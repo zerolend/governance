@@ -12,20 +12,11 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+// import {ProxyOFTV2} from "@layerzerolabs/solidity-examples/contracts/token/oft/v2/ProxyOFTV2.sol";
 
-contract LockerNFT is Initializable, AccessControlEnumerableUpgradeable {
-    // A locker which is a soul bound token (SBT) that represents voting power
-
-    /// @dev The staking contract where veZERO nfts are saved
-    address public lockerStaking;
-
-    function lock() external {
-        // todo
-    }
-
-    function lockAndStake() external {
-        // todo
-    }
-}
+// abstract contract ZeroLendOFTProxy is ProxyOFTV2 {
+//     constructor(
+//         address _token,
+//         address _lzEndpoint
+//     ) ProxyOFTV2(_token, 8, _lzEndpoint) {}
+// }

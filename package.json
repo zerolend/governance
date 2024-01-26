@@ -21,6 +21,7 @@
     "zksync-web3": "^0.14.3"
   },
   "scripts": {
+    "compile": "hardhat compile",
     "test": "NODE_ENV=test hardhat test --network zkSyncTestnet",
     "deploy": "yarn hardhat deploy-zksync --script deploy-greeter.ts",
     "greet": "yarn hardhat deploy-zksync --script use-greeter.ts"
@@ -28,7 +29,9 @@
   "dependencies": {
     "@layerzerolabs/lz-evm-oapp-v2": "^2.0.18",
     "@layerzerolabs/lz-evm-protocol-v2": "^2.0.18",
+    "@layerzerolabs/solidity-examples": "^1.1.0",
     "@openzeppelin/contracts": "^5.0.1",
+    "@openzeppelin/contracts-upgradeable": "^5.0.1",
     "@sablier/v2-core": "^1.1.2"
   }
 }

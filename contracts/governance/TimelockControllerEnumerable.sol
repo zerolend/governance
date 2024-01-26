@@ -3,9 +3,9 @@
 
 pragma solidity ^0.8.20;
 
-import {AccessControlEnumerable} from "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 import {ERC721Holder} from "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import {ERC1155Receiver, ERC1155Holder} from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import {ERC1155Holder} from "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 
 /**
@@ -185,15 +185,15 @@ contract TimelockControllerEnumerable is
         public
         view
         virtual
-        override(AccessControlEnumerable, ERC1155Receiver)
+        override(AccessControlEnumerable, ERC1155Holder)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
     }
 
     /**
-     * @dev Returns whether an id correspond to a registered operation. This
-     * includes both Pending, Ready and Done operations.
+     * @dev Returns whether an id corresponds to a registered operation. This
+     * includes both Waiting, Ready, and Done operations.
      */
     function isOperation(bytes32 id) public view returns (bool) {
         return getOperationState(id) != OperationState.Unset;
@@ -484,7 +484,7 @@ contract TimelockControllerEnumerable is
         (bool success, bytes memory returndata) = target.call{value: value}(
             data
         );
-        Address.verifyCallResult(success, returndata, "call reverted");
+        Address.verifyCallResult(success, returndata);
     }
 
     /**
