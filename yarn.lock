@@ -410,6 +410,16 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+"@layerzerolabs/lz-evm-oapp-v2@^2.0.18":
+  version "2.0.18"
+  resolved "https://registry.yarnpkg.com/@layerzerolabs/lz-evm-oapp-v2/-/lz-evm-oapp-v2-2.0.18.tgz#17f5c232c30952017696a47f73516d6e3b9a03bd"
+  integrity sha512-ZYnH55yijI+fMBt4oTLHjrJrAkI54Q1vvkl+pugeidDOzo+vWGN00dyajJEOyfaXdlReTiUAIRUVEMtj/KUktg==
+
+"@layerzerolabs/lz-evm-protocol-v2@^2.0.18":
+  version "2.0.18"
+  resolved "https://registry.yarnpkg.com/@layerzerolabs/lz-evm-protocol-v2/-/lz-evm-protocol-v2-2.0.18.tgz#38e69572586b173b3b39345cf1cafc2a10f03838"
+  integrity sha512-nj4BHwkFOu+ogL61Fk+qfWXT//KZDeqhe8I0G8tlVrvRm6plyAba9XZmhnf+6YquLJkYpya4GDKpoKfPoRFaLA==
+
 "@matterlabs/hardhat-zksync-deploy@^0.6.3":
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/@matterlabs/hardhat-zksync-deploy/-/hardhat-zksync-deploy-0.6.3.tgz#833b208373e7037bf43671054328d82511444e2a"
@@ -693,10 +703,28 @@
     table "^6.8.0"
     undici "^5.14.0"
 
-"@openzeppelin/contracts@^4.9.3":
-  version "4.9.3"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.9.3.tgz#00d7a8cf35a475b160b3f0293a6403c511099364"
-  integrity sha512-He3LieZ1pP2TNt5JbkPA4PNT9WC3gOTOlDcFGJW4Le4QKqwmiNJCRt44APfxMxvq7OugU/cqYuPcSBzOw38DAg==
+"@openzeppelin/contracts@4.9.2":
+  version "4.9.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.9.2.tgz#1cb2d5e4d3360141a17dbc45094a8cad6aac16c1"
+  integrity sha512-mO+y6JaqXjWeMh9glYVzVu8HYPGknAAnWyxTRhGeckOruyXQMNnlcW6w/Dx9ftLeIQk6N+ZJFuVmTwF7lEIFrg==
+
+"@openzeppelin/contracts@^5.0.1":
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-5.0.1.tgz#93da90fc209a0a4ff09c1deb037fbb35e4020890"
+  integrity sha512-yQJaT5HDp9hYOOp4jTYxMsR02gdFZFXhewX5HW9Jo4fsqSVqqyIO/xTHdWDaKX5a3pv1txmf076Lziz+sO7L1w==
+
+"@prb/math@4.0.2":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@prb/math/-/math-4.0.2.tgz#0bcbc34eb2c49c56b70ded059d0af28c09b7833a"
+  integrity sha512-kJgqvXR6iyU7+N959RzggSFhBdnRuSDnc/bs8u6MzdWw7aYIUaAr+uMVdpP6Dheypjerd7sfJgFOs19FRFhscg==
+
+"@sablier/v2-core@^1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@sablier/v2-core/-/v2-core-1.1.2.tgz#ecf024ffff3a833d8083d6a34fd8e330b42607d7"
+  integrity sha512-b9tSDVlwNc28l/kuBnizqYQ399OxS5kL03m9d9v79WH/9IMjrEFq0dhVX/sMsIWvzj3GXZ60P1oL1QWymeLXJQ==
+  dependencies:
+    "@openzeppelin/contracts" "4.9.2"
+    "@prb/math" "4.0.2"
 
 "@scure/base@~1.1.0":
   version "1.1.1"
