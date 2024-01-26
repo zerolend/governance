@@ -4,16 +4,7 @@ pragma solidity ^0.8.6;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
-
-library Math {
-    function max(uint a, uint b) internal pure returns (uint) {
-        return a >= b ? a : b;
-    }
-
-    function min(uint a, uint b) internal pure returns (uint) {
-        return a < b ? a : b;
-    }
-}
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract PoolVoter {
     IVotes public staking; // the ve token that governs these contracts

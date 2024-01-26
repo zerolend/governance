@@ -22,8 +22,9 @@ pragma solidity ^0.8.20;
 // }
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-// import {IPoolAddressesProvider} from '../../interfaces/IPoolAddressesProvider.sol';
-import {InitializableImmutableAdminUpgradeabilityProxy} from "./proxy/InitializableImmutableAdminUpgradeabilityProxy.sol";
+import {IPoolAddressesProvider} from "./interfaces/IPoolAddressesProvider.sol";
+
+// import {InitializableImmutableAdminUpgradeabilityProxy} from "./proxy/InitializableImmutableAdminUpgradeabilityProxy.sol";
 
 /**
  * @title PoolAddressesProvider
@@ -53,9 +54,8 @@ contract ZeroRegistry is Ownable, IPoolAddressesProvider {
      * @param marketId The identifier of the market.
      * @param owner The owner address of this contract.
      */
-    constructor(string memory marketId, address owner) {
+    constructor(string memory marketId, address owner) Ownable(owner) {
         _setMarketId(marketId);
-        transferOwnership(owner);
     }
 
     /// @inheritdoc IPoolAddressesProvider
@@ -212,25 +212,25 @@ contract ZeroRegistry is Ownable, IPoolAddressesProvider {
      */
     function _updateImpl(bytes32 id, address newAddress) internal {
         address proxyAddress = _addresses[id];
-        InitializableImmutableAdminUpgradeabilityProxy proxy;
-        bytes memory params = abi.encodeWithSignature(
-            "initialize(address)",
-            address(this)
-        );
+        // InitializableImmutableAdminUpgradeabilityProxy proxy;
+        // bytes memory params = abi.encodeWithSignature(
+        //     "initialize(address)",
+        //     address(this)
+        // );
 
-        if (proxyAddress == address(0)) {
-            proxy = new InitializableImmutableAdminUpgradeabilityProxy(
-                address(this)
-            );
-            _addresses[id] = proxyAddress = address(proxy);
-            proxy.initialize(newAddress, params);
-            emit ProxyCreated(id, proxyAddress, newAddress);
-        } else {
-            proxy = InitializableImmutableAdminUpgradeabilityProxy(
-                payable(proxyAddress)
-            );
-            proxy.upgradeToAndCall(newAddress, params);
-        }
+        // if (proxyAddress == address(0)) {
+        //     proxy = new InitializableImmutableAdminUpgradeabilityProxy(
+        //         address(this)
+        //     );
+        //     _addresses[id] = proxyAddress = address(proxy);
+        //     proxy.initialize(newAddress, params);
+        //     emit ProxyCreated(id, proxyAddress, newAddress);
+        // } else {
+        //     proxy = InitializableImmutableAdminUpgradeabilityProxy(
+        //         payable(proxyAddress)
+        //     );
+        //     proxy.upgradeToAndCall(newAddress, params);
+        // }
     }
 
     /**
@@ -251,15 +251,16 @@ contract ZeroRegistry is Ownable, IPoolAddressesProvider {
      * @return The address of the implementation contract
      */
     function _getProxyImplementation(bytes32 id) internal returns (address) {
-        address proxyAddress = _addresses[id];
-        if (proxyAddress == address(0)) {
-            return address(0);
-        } else {
-            address payable payableProxyAddress = payable(proxyAddress);
-            return
-                InitializableImmutableAdminUpgradeabilityProxy(
-                    payableProxyAddress
-                ).implementation();
-        }
+        // address proxyAddress = _addresses[id];
+        // if (proxyAddress == address(0)) {
+        //     return address(0);
+        // } else {
+        //     address payable payableProxyAddress = payable(proxyAddress);
+        //     return
+        //         InitializableImmutableAdminUpgradeabilityProxy(
+        //             payableProxyAddress
+        //         ).implementation();
+        // }
+        return address(0);
     }
 }
