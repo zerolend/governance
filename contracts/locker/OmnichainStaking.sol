@@ -15,7 +15,14 @@ pragma solidity ^0.8.20;
 import {OApp} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
 import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 
-abstract contract LockerStaking is OApp, Votes {
+abstract contract OmnichainStaking is OApp, Votes {
+    struct StakeInformation {
+        address owner;
+        uint256 tokenStake;
+        uint256 lpStake;
+        uint256 localVe;
+    }
+
     // An omni-chain staking contract that allows users to stake their veNFT
     // and get some voting power. Once staked the voting power is available cross-chain.
 
@@ -26,6 +33,10 @@ abstract contract LockerStaking is OApp, Votes {
     constructor(address _endpoint) OApp(_endpoint, msg.sender) {
         // todo
     }
+
+    function stakeLP() external {}
+
+    function stakeToken() external {}
 
     function updatePowerOnChain(uint256 chainId, uint256 nftId) external {
         // using layerzero, sends the updated voting power across the different chains
