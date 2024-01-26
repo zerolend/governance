@@ -39,4 +39,6 @@ abstract contract ZeroLend is ERC20Permit {
     // ) internal virtual override {
     //     require(!blacklisted[from] && !blacklisted[to], "blacklisted");
     // }
+
+    function startTrading() external {}
 }
