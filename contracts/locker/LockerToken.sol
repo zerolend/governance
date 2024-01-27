@@ -6,6 +6,7 @@ import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receive
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
 
@@ -33,11 +34,11 @@ import {INFTLocker} from "../interfaces/INFTLocker.sol";
   # maxtime (4 years?)
 */
 
-contract LockerLP is ReentrancyGuard, INFTLocker {
-    uint256 internal constant WEEK = 1 weeks;
-    uint256 internal constant MAXTIME = 4 * 365 * 86400;
-    int128 internal constant iMAXTIME = 4 * 365 * 86400;
-    uint256 internal constant MULTIPLIER = 1 ether;
+contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
+    uint256 internal WEEK;
+    uint256 internal MAXTIME;
+    int128 internal iMAXTIME;
+    uint256 internal MULTIPLIER;
 
     uint256 public supply;
     mapping(uint256 => LockedBalance) public locked;
@@ -51,10 +52,10 @@ contract LockerLP is ReentrancyGuard, INFTLocker {
     mapping(uint256 => uint256) public override userPointEpoch;
     mapping(uint256 => int128) public slopeChanges; // time -> signed slope change
 
-    string public constant name = "Locked ZERO";
-    string public constant symbol = "ZERO";
-    string public constant version = "1.0.0";
-    uint8 public constant decimals = 18;
+    string public name;
+    string public symbol;
+    string public version;
+    uint8 public decimals;
 
     /// @dev Current count of token
     uint256 internal tokenId;
@@ -80,29 +81,33 @@ contract LockerLP is ReentrancyGuard, INFTLocker {
     /// @dev Mapping from owner address to mapping of operator addresses.
     mapping(address => mapping(address => bool)) internal ownerToOperators;
 
-    constructor(
-        address _token,
-        address _royaltyRcv,
-        address _renderingContract,
-        uint96 _royaltyFeeNumerator
-    ) {
+    function init(address _token) external initializer {
+        name = "Locked ZERO";
+        symbol = "ZERO";
+        version = "1.0.0";
+        decimals = 18;
+
+        WEEK = 1 weeks;
+        MAXTIME = 4 * 365 * 86400;
+        iMAXTIME = 4 * 365 * 86400;
+        MULTIPLIER = 1 ether;
+
         // registry = IRegistry(_registry);
         token = IERC20(_token);
         _pointHistory[0].blk = block.number;
         _pointHistory[0].ts = block.timestamp;
     }
 
-    // /// @dev Interface identification is specified in ERC-165.
-    // /// @param _interfaceID Id of the interface
-    // function supportsInterface(
-    //     bytes4 _interfaceID
-    // ) public view override returns (bool) {
-    //     return
-    //         // bytes4(0x01ffc9a7) == _interfaceID || // ERC165
-    //         bytes4(0x80ac58cd) == _interfaceID || // ERC721
-    //         bytes4(0x5b5e139f) == _interfaceID || // ERC721Metadata
-    //         super.supportsInterface(_interfaceID);
-    // }
+    /// @dev Interface identification is specified in ERC-165.
+    /// @param _interfaceID Id of the interface
+    function supportsInterface(
+        bytes4 _interfaceID
+    ) public pure override returns (bool) {
+        return
+            // bytes4(0x01ffc9a7) == _interfaceID || // ERC165
+            bytes4(0x80ac58cd) == _interfaceID || // ERC721
+            bytes4(0x5b5e139f) == _interfaceID;
+    }
 
     function totalSupplyWithoutDecay()
         external

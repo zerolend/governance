@@ -5,21 +5,14 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import {VersionedInitializable} from "../proxy/VersionedInitializable.sol";
 
-contract PoolVoter {
+contract PoolVoter is ReentrancyGuardUpgradeable {
     IVotes public staking; // the ve token that governs these contracts
     IERC20 public base;
 
     uint public totalWeight; // total voting weight
-
-    // simple re-entrancy check
-    uint _unlocked = 1;
-    modifier lock() {
-        require(_unlocked == 1);
-        _unlocked = 0;
-        _;
-        _unlocked = 1;
-    }
 
     address[] internal _pools; // all pools viable for incentives
     mapping(address => address) public gauges; // pool => gauge
@@ -34,14 +27,20 @@ contract PoolVoter {
     mapping(address => uint) public supplyIndex;
     mapping(address => uint) public claimable;
 
+    function getRevision() internal pure virtual returns (uint256) {
+        return 0;
+    }
+
     function pools() external view returns (address[] memory) {
         return _pools;
     }
 
-    constructor(address __ve, address _factory) {
+    function init(address __ve, address _factory) external initializer {
         // _ve = __ve;
         // factory = _factory;
         // base = ve(__ve).token();
+
+        __ReentrancyGuard_init();
     }
 
     function reset(address _tokenId) external {
@@ -56,13 +55,12 @@ contract PoolVoter {
             address _pool = _poolVote[i];
             uint _votes = votes[_tokenId][_pool];
 
-            // if (_votes > 0) {
-            //     _updateFor(gauges[_pool]);
-            //     totalWeight -= _votes;
-            //     weights[_pool] -= _votes;
-            //     votes[_tokenId][_pool] = 0;
-            //     Bribe(bribes[gauges[_pool]])._withdraw(_votes, _tokenId);
-            // }
+            if (_votes > 0) {
+                _updateFor(gauges[_pool]);
+                totalWeight -= _votes;
+                weights[_pool] -= _votes;
+                votes[_tokenId][_pool] = 0;
+            }
         }
 
         delete poolVote[_tokenId];
@@ -105,15 +103,14 @@ contract PoolVoter {
             address _gauge = gauges[_pool];
             uint _poolWeight = (_weights[i] * _weight) / _totalVoteWeight;
 
-            // if (_gauge != address(0x0)) {
-            //     _updateFor(_gauge);
-            //     _usedWeight += _poolWeight;
-            //     totalWeight += _poolWeight;
-            //     weights[_pool] += _poolWeight;
-            //     poolVote[_tokenId].push(_pool);
-            //     votes[_tokenId][_pool] = _poolWeight;
-            //     Bribe(bribes[_gauge])._deposit(_poolWeight, _tokenId);
-            // }
+            if (_gauge != address(0x0)) {
+                _updateFor(_gauge);
+                _usedWeight += _poolWeight;
+                totalWeight += _poolWeight;
+                weights[_pool] += _poolWeight;
+                poolVote[_tokenId].push(_pool);
+                votes[_tokenId][_pool] = _poolWeight;
+            }
         }
 
         usedWeights[_tokenId] = _usedWeight;
@@ -146,7 +143,7 @@ contract PoolVoter {
     }
 
     // Accrue fees on token0
-    function notifyRewardAmount(uint amount) public lock {
+    function notifyRewardAmount(uint amount) public nonReentrant {
         _safeTransferFrom(address(base), msg.sender, address(this), amount); // transfer the distro in
         uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
         if (_ratio > 0) {
@@ -175,7 +172,7 @@ contract PoolVoter {
         }
     }
 
-    function distribute(address _gauge) public lock {
+    function distribute(address _gauge) public nonReentrant {
         uint _claimable = claimable[_gauge];
         claimable[_gauge] = 0;
         IERC20(base).approve(_gauge, 0); // first set to 0, this helps reset some non-standard tokens
@@ -212,7 +209,11 @@ contract PoolVoter {
 
     // setup distro > then distribute
 
-    function distributeEx(address token, uint start, uint finish) public lock {
+    function distributeEx(
+        address token,
+        uint start,
+        uint finish
+    ) public nonReentrant {
         uint _balance = IERC20(token).balanceOf(address(this));
         if (_balance > 0 && totalWeight > 0) {
             uint _totalWeight = totalWeight;
