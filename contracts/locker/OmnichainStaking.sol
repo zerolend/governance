@@ -14,15 +14,9 @@ pragma solidity ^0.8.20;
 
 import {OApp} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
 import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
+import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 
-abstract contract OmnichainStaking is OApp, Votes {
-    struct StakeInformation {
-        address owner;
-        uint256 tokenStake;
-        uint256 lpStake;
-        uint256 localVe;
-    }
-
+abstract contract OmnichainStaking is IOmnichainStaking, OApp, Votes {
     // An omni-chain staking contract that allows users to stake their veNFT
     // and get some voting power. Once staked the voting power is available cross-chain.
 
@@ -34,9 +28,9 @@ abstract contract OmnichainStaking is OApp, Votes {
         // todo
     }
 
-    function stakeLP() external {}
+    function stakeLPFor(address who, uint256 tokenId) external {}
 
-    function stakeToken() external {}
+    function stakeTokenFor(address who, uint256 tokenId) external {}
 
     function updatePowerOnChain(uint256 chainId, uint256 nftId) external {
         // using layerzero, sends the updated voting power across the different chains

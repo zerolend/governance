@@ -9,6 +9,7 @@ import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
+import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 
 // import {INFTStaker} from "./interfaces/INFTStaker.sol";
 
@@ -61,6 +62,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
     uint256 internal tokenId;
 
     IERC20 public token;
+    IOmnichainStaking public staking;
 
     /// @dev Mapping from NFT ID to the address that owns it.
     mapping(uint256 => address) internal idToOwner;
@@ -81,7 +83,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
     /// @dev Mapping from owner address to mapping of operator addresses.
     mapping(address => mapping(address => bool)) internal ownerToOperators;
 
-    function init(address _token) external initializer {
+    function init(address _token, address _staking) external initializer {
         name = "Locked ZERO";
         symbol = "ZERO";
         version = "1.0.0";
@@ -92,7 +94,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
         iMAXTIME = 4 * 365 * 86400;
         MULTIPLIER = 1 ether;
 
-        // registry = IRegistry(_registry);
+        staking = IOmnichainStaking(_staking);
         token = IERC20(_token);
         _pointHistory[0].blk = block.number;
         _pointHistory[0].ts = block.timestamp;
@@ -673,8 +675,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
         uint256 _value,
         uint256 unlockTime,
         LockedBalance memory lockedBalance,
-        DepositType depositType,
-        bool stakeNFT
+        DepositType depositType
     ) internal {
         LockedBalance memory _locked = lockedBalance;
         uint256 supplyBefore = supply;
@@ -705,8 +706,6 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
             assert(token.transferFrom(from, address(this), _value));
         }
 
-        // if (_stakeNFT) INFTStaker(registry.staker())._stakeFromLock(_tokenId);
-
         emit Deposit(
             from,
             _tokenId,
@@ -733,7 +732,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
         locked[_from] = LockedBalance(0, 0, 0);
         _checkpoint(_from, _locked0, LockedBalance(0, 0, 0));
         _burn(_from);
-        _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE, false);
+        _depositFor(_to, value0, end, _locked1, DepositType.MERGE_TYPE);
     }
 
     function blockNumber() external view override returns (uint256) {
@@ -759,27 +758,18 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
         require(_value > 0, "value = 0"); // dev: need non-zero value
         require(_locked.amount > 0, "No existing lock found");
         require(_locked.end > block.timestamp, "Cannot add to expired lock.");
-        _depositFor(
-            _tokenId,
-            _value,
-            0,
-            _locked,
-            DepositType.DEPOSIT_FOR_TYPE,
-            false
-        );
+        _depositFor(_tokenId, _value, 0, _locked, DepositType.DEPOSIT_FOR_TYPE);
     }
 
     /// @notice Deposit `_value` tokens for `_to` and lock for `_lockDuration`
     /// @param _value Amount to deposit
     /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
     /// @param _to Address to deposit
-    /// @param _shouldPullUserMaha Should we pull maha with the lock
     /// @param _stakeNFT should we stake into the staking contract
     function _createLock(
         uint256 _value,
         uint256 _lockDuration,
         address _to,
-        bool _shouldPullUserMaha,
         bool _stakeNFT
     ) internal returns (uint256) {
         uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
@@ -800,9 +790,10 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
             _value,
             unlockTime,
             locked[_tokenId],
-            DepositType.CREATE_LOCK_TYPE,
-            _stakeNFT
+            DepositType.CREATE_LOCK_TYPE
         );
+
+        if (_stakeNFT) staking.stakeTokenFor(_to, _tokenId);
 
         return _tokenId;
     }
@@ -817,7 +808,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
         address _to,
         bool _stakeNFT
     ) external override nonReentrant returns (uint256) {
-        return _createLock(_value, _lockDuration, _to, true, _stakeNFT);
+        return _createLock(_value, _lockDuration, _to, _stakeNFT);
     }
 
     /// @notice Deposit `_value` tokens for `msg.sender` and lock for `_lockDuration`
@@ -829,7 +820,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
         uint256 _lockDuration,
         bool _stakeNFT
     ) external override nonReentrant returns (uint256) {
-        return _createLock(_value, _lockDuration, msg.sender, true, _stakeNFT);
+        return _createLock(_value, _lockDuration, msg.sender, _stakeNFT);
     }
 
     /// @notice Deposit `_value` additional tokens for `_tokenId` without modifying the unlock time
@@ -853,8 +844,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
             _value,
             0,
             _locked,
-            DepositType.INCREASE_LOCK_AMOUNT,
-            true
+            DepositType.INCREASE_LOCK_AMOUNT
         );
     }
 
@@ -889,8 +879,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
             0,
             unlockTime,
             _locked,
-            DepositType.INCREASE_UNLOCK_TIME,
-            false
+            DepositType.INCREASE_UNLOCK_TIME
         );
     }
 
