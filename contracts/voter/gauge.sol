@@ -9,24 +9,26 @@ import {RewardBase} from "./RewardBase.sol";
 // Gauges are used to incentivize pools, they emit reward tokens over 7 days for staked LP tokens
 // Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
 contract Gauge is RewardBase {
-    address public immutable stake; // the LP token that needs to be staked for rewards
-    IVotes immutable _ve; // the ve token used for gauges
-    IERC20 token;
+    IERC20 public stake; // the LP token that needs to be staked for rewards
+    IVotes public staking; // the ve token used for gauges
+    IERC20 public reward;
 
-    uint public derivedSupply;
-    mapping(address => uint) public derivedBalances;
+    uint256 public derivedSupply;
+    mapping(address => uint256) public derivedBalances;
 
-    constructor(address _stake) {
-        stake = _stake;
-        // address __ve = BaseV1Gauges(msg.sender)._ve();
-        _ve = IVotes(address(0));
-        // incentives.push(ve(address(0)).token()); // assume the first incentive is the same token that creates ve
+    function init(address _stake, address _staking, address _reward) external {
+        __RewardBase_init();
+        stake = IERC20(_stake);
+        staking = IVotes(_staking);
+        reward = IERC20(_reward);
     }
 
-    function rewardPerToken(address token) public view override returns (uint) {
-        if (totalSupply == 0) {
-            return rewardPerTokenStored[token];
-        } // derivedSupply is used instead of totalSupply to modify for ve-BOOST
+    function rewardPerToken(
+        address token
+    ) public view override returns (uint256) {
+        if (totalSupply == 0) return rewardPerTokenStored[token];
+
+        // derivedSupply is used instead of totalSupply to modify for ve-BOOST
         return
             rewardPerTokenStored[token] +
             (((lastTimeRewardApplicable(token) - lastUpdateTime[token]) *
@@ -36,25 +38,25 @@ contract Gauge is RewardBase {
 
     // used to update an account internally and externally, since ve decays over times, an address could have 0 balance but still register here
     function kick(address account) public {
-        uint _derivedBalance = derivedBalances[account];
+        uint256 _derivedBalance = derivedBalances[account];
         derivedSupply -= _derivedBalance;
         _derivedBalance = derivedBalance(account);
         derivedBalances[account] = _derivedBalance;
         derivedSupply += _derivedBalance;
     }
 
-    function derivedBalance(address account) public view returns (uint) {
-        uint _balance = balanceOf[account];
-        uint _derived = (_balance * 40) / 100;
-        uint _adjusted = (((totalSupply * _ve.getVotes(account)) /
-            token.totalSupply()) * 60) / 100;
+    function derivedBalance(address account) public view returns (uint256) {
+        uint256 _balance = balanceOf[account];
+        uint256 _derived = (_balance * 40) / 100;
+        uint256 _adjusted = (((totalSupply * staking.getVotes(account)) /
+            staking.getPastTotalSupply(block.timestamp)) * 60) / 100;
         return Math.min(_derived + _adjusted, _balance);
     }
 
     function earned(
         address token,
         address account
-    ) public view override returns (uint) {
+    ) public view override returns (uint256) {
         return
             ((derivedBalances[account] *
                 (rewardPerToken(token) -
@@ -66,19 +68,19 @@ contract Gauge is RewardBase {
         _deposit(erc20(stake).balanceOf(msg.sender), msg.sender);
     }
 
-    function deposit(uint amount) external {
+    function deposit(uint256 amount) external {
         _deposit(amount, msg.sender);
     }*/
 
-    function deposit(uint amount, address account) external {
+    function deposit(uint256 amount, address account) external {
         _deposit(amount, account);
     }
 
     function _deposit(
-        uint amount,
+        uint256 amount,
         address account
-    ) internal lock updateReward(incentives[0], account) {
-        _safeTransferFrom(stake, account, address(this), amount);
+    ) internal nonReentrant updateReward(incentives[0], account) {
+        // _safeTransferFrom(stake, account, address(this), amount);
         totalSupply += amount;
         balanceOf[account] += amount;
     }
@@ -87,16 +89,16 @@ contract Gauge is RewardBase {
         _withdraw(balanceOf[msg.sender]);
     }
 
-    function withdraw(uint amount) external {
+    function withdraw(uint256 amount) external {
         _withdraw(amount);
     }
 
     function _withdraw(
-        uint amount
-    ) internal lock updateReward(incentives[0], msg.sender) {
+        uint256 amount
+    ) internal nonReentrant updateReward(incentives[0], msg.sender) {
         totalSupply -= amount;
         balanceOf[msg.sender] -= amount;
-        _safeTransfer(stake, msg.sender, amount);
+        // _safeTransfer(stake, msg.sender, amount);
     }
 
     function exit() external {

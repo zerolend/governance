@@ -10,22 +10,23 @@ import {VersionedInitializable} from "../proxy/VersionedInitializable.sol";
 
 contract PoolVoter is ReentrancyGuardUpgradeable {
     IVotes public staking; // the ve token that governs these contracts
-    IERC20 public base;
-
-    uint public totalWeight; // total voting weight
+    IERC20 public reward;
+    uint256 public totalWeight; // total voting weight
+    address public lzEndpoint;
+    address public mainnetEmissions;
 
     address[] internal _pools; // all pools viable for incentives
     mapping(address => address) public gauges; // pool => gauge
     mapping(address => address) public poolForGauge; // pool => gauge
     mapping(address => address) public bribes; // gauge => bribe
-    mapping(address => uint) public weights; // pool => weight
-    mapping(address => mapping(address => uint)) public votes; // nft => votes
+    mapping(address => uint256) public weights; // pool => weight
+    mapping(address => mapping(address => uint256)) public votes; // nft => votes
     mapping(address => address[]) public poolVote; // nft => pools
-    mapping(address => uint) public usedWeights; // nft => total voting weight of user
+    mapping(address => uint256) public usedWeights; // nft => total voting weight of user
 
-    uint public index;
-    mapping(address => uint) public supplyIndex;
-    mapping(address => uint) public claimable;
+    uint256 public index;
+    mapping(address => uint256) public supplyIndex;
+    mapping(address => uint256) public claimable;
 
     function getRevision() internal pure virtual returns (uint256) {
         return 0;
@@ -35,47 +36,50 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
         return _pools;
     }
 
-    function init(address __ve, address _factory) external initializer {
-        // _ve = __ve;
-        // factory = _factory;
-        // base = ve(__ve).token();
-
+    function init(
+        address _staking,
+        address _reward,
+        address _lzEndpoint,
+        address _mainnetEmissions
+    ) external initializer {
+        staking = IVotes(_staking);
+        reward = IERC20(_reward);
         __ReentrancyGuard_init();
     }
 
-    function reset(address _tokenId) external {
-        _reset(_tokenId);
+    function reset() external {
+        _reset(msg.sender);
     }
 
-    function _reset(address _tokenId) internal {
-        address[] storage _poolVote = poolVote[_tokenId];
-        uint _poolVoteCnt = _poolVote.length;
+    function _reset(address _who) internal {
+        address[] storage _poolVote = poolVote[_who];
+        uint256 _poolVoteCnt = _poolVote.length;
 
-        for (uint i = 0; i < _poolVoteCnt; i++) {
+        for (uint256 i = 0; i < _poolVoteCnt; i++) {
             address _pool = _poolVote[i];
-            uint _votes = votes[_tokenId][_pool];
+            uint256 _votes = votes[_who][_pool];
 
             if (_votes > 0) {
                 _updateFor(gauges[_pool]);
                 totalWeight -= _votes;
                 weights[_pool] -= _votes;
-                votes[_tokenId][_pool] = 0;
+                votes[_who][_pool] = 0;
             }
         }
 
-        delete poolVote[_tokenId];
+        delete poolVote[_who];
     }
 
     function poke(address who) public {
         address[] memory _poolVote = poolVote[who];
-        uint _poolCnt = _poolVote.length;
-        uint[] memory _weights = new uint[](_poolCnt);
+        uint256 _poolCnt = _poolVote.length;
+        uint256[] memory _weights = new uint256[](_poolCnt);
 
-        uint _prevUsedWeight = usedWeights[who];
-        uint _weight = staking.getVotes(who);
+        uint256 _prevUsedWeight = usedWeights[who];
+        uint256 _weight = staking.getVotes(who);
 
-        for (uint i = 0; i < _poolCnt; i++) {
-            uint _prevWeight = votes[who][_poolVote[i]];
+        for (uint256 i = 0; i < _poolCnt; i++) {
+            uint256 _prevWeight = votes[who][_poolVote[i]];
             _weights[i] = (_prevWeight * _weight) / _prevUsedWeight;
         }
 
@@ -83,46 +87,45 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
     }
 
     function _vote(
-        address _tokenId,
+        address _who,
         address[] memory _poolVote,
-        uint[] memory _weights
+        uint256[] memory _weights
     ) internal {
         // require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId));
-        _reset(_tokenId);
-        uint _poolCnt = _poolVote.length;
-        uint _weight = staking.getVotes(_tokenId);
-        uint _totalVoteWeight = 0;
-        uint _usedWeight = 0;
+        _reset(_who);
+        uint256 _poolCnt = _poolVote.length;
+        uint256 _weight = staking.getVotes(_who);
+        uint256 _totalVoteWeight = 0;
+        uint256 _usedWeight = 0;
 
-        for (uint i = 0; i < _poolCnt; i++) {
+        for (uint256 i = 0; i < _poolCnt; i++) {
             _totalVoteWeight += _weights[i];
         }
 
-        for (uint i = 0; i < _poolCnt; i++) {
+        for (uint256 i = 0; i < _poolCnt; i++) {
             address _pool = _poolVote[i];
             address _gauge = gauges[_pool];
-            uint _poolWeight = (_weights[i] * _weight) / _totalVoteWeight;
+            uint256 _poolWeight = (_weights[i] * _weight) / _totalVoteWeight;
 
             if (_gauge != address(0x0)) {
                 _updateFor(_gauge);
                 _usedWeight += _poolWeight;
                 totalWeight += _poolWeight;
                 weights[_pool] += _poolWeight;
-                poolVote[_tokenId].push(_pool);
-                votes[_tokenId][_pool] = _poolWeight;
+                poolVote[_who].push(_pool);
+                votes[_who][_pool] = _poolWeight;
             }
         }
 
-        usedWeights[_tokenId] = _usedWeight;
+        usedWeights[_who] = _usedWeight;
     }
 
     function vote(
-        address tokenId,
         address[] calldata _poolVote,
-        uint[] calldata _weights
+        uint256[] calldata _weights
     ) external {
         require(_poolVote.length == _weights.length);
-        _vote(tokenId, _poolVote, _weights);
+        _vote(msg.sender, _poolVote, _weights);
     }
 
     // function createGauge(address _pool) external returns (address) {
@@ -138,13 +141,13 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
     //     return _gauge;
     // }
 
-    function length() external view returns (uint) {
+    function length() external view returns (uint256) {
         return _pools.length;
     }
 
     // Accrue fees on token0
-    function notifyRewardAmount(uint amount) public nonReentrant {
-        _safeTransferFrom(address(base), msg.sender, address(this), amount); // transfer the distro in
+    function notifyRewardAmount(uint256 amount) public nonReentrant {
+        _safeTransferFrom(address(reward), msg.sender, address(this), amount); // transfer the distro in
         uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
         if (_ratio > 0) {
             index += _ratio;
@@ -157,14 +160,14 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
 
     function _updateFor(address _gauge) internal {
         address _pool = poolForGauge[_gauge];
-        uint _supplied = weights[_pool];
+        uint256 _supplied = weights[_pool];
         if (_supplied > 0) {
-            uint _supplyIndex = supplyIndex[_gauge];
-            uint _index = index; // get global index0 for accumulated distro
+            uint256 _supplyIndex = supplyIndex[_gauge];
+            uint256 _index = index; // get global index0 for accumulated distro
             supplyIndex[_gauge] = _index; // update _gauge current position to global position
-            uint _delta = _index - _supplyIndex; // see if there is any difference that need to be accrued
+            uint256 _delta = _index - _supplyIndex; // see if there is any difference that need to be accrued
             if (_delta > 0) {
-                uint _share = (_supplied * _delta) / 1e18; // add accrued difference for each supplied token
+                uint256 _share = (_supplied * _delta) / 1e18; // add accrued difference for each supplied token
                 claimable[_gauge] += _share;
             }
         } else {
@@ -173,11 +176,11 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
     }
 
     function distribute(address _gauge) public nonReentrant {
-        uint _claimable = claimable[_gauge];
+        uint256 _claimable = claimable[_gauge];
         claimable[_gauge] = 0;
-        IERC20(base).approve(_gauge, 0); // first set to 0, this helps reset some non-standard tokens
-        IERC20(base).approve(_gauge, _claimable);
-        if (!IGauge(_gauge).notifyRewardAmount(address(base), _claimable)) {
+        IERC20(reward).approve(_gauge, 0); // first set to 0, this helps reset some non-standard tokens
+        IERC20(reward).approve(_gauge, _claimable);
+        if (!IGauge(_gauge).notifyRewardAmount(address(reward), _claimable)) {
             // can return false, will simply not distribute tokens
             claimable[_gauge] = _claimable;
         }
@@ -191,14 +194,14 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
         distribute(0, _pools.length);
     }
 
-    function distribute(uint start, uint finish) public {
-        for (uint x = start; x < finish; x++) {
+    function distribute(uint256 start, uint256 finish) public {
+        for (uint256 x = start; x < finish; x++) {
             distribute(gauges[_pools[x]]);
         }
     }
 
     function distribute(address[] memory _gauges) external {
-        for (uint x = 0; x < _gauges.length; x++) {
+        for (uint256 x = 0; x < _gauges.length; x++) {
             distribute(_gauges[x]);
         }
     }
@@ -211,14 +214,15 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
 
     function distributeEx(
         address token,
-        uint start,
-        uint finish
+        uint256 start,
+        uint256 finish
     ) public nonReentrant {
-        uint _balance = IERC20(token).balanceOf(address(this));
+        uint256 _balance = IERC20(token).balanceOf(address(this));
         if (_balance > 0 && totalWeight > 0) {
-            uint _totalWeight = totalWeight;
-            for (uint x = start; x < finish; x++) {
-                uint _reward = (_balance * weights[_pools[x]]) / _totalWeight;
+            uint256 _totalWeight = totalWeight;
+            for (uint256 x = start; x < finish; x++) {
+                uint256 _reward = (_balance * weights[_pools[x]]) /
+                    _totalWeight;
                 if (_reward > 0) {
                     address _gauge = gauges[_pools[x]];
 
