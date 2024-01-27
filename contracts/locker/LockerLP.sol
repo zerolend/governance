@@ -15,7 +15,7 @@ pragma solidity ^0.8.20;
 import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract LockerLP is Initializable, AccessControlEnumerableUpgradeable {
+contract LockerNFT is Initializable, AccessControlEnumerableUpgradeable {
     // A locker which is a soul bound token (SBT) that represents voting power
 
     /// @dev The staking contract where veZERO nfts are saved

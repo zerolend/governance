@@ -32,8 +32,8 @@ contract StreamedVesting is
     IZeroLocker public locker;
     uint256 public lastId;
     IBonusPool public bonusPool;
-    address public dead = address(0xdead);
-    uint256 public duration = 3 * 30 days; // 3 months vesting
+    address public dead;
+    uint256 public duration;
 
     mapping(uint256 => VestInfo) public vests;
     mapping(address => uint256) public userVestCounts;
@@ -54,6 +54,9 @@ contract StreamedVesting is
         locker = _locker;
         bonusPool = _bonusPool;
         underlying.approve(address(_locker), type(uint256).max);
+
+        dead = address(0xdead);
+        duration = 3 * 30 days; // 3 months vesting
 
         __Ownable_init(msg.sender);
         __Pausable_init();
