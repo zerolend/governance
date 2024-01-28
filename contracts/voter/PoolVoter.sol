@@ -2,13 +2,17 @@
 pragma solidity ^0.8.6;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
+import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {VersionedInitializable} from "../proxy/VersionedInitializable.sol";
 
-contract PoolVoter is ReentrancyGuardUpgradeable {
+contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
+    using SafeERC20 for IERC20;
+
     IVotes public staking; // the ve token that governs these contracts
     IERC20 public reward;
     uint256 public totalWeight; // total voting weight
@@ -17,6 +21,7 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
 
     address[] internal _pools; // all pools viable for incentives
     mapping(address => address) public gauges; // pool => gauge
+    mapping(address => bool) public isPool; // pool => bool
     mapping(address => address) public poolForGauge; // pool => gauge
     mapping(address => address) public bribes; // gauge => bribe
     mapping(address => uint256) public weights; // pool => weight
@@ -36,15 +41,11 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
         return _pools;
     }
 
-    function init(
-        address _staking,
-        address _reward,
-        address _lzEndpoint,
-        address _mainnetEmissions
-    ) external initializer {
+    function init(address _staking, address _reward) external initializer {
         staking = IVotes(_staking);
         reward = IERC20(_reward);
         __ReentrancyGuard_init();
+        __Ownable_init(msg.sender);
     }
 
     function reset() external {
@@ -128,18 +129,22 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
         _vote(msg.sender, _poolVote, _weights);
     }
 
-    // function createGauge(address _pool) external returns (address) {
-    //     require(gauges[_pool] == address(0x0), "exists");
-    //     require(IBaseV1Factory(factory).isPair(_pool), "!_pool");
-    //     address _gauge = address(new Gauge(_pool));
-    //     address _bribe = address(new Bribe());
-    //     bribes[_gauge] = _bribe;
-    //     gauges[_pool] = _gauge;
-    //     poolForGauge[_gauge] = _pool;
-    //     _updateFor(_gauge);
-    //     _pools.push(_pool);
-    //     return _gauge;
-    // }
+    function registerGauge(
+        address _pool,
+        address _gauge
+    ) external onlyOwner returns (address) {
+        if (isPool[_pool]) {
+            _pools.push(_pool);
+            isPool[_pool] = true;
+        }
+
+        bribes[_gauge] = address(0);
+        gauges[_pool] = _gauge;
+        poolForGauge[_gauge] = _pool;
+        _updateFor(_gauge);
+
+        return _gauge;
+    }
 
     function length() external view returns (uint256) {
         return _pools.length;
@@ -147,11 +152,9 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
 
     // Accrue fees on token0
     function notifyRewardAmount(uint256 amount) public nonReentrant {
-        _safeTransferFrom(address(reward), msg.sender, address(this), amount); // transfer the distro in
+        reward.safeTransferFrom(msg.sender, address(this), amount); // transfer the distro in
         uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
-        if (_ratio > 0) {
-            index += _ratio;
-        }
+        if (_ratio > 0) index += _ratio;
     }
 
     function updateFor(address _gauge) external {
@@ -184,10 +187,6 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
             // can return false, will simply not distribute tokens
             claimable[_gauge] = _claimable;
         }
-    }
-
-    function distro() external {
-        distribute(0, _pools.length);
     }
 
     function distribute() external {
@@ -232,22 +231,5 @@ contract PoolVoter is ReentrancyGuardUpgradeable {
                 }
             }
         }
-    }
-
-    function _safeTransferFrom(
-        address token,
-        address from,
-        address to,
-        uint256 value
-    ) internal {
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(
-                IERC20.transferFrom.selector,
-                from,
-                to,
-                value
-            )
-        );
-        require(success && (data.length == 0 || abi.decode(data, (bool))));
     }
 }
