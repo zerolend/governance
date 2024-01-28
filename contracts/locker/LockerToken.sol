@@ -11,8 +11,6 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/ut
 import {INFTLocker} from "../interfaces/INFTLocker.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 
-// import {INFTStaker} from "./interfaces/INFTStaker.sol";
-
 /**
   @title Voting Escrow
   @author Curve Finance
@@ -43,7 +41,6 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
 
     uint256 public supply;
     mapping(uint256 => LockedBalance) public locked;
-
     mapping(uint256 => uint256) public ownershipChange;
 
     uint256 public override epoch;
@@ -85,7 +82,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
 
     function init(address _token, address _staking) external initializer {
         name = "Locked ZERO";
-        symbol = "ZERO";
+        symbol = "veZERO";
         version = "1.0.0";
         decimals = 18;
 
@@ -106,7 +103,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
         bytes4 _interfaceID
     ) public pure override returns (bool) {
         return
-            // bytes4(0x01ffc9a7) == _interfaceID || // ERC165
+            bytes4(0x01ffc9a7) == _interfaceID || // ERC165
             bytes4(0x80ac58cd) == _interfaceID || // ERC721
             bytes4(0x5b5e139f) == _interfaceID;
     }
