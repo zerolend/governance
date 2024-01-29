@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-interface IStreamedVesting {
+interface IBasicVesting {
     struct VestInfo {
         address who;
         uint256 id;
@@ -31,8 +31,6 @@ interface IStreamedVesting {
     function stakeTo4Year(uint256 id, bool stake) external;
 
     function claimVest(uint256 id) external;
-
-    function claimVestEarlyWithPenalty(uint256 id) external;
 
     function vestStatus(
         address who,

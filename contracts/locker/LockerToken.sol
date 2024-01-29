@@ -8,7 +8,7 @@ import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions
 import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
-import {INFTLocker} from "../interfaces/INFTLocker.sol";
+import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 
 /**
@@ -33,7 +33,7 @@ import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
   # maxtime (4 years?)
 */
 
-contract LockerToken is ReentrancyGuardUpgradeable, INFTLocker {
+contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
     uint256 internal WEEK;
     uint256 internal MAXTIME;
     int128 internal iMAXTIME;

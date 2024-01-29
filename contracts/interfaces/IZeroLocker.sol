@@ -38,12 +38,14 @@ interface IZeroLocker is IERC721 {
     function createLockFor(
         uint256 _value,
         uint256 _lockDuration,
-        address _to
+        address _to,
+        bool _stakeNFT
     ) external returns (uint256);
 
     function createLock(
         uint256 _value,
-        uint256 _lockDuration
+        uint256 _lockDuration,
+        bool _stakeNFT
     ) external returns (uint256);
 
     enum DepositType {

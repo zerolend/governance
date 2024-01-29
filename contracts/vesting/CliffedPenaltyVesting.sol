@@ -16,14 +16,14 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC20Burnable} from "../interfaces/IERC20Burnable.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import {IStreamedVesting} from "../interfaces/IStreamedVesting.sol";
+import {IBasicVesting} from "../interfaces/IBasicVesting.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 import {IBonusPool} from "../interfaces/IBonusPool.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract StreamedVesting is
-    IStreamedVesting,
+contract CliffedPenaltyVesting is
+    IBasicVesting,
     OwnableUpgradeable,
     PausableUpgradeable
 {
@@ -32,7 +32,7 @@ contract StreamedVesting is
     IZeroLocker public locker;
     uint256 public lastId;
     IBonusPool public bonusPool;
-    address public dead;
+    address public penaltyDestination;
     uint256 public duration;
 
     mapping(uint256 => VestInfo) public vests;
@@ -47,7 +47,8 @@ contract StreamedVesting is
         IERC20 _underlying,
         IERC20Burnable _vestedToken,
         IZeroLocker _locker,
-        IBonusPool _bonusPool
+        IBonusPool _bonusPool,
+        address _penaltyDestination
     ) external initializer {
         underlying = _underlying;
         vestedToken = _vestedToken;
@@ -55,7 +56,7 @@ contract StreamedVesting is
         bonusPool = _bonusPool;
         underlying.approve(address(_locker), type(uint256).max);
 
-        dead = address(0xdead);
+        penaltyDestination = _penaltyDestination;
         duration = 3 * 30 days; // 3 months vesting
 
         __Ownable_init(msg.sender);
@@ -100,7 +101,7 @@ contract StreamedVesting is
         emit VestingCreated(to, lastId, amount, block.timestamp);
     }
 
-    function stakeTo4Year(uint256 id) external whenNotPaused {
+    function stakeTo4Year(uint256 id, bool _stake) external whenNotPaused {
         VestInfo memory vest = vests[id];
         require(msg.sender == vest.who, "not owner");
 
@@ -122,43 +123,25 @@ contract StreamedVesting is
         }
 
         // create a 4 year lock for the user
-        locker.createLockFor(lockAmount, 86400 * 365 * 4, msg.sender);
+        locker.createLockFor(lockAmount, 86400 * 365 * 4, msg.sender, _stake);
     }
 
     function claimVest(uint256 id) external whenNotPaused {
         VestInfo memory vest = vests[id];
         require(msg.sender == vest.who, "not owner");
 
-        uint256 val = _claimable(vest);
-        require(val > 0, "no claimable amount");
-
-        // update
-        vest.claimed += val;
-        vests[id] = vest;
-
-        // send reward
-        underlying.transfer(msg.sender, val);
-        emit TokensReleased(msg.sender, id, val);
-    }
-
-    function claimVestEarlyWithPenalty(uint256 id) external whenNotPaused {
-        VestInfo memory vest = vests[id];
-        require(msg.sender == vest.who, "not owner");
-
-        uint256 pendingAmt = vest.amount - vest.claimed;
-        require(pendingAmt > 0, "no pending amount");
-
-        // update
-        vest.claimed += pendingAmt;
-        vests[id] = vest;
+        require(vest.amount > 0, "no pending amount");
+        require(vest.claimed == 0, "vest claimed");
 
         // send reward with penalties
         uint256 penaltyPct = penalty(vest);
-        uint256 penaltyAmt = ((pendingAmt * penaltyPct) / 1e18);
-        underlying.transfer(msg.sender, pendingAmt - penaltyAmt);
-        underlying.transfer(dead, penaltyAmt);
+        uint256 penaltyAmt = ((vest.amount * penaltyPct) / 1e18);
 
-        emit TokensReleased(msg.sender, id, penaltyAmt);
+        vest.claimed = vest.amount - penaltyAmt;
+        underlying.transfer(msg.sender, vest.claimed);
+        underlying.transfer(penaltyDestination, penaltyAmt);
+
+        emit TokensReleased(msg.sender, id, vest.claimed);
         emit PenaltyCharged(msg.sender, id, penaltyAmt, penaltyPct);
     }
 
@@ -199,9 +182,7 @@ contract StreamedVesting is
 
     function claimablePenalty(uint256 id) external view returns (uint256) {
         VestInfo memory vest = vests[id];
-
         uint256 pendingAmt = vest.amount - vest.claimed;
-
         uint256 _penalty = penalty(vest);
         return pendingAmt - ((pendingAmt * _penalty) / 1e18);
     }
