@@ -2,9 +2,12 @@
 
 todo
 
-- gauge voting
-- locker for DLP and ve
+~~- gauge voting~~
+~~- locker for ve~~
+
+- locker for DLP
 - pool integration
 - unit tests
 - omnichain voting
 - zappers
+- eligibility criteria
