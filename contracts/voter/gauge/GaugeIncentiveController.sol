@@ -9,7 +9,7 @@ import {IIncentivesController} from "../../interfaces/IIncentivesController.sol"
 
 // Gauges are used to incentivize pools, they emit reward tokens over 14 days for staked LP tokens
 // Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
-contract Gauge is RewardBase, IIncentivesController {
+contract GaugeIncentiveController is RewardBase, IIncentivesController {
     IERC20 public aToken;
     IVotes public staking;
     IERC20 public reward;

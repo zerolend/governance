@@ -128,17 +128,17 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     function registerGauge(
-        address _pool,
+        address _asset,
         address _gauge
     ) external onlyOwner returns (address) {
-        if (isPool[_pool]) {
-            _pools.push(_pool);
-            isPool[_pool] = true;
+        if (isPool[_asset]) {
+            _pools.push(_asset);
+            isPool[_asset] = true;
         }
 
         bribes[_gauge] = address(0);
-        gauges[_pool] = _gauge;
-        poolForGauge[_gauge] = _pool;
+        gauges[_asset] = _gauge;
+        poolForGauge[_gauge] = _asset;
         _updateFor(_gauge);
 
         return _gauge;
