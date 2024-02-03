@@ -21,9 +21,7 @@ interface IZeroLocker is IERC721 {
 
     function totalSupplyWithoutDecay() external view returns (uint256);
 
-    function isApprovedOrOwner(address, uint256) external view returns (bool);
-
-    function totalSupply() external view returns (uint256);
+    // function totalSupply() external view returns (uint256);
 
     function totalSupplyAt(uint256 _block) external view returns (uint256);
 

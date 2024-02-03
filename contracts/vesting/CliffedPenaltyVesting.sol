@@ -12,28 +12,26 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
+import {IBasicVesting} from "../interfaces/IBasicVesting.sol";
+import {IBonusPool} from "../interfaces/IBonusPool.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC20Burnable} from "../interfaces/IERC20Burnable.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import {IBasicVesting} from "../interfaces/IBasicVesting.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
-import {IBonusPool} from "../interfaces/IBonusPool.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
 contract CliffedPenaltyVesting is
     IBasicVesting,
     OwnableUpgradeable,
     PausableUpgradeable
 {
+    address public penaltyDestination;
+    IBonusPool public bonusPool;
     IERC20 public underlying;
     IERC20Burnable public vestedToken;
     IZeroLocker public locker;
-    uint256 public lastId;
-    IBonusPool public bonusPool;
-    address public penaltyDestination;
     uint256 public duration;
+    uint256 public lastId;
 
     mapping(uint256 => VestInfo) public vests;
     mapping(address => uint256) public userVestCounts;
@@ -177,14 +175,8 @@ contract CliffedPenaltyVesting is
 
     function claimable(uint256 id) external view returns (uint256) {
         VestInfo memory vest = vests[id];
-        return _claimable(vest);
-    }
-
-    function claimablePenalty(uint256 id) external view returns (uint256) {
-        VestInfo memory vest = vests[id];
-        uint256 pendingAmt = vest.amount - vest.claimed;
         uint256 _penalty = penalty(vest);
-        return pendingAmt - ((pendingAmt * _penalty) / 1e18);
+        return vest.amount - ((vest.amount * _penalty) / 1e18);
     }
 
     function penalty(VestInfo memory vest) public view returns (uint256) {

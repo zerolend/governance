@@ -12,28 +12,26 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
+import {IBasicVesting} from "../interfaces/IBasicVesting.sol";
+import {IBonusPool} from "../interfaces/IBonusPool.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC20Burnable} from "../interfaces/IERC20Burnable.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import {IBasicVesting} from "../interfaces/IBasicVesting.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
-import {IBonusPool} from "../interfaces/IBonusPool.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
-contract StreamedVesting is
+contract LinearVesting is
     IBasicVesting,
     OwnableUpgradeable,
     PausableUpgradeable
 {
+    address public dead;
+    IBonusPool public bonusPool;
     IERC20 public underlying;
     IERC20Burnable public vestedToken;
     IZeroLocker public locker;
-    uint256 public lastId;
-    IBonusPool public bonusPool;
-    address public dead;
     uint256 public duration;
+    uint256 public lastId;
 
     mapping(uint256 => VestInfo) public vests;
     mapping(address => uint256) public userVestCounts;

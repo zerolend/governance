@@ -4,8 +4,7 @@ pragma solidity ^0.8.0;
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
-import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import {IERC165, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
@@ -33,7 +32,11 @@ import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
   # maxtime (4 years?)
 */
 
-contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
+contract LockerToken is
+    ReentrancyGuardUpgradeable,
+    ERC721EnumerableUpgradeable,
+    IZeroLocker
+{
     uint256 internal WEEK;
     uint256 internal MAXTIME;
     int128 internal iMAXTIME;
@@ -50,8 +53,6 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
     mapping(uint256 => uint256) public override userPointEpoch;
     mapping(uint256 => int128) public slopeChanges; // time -> signed slope change
 
-    string public name;
-    string public symbol;
     string public version;
     uint8 public decimals;
 
@@ -61,28 +62,8 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
     IERC20 public token;
     IOmnichainStaking public staking;
 
-    /// @dev Mapping from NFT ID to the address that owns it.
-    mapping(uint256 => address) internal idToOwner;
-
-    /// @dev Mapping from NFT ID to approved address.
-    mapping(uint256 => address) internal idToApprovals;
-
-    /// @dev Mapping from owner address to count of his tokens.
-    mapping(address => uint256) internal ownerToNFTokenCount;
-
-    /// @dev Mapping from owner address to mapping of index to tokenIds
-    mapping(address => mapping(uint256 => uint256))
-        internal ownerToNFTokenIdList;
-
-    /// @dev Mapping from NFT ID to index of owner
-    mapping(uint256 => uint256) internal tokenToOwnerIndex;
-
-    /// @dev Mapping from owner address to mapping of operator addresses.
-    mapping(address => mapping(address => bool)) internal ownerToOperators;
-
     function init(address _token, address _staking) external initializer {
-        name = "Locked ZERO";
-        symbol = "veZERO";
+        __ERC721_init("Locked ZERO", "weZERO");
         version = "1.0.0";
         decimals = 18;
 
@@ -101,7 +82,12 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
     /// @param _interfaceID Id of the interface
     function supportsInterface(
         bytes4 _interfaceID
-    ) public pure override returns (bool) {
+    )
+        public
+        pure
+        override(ERC721EnumerableUpgradeable, IERC165)
+        returns (bool)
+    {
         return
             bytes4(0x01ffc9a7) == _interfaceID || // ERC165
             bytes4(0x80ac58cd) == _interfaceID || // ERC721
@@ -156,217 +142,16 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
         return locked[_tokenId].end;
     }
 
-    /// @dev Returns the number of NFTs owned by `_owner`.
-    ///      Throws if `_owner` is the zero address. NFTs assigned to the zero address are considered invalid.
-    /// @param _owner Address for whom to query the balance.
-    function _balance(address _owner) internal view returns (uint256) {
-        return ownerToNFTokenCount[_owner];
-    }
-
-    /// @dev Returns the number of NFTs owned by `_owner`.
-    ///      Throws if `_owner` is the zero address. NFTs assigned to the zero address are considered invalid.
-    /// @param _owner Address for whom to query the balance.
-    function balanceOf(
-        address _owner
-    ) external view override returns (uint256) {
-        return _balance(_owner);
-    }
-
-    /// @dev Returns the address of the owner of the NFT.
-    /// @param _tokenId The identifier for an NFT.
-    function _ownerOf(uint256 _tokenId) internal view returns (address) {
-        return idToOwner[_tokenId];
-    }
-
-    /// @dev Returns the address of the owner of the NFT.
-    /// @param _tokenId The identifier for an NFT.
-    function ownerOf(
-        uint256 _tokenId
-    ) external view override returns (address) {
-        return _ownerOf(_tokenId);
-    }
-
     /// @dev Returns the voting power of the `_owner`.
     ///      Throws if `_owner` is the zero address. NFTs assigned to the zero address are considered invalid.
     /// @param _owner Address for whom to query the voting power of.
     function votingPowerOf(
         address _owner
     ) external view returns (uint256 _power) {
-        for (uint256 index = 0; index < ownerToNFTokenCount[_owner]; index++) {
-            uint256 _tokenId = ownerToNFTokenIdList[_owner][index];
+        for (uint256 index = 0; index < balanceOf(_owner); index++) {
+            uint256 _tokenId = tokenOfOwnerByIndex(_owner, index);
             _power += _balanceOfNFT(_tokenId, block.timestamp);
         }
-    }
-
-    /// @dev Get the approved address for a single NFT.
-    /// @param _tokenId ID of the NFT to query the approval of.
-    function getApproved(
-        uint256 _tokenId
-    ) external view override returns (address) {
-        return idToApprovals[_tokenId];
-    }
-
-    /// @dev Checks if `_operator` is an approved operator for `_owner`.
-    /// @param _owner The address that owns the NFTs.
-    /// @param _operator The address that acts on behalf of the owner.
-    function isApprovedForAll(
-        address _owner,
-        address _operator
-    ) external view override returns (bool) {
-        return (ownerToOperators[_owner])[_operator];
-    }
-
-    /// @dev  Get token by index
-    function tokenOfOwnerByIndex(
-        address _owner,
-        uint256 _tokenIndex
-    ) external view returns (uint256) {
-        return ownerToNFTokenIdList[_owner][_tokenIndex];
-    }
-
-    /// @dev Returns whether the given spender can transfer a given token ID
-    /// @param _spender address of the spender to query
-    /// @param _tokenId uint ID of the token to be transferred
-    /// @return bool whether the msg.sender is approved for the given token ID, is an operator of the owner, or is the owner of the token
-    function _isApprovedOrOwner(
-        address _spender,
-        uint256 _tokenId
-    ) internal view returns (bool) {
-        address owner = idToOwner[_tokenId];
-        bool spenderIsOwner = owner == _spender;
-        bool spenderIsApproved = _spender == idToApprovals[_tokenId];
-        bool spenderIsApprovedForAll = (ownerToOperators[owner])[_spender];
-        return spenderIsOwner || spenderIsApproved || spenderIsApprovedForAll;
-    }
-
-    function isApprovedOrOwner(
-        address _spender,
-        uint256 _tokenId
-    ) external view override returns (bool) {
-        return _isApprovedOrOwner(_spender, _tokenId);
-    }
-
-    /// @dev Add a NFT to an index mapping to a given address
-    /// @param _to address of the receiver
-    /// @param _tokenId uint ID Of the token to be added
-    function _addTokenToOwnerList(address _to, uint256 _tokenId) internal {
-        uint256 currentCount = _balance(_to);
-        ownerToNFTokenIdList[_to][currentCount] = _tokenId;
-        tokenToOwnerIndex[_tokenId] = currentCount;
-    }
-
-    /// @dev Remove a NFT from an index mapping to a given address
-    /// @param _from address of the sender
-    /// @param _tokenId uint ID Of the token to be removed
-    function _removeTokenFromOwnerList(
-        address _from,
-        uint256 _tokenId
-    ) internal {
-        // Delete
-        uint256 currentCount = _balance(_from) - 1;
-        uint256 currentIndex = tokenToOwnerIndex[_tokenId];
-
-        if (currentCount == currentIndex) {
-            // update ownerToNFTokenIdList
-            ownerToNFTokenIdList[_from][currentCount] = 0;
-            // update tokenToOwnerIndex
-            tokenToOwnerIndex[_tokenId] = 0;
-        } else {
-            uint256 lastTokenId = ownerToNFTokenIdList[_from][currentCount];
-
-            // Add
-            // update ownerToNFTokenIdList
-            ownerToNFTokenIdList[_from][currentIndex] = lastTokenId;
-            // update tokenToOwnerIndex
-            tokenToOwnerIndex[lastTokenId] = currentIndex;
-
-            // Delete
-            // update ownerToNFTokenIdList
-            ownerToNFTokenIdList[_from][currentCount] = 0;
-            // update tokenToOwnerIndex
-            tokenToOwnerIndex[_tokenId] = 0;
-        }
-    }
-
-    /// @dev Add a NFT to a given address
-    ///      Throws if `_tokenId` is owned by someone.
-    function _addTokenTo(address _to, uint256 _tokenId) internal {
-        // Throws if `_tokenId` is owned by someone
-        assert(idToOwner[_tokenId] == address(0));
-        // Change the owner
-        idToOwner[_tokenId] = _to;
-        // Update owner token index tracking
-        _addTokenToOwnerList(_to, _tokenId);
-        // Change count tracking
-        ownerToNFTokenCount[_to] += 1;
-    }
-
-    /// @dev Remove a NFT from a given address
-    ///      Throws if `_from` is not the current owner.
-    function _removeTokenFrom(address _from, uint256 _tokenId) internal {
-        // Throws if `_from` is not the current owner
-        assert(idToOwner[_tokenId] == _from);
-        // Change the owner
-        idToOwner[_tokenId] = address(0);
-        // Update owner token index tracking
-        _removeTokenFromOwnerList(_from, _tokenId);
-        // Change count tracking
-        ownerToNFTokenCount[_from] -= 1;
-    }
-
-    /// @dev Clear an approval of a given address
-    ///      Throws if `_owner` is not the current owner.
-    function _clearApproval(address _owner, uint256 _tokenId) internal {
-        // Throws if `_owner` is not the current owner
-        assert(idToOwner[_tokenId] == _owner);
-        if (idToApprovals[_tokenId] != address(0)) {
-            // Reset approvals
-            idToApprovals[_tokenId] = address(0);
-        }
-    }
-
-    /// @dev Exeute transfer of a NFT.
-    ///      Throws unless `msg.sender` is the current owner, an authorized operator, or the approved
-    ///      address for this NFT. (NOTE: `msg.sender` not allowed in internal function so pass `_sender`.)
-    ///      Throws if `_to` is the zero address.
-    ///      Throws if `_from` is not the current owner.
-    ///      Throws if `_tokenId` is not a valid NFT.
-    function _transferFrom(
-        address _from,
-        address _to,
-        uint256 _tokenId,
-        address _sender
-    ) internal {
-        // Check requirements
-        require(_isApprovedOrOwner(_sender, _tokenId), "not approved sender");
-        // Clear approval. Throws if `_from` is not the current owner
-        _clearApproval(_from, _tokenId);
-        // Remove NFT. Throws if `_tokenId` is not a valid NFT
-        _removeTokenFrom(_from, _tokenId);
-        // Add NFT
-        _addTokenTo(_to, _tokenId);
-        // Set the block of ownership transfer (for Flash NFT protection)
-        ownershipChange[_tokenId] = block.number;
-        // Log the transfer
-        emit Transfer(_from, _to, _tokenId);
-    }
-
-    /* TRANSFER FUNCTIONS */
-    /// @dev Throws unless `msg.sender` is the current owner, an authorized operator, or the approved address for this NFT.
-    ///      Throws if `_from` is not the current owner.
-    ///      Throws if `_to` is the zero address.
-    ///      Throws if `_tokenId` is not a valid NFT.
-    /// @notice The caller is responsible to confirm that `_to` is capable of receiving NFTs or else
-    ///        they maybe be permanently lost.
-    /// @param _from The current owner of the NFT.
-    /// @param _to The new owner.
-    /// @param _tokenId The NFT to transfer.
-    function transferFrom(
-        address _from,
-        address _to,
-        uint256 _tokenId
-    ) external override {
-        _transferFrom(_from, _to, _tokenId, msg.sender);
     }
 
     function _isContract(address account) internal view returns (bool) {
@@ -378,130 +163,6 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
             size := extcodesize(account)
         }
         return size > 0;
-    }
-
-    /// @dev Transfers the ownership of an NFT from one address to another address.
-    ///      Throws unless `msg.sender` is the current owner, an authorized operator, or the
-    ///      approved address for this NFT.
-    ///      Throws if `_from` is not the current owner.
-    ///      Throws if `_to` is the zero address.
-    ///      Throws if `_tokenId` is not a valid NFT.
-    ///      If `_to` is a smart contract, it calls `onERC721Received` on `_to` and throws if
-    ///      the return value is not `bytes4(keccak256("onERC721Received(address,address,uint,bytes)"))`.
-    /// @param _from The current owner of the NFT.
-    /// @param _to The new owner.
-    /// @param _tokenId The NFT to transfer.
-    /// @param _data Additional data with no specified format, sent in call to `_to`.
-    function safeTransferFrom(
-        address _from,
-        address _to,
-        uint256 _tokenId,
-        bytes memory _data
-    ) public override {
-        _transferFrom(_from, _to, _tokenId, msg.sender);
-
-        if (_isContract(_to)) {
-            // Throws if transfer destination is a contract which does not implement 'onERC721Received'
-            try
-                IERC721Receiver(_to).onERC721Received(
-                    msg.sender,
-                    _from,
-                    _tokenId,
-                    _data
-                )
-            returns (bytes4) {} catch (bytes memory reason) {
-                if (reason.length == 0) {
-                    revert(
-                        "ERC721: transfer to non ERC721Receiver implementer"
-                    );
-                } else {
-                    assembly {
-                        revert(add(32, reason), mload(reason))
-                    }
-                }
-            }
-        }
-    }
-
-    /// @dev Transfers the ownership of an NFT from one address to another address.
-    ///      Throws unless `msg.sender` is the current owner, an authorized operator, or the
-    ///      approved address for this NFT.
-    ///      Throws if `_from` is not the current owner.
-    ///      Throws if `_to` is the zero address.
-    ///      Throws if `_tokenId` is not a valid NFT.
-    ///      If `_to` is a smart contract, it calls `onERC721Received` on `_to` and throws if
-    ///      the return value is not `bytes4(keccak256("onERC721Received(address,address,uint,bytes)"))`.
-    /// @param _from The current owner of the NFT.
-    /// @param _to The new owner.
-    /// @param _tokenId The NFT to transfer.
-    function safeTransferFrom(
-        address _from,
-        address _to,
-        uint256 _tokenId
-    ) external override {
-        safeTransferFrom(_from, _to, _tokenId, "");
-    }
-
-    /// @dev Set or reaffirm the approved address for an NFT. The zero address indicates there is no approved address.
-    ///      Throws unless `msg.sender` is the current NFT owner, or an authorized operator of the current owner.
-    ///      Throws if `_tokenId` is not a valid NFT. (NOTE: This is not written the EIP)
-    ///      Throws if `_approved` is the current owner. (NOTE: This is not written the EIP)
-    /// @param _approved Address to be approved for the given NFT ID.
-    /// @param _tokenId ID of the token to be approved.
-    function _approve(address _approved, uint256 _tokenId) internal {
-        address owner = idToOwner[_tokenId];
-        // Throws if `_tokenId` is not a valid NFT
-        require(owner != address(0), "owner is 0x0");
-        // Throws if `_approved` is the current owner
-        require(_approved != owner, "not owner");
-        // Check requirements
-        bool senderIsOwner = (idToOwner[_tokenId] == msg.sender);
-        bool senderIsApprovedForAll = (ownerToOperators[owner])[msg.sender];
-        require(senderIsOwner || senderIsApprovedForAll, "invalid sender");
-        // Set the approval
-        idToApprovals[_tokenId] = _approved;
-        emit Approval(owner, _approved, _tokenId);
-    }
-
-    /// @dev Set or reaffirm the approved address for an NFT. The zero address indicates there is no approved address.
-    ///      Throws unless `msg.sender` is the current NFT owner, or an authorized operator of the current owner.
-    ///      Throws if `_tokenId` is not a valid NFT. (NOTE: This is not written the EIP)
-    ///      Throws if `_approved` is the current owner. (NOTE: This is not written the EIP)
-    /// @param _approved Address to be approved for the given NFT ID.
-    /// @param _tokenId ID of the token to be approved.
-    function approve(address _approved, uint256 _tokenId) external override {
-        _approve(_approved, _tokenId);
-    }
-
-    /// @dev Enables or disables approval for a third party ("operator") to manage all of
-    ///      `msg.sender`'s assets. It also emits the ApprovalForAll event.
-    ///      Throws if `_operator` is the `msg.sender`. (NOTE: This is not written the EIP)
-    /// @notice This works even if sender doesn't own any tokens at the time.
-    /// @param _operator Address to add to the set of authorized operators.
-    /// @param _approved True if the operators is approved, false to revoke approval.
-    function setApprovalForAll(
-        address _operator,
-        bool _approved
-    ) external override {
-        // Throws if `_operator` is the `msg.sender`
-        assert(_operator != msg.sender);
-        ownerToOperators[msg.sender][_operator] = _approved;
-        emit ApprovalForAll(msg.sender, _operator, _approved);
-    }
-
-    /// @dev Function to mint tokens
-    ///      Throws if `_to` is zero address.
-    ///      Throws if `_tokenId` is owned by someone.
-    /// @param _to The address that will receive the minted tokens.
-    /// @param _tokenId The token id to mint.
-    /// @return A boolean that indicates if the operation was successful.
-    function _mint(address _to, uint256 _tokenId) internal returns (bool) {
-        // Throws if `_to` is zero address
-        assert(_to != address(0));
-        // Add NFT. Throws if `_tokenId` is owned by someone
-        _addTokenTo(_to, _tokenId);
-        emit Transfer(address(0), _to, _tokenId);
-        return true;
     }
 
     /// @notice Record global and per-user data to checkpoint
@@ -716,8 +377,14 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
 
     function merge(uint256 _from, uint256 _to) external override {
         require(_from != _to, "same nft");
-        require(_isApprovedOrOwner(msg.sender, _from), "from not approved");
-        require(_isApprovedOrOwner(msg.sender, _to), "to not approved");
+        require(
+            _isAuthorized(ownerOf(_from), msg.sender, _from),
+            "from not approved"
+        );
+        require(
+            _isAuthorized(ownerOf(_to), msg.sender, _to),
+            "to not approved"
+        );
 
         LockedBalance memory _locked0 = locked[_from];
         LockedBalance memory _locked1 = locked[_to];
@@ -762,43 +429,6 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
     /// @param _value Amount to deposit
     /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
     /// @param _to Address to deposit
-    /// @param _stakeNFT should we stake into the staking contract
-    function _createLock(
-        uint256 _value,
-        uint256 _lockDuration,
-        address _to,
-        bool _stakeNFT
-    ) internal returns (uint256) {
-        uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
-
-        require(_value > 0, "value = 0"); // dev: need non-zero value
-        require(unlockTime > block.timestamp, "Can only lock in the future");
-        require(
-            unlockTime <= block.timestamp + MAXTIME,
-            "Voting lock can be 4 years max"
-        );
-
-        ++tokenId;
-        uint256 _tokenId = tokenId;
-        _mint(_to, _tokenId);
-
-        _depositFor(
-            _tokenId,
-            _value,
-            unlockTime,
-            locked[_tokenId],
-            DepositType.CREATE_LOCK_TYPE
-        );
-
-        if (_stakeNFT) staking.stakeTokenFor(_to, _tokenId);
-
-        return _tokenId;
-    }
-
-    /// @notice Deposit `_value` tokens for `_to` and lock for `_lockDuration`
-    /// @param _value Amount to deposit
-    /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
-    /// @param _to Address to deposit
     function createLockFor(
         uint256 _value,
         uint256 _lockDuration,
@@ -827,7 +457,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
         uint256 _value
     ) external nonReentrant {
         require(
-            _isApprovedOrOwner(msg.sender, _tokenId),
+            _isAuthorized(_ownerOf(_tokenId), msg.sender, _tokenId),
             "caller is not owner nor approved"
         );
         LockedBalance memory _locked = locked[_tokenId];
@@ -852,7 +482,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
         uint256 _lockDuration
     ) external nonReentrant {
         require(
-            _isApprovedOrOwner(msg.sender, _tokenId),
+            _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
             "caller is not owner nor approved"
         );
 
@@ -884,7 +514,7 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
     /// @dev Only possible if the lock has expired
     function withdraw(uint256 _tokenId) external nonReentrant {
         require(
-            _isApprovedOrOwner(msg.sender, _tokenId),
+            _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
             "caller is not owner nor approved"
         );
 
@@ -908,6 +538,43 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
 
         emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
         emit Supply(supplyBefore, supplyBefore - value);
+    }
+
+    /// @notice Deposit `_value` tokens for `_to` and lock for `_lockDuration`
+    /// @param _value Amount to deposit
+    /// @param _lockDuration Number of seconds to lock tokens for (rounded down to nearest week)
+    /// @param _to Address to deposit
+    /// @param _stakeNFT should we stake into the staking contract
+    function _createLock(
+        uint256 _value,
+        uint256 _lockDuration,
+        address _to,
+        bool _stakeNFT
+    ) internal returns (uint256) {
+        uint256 unlockTime = ((block.timestamp + _lockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
+
+        require(_value > 0, "value = 0"); // dev: need non-zero value
+        require(unlockTime > block.timestamp, "Can only lock in the future");
+        require(
+            unlockTime <= block.timestamp + MAXTIME,
+            "Voting lock can be 4 years max"
+        );
+
+        ++tokenId;
+        uint256 _tokenId = tokenId;
+        _mint(_to, _tokenId);
+
+        _depositFor(
+            _tokenId,
+            _value,
+            unlockTime,
+            locked[_tokenId],
+            DepositType.CREATE_LOCK_TYPE
+        );
+
+        if (_stakeNFT) staking.stakeTokenFor(_to, _tokenId);
+
+        return _tokenId;
     }
 
     // The following ERC20/minime-compatible methods are not real balanceOf and supply!
@@ -1085,10 +752,6 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
         return _supplyAt(lastPoint, t);
     }
 
-    function totalSupply() external view override returns (uint256) {
-        return totalSupplyAtT(block.timestamp);
-    }
-
     /// @notice Calculate total voting power at some point in the past
     /// @param _block Block to calculate the total voting power at
     /// @return Total voting power at `_block`
@@ -1118,25 +781,4 @@ contract LockerToken is ReentrancyGuardUpgradeable, IZeroLocker {
         // Now dt contains info on how far are we beyond point
         return _supplyAt(point, point.ts + dt);
     }
-
-    function _burn(uint256 _tokenId) internal {
-        require(
-            _isApprovedOrOwner(msg.sender, _tokenId),
-            "caller is not owner nor approved"
-        );
-
-        address owner = _ownerOf(_tokenId);
-
-        // Clear approval
-        _approve(address(0), _tokenId);
-        // Remove token
-        _removeTokenFrom(msg.sender, _tokenId);
-        emit Transfer(owner, address(0), _tokenId);
-    }
-
-    // function isStaked(uint256) external view override returns (bool) {}
-
-    // function epoch() external view override returns (uint256) {}
-
-    // function userPointEpoch(uint256) external view override returns (uint256) {}
 }

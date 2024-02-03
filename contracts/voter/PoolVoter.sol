@@ -4,11 +4,9 @@ pragma solidity ^0.8.6;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {VersionedInitializable} from "../proxy/VersionedInitializable.sol";
 
 contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
