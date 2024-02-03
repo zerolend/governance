@@ -20,19 +20,15 @@ import {IERC20, IWETH} from "../interfaces/IWETH.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 import {IERC165, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 
-contract LockerNFT is
+contract LockerLP is
     ILocker,
     ERC721EnumerableUpgradeable,
     AccessControlEnumerableUpgradeable
 {
-    // A locker which is a soul bound token (SBT) that represents voting power
-
     /// @dev The staking contract where veZERO nfts are saved
     IOmnichainStaking public staking;
-
     IWETH public weth;
     IERC20 public zero;
-    string public version;
     IPoolHelper public poolHelper;
 
     function init(
@@ -42,7 +38,6 @@ contract LockerNFT is
         IERC20 _zero
     ) external initializer {
         __ERC721_init("Locked ZERO LP", "lpZERO");
-        version = "1.0.0";
 
         poolHelper = _poolHelper;
         staking = _staking;
@@ -79,24 +74,24 @@ contract LockerNFT is
     }
 
     function claimFees(
-        address who,
-        address zeroLP,
-        address zero,
-        bool stake
+        address _who,
+        address _zeroLP,
+        address _zero,
+        bool _stake
     ) external payable {
         // todo
     }
 
     function balanceOfNFT(
         uint256 _tokenId
-    ) external view override returns (uint256) {
+    ) external pure override returns (uint256) {
         return 0;
     }
 
     function balanceOfNFTAt(
         uint256 _tokenId,
         uint256 _t
-    ) external view override returns (uint256) {
+    ) external pure override returns (uint256) {
         return 0;
     }
 }

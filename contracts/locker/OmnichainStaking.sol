@@ -20,7 +20,7 @@ import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/E
 
 // An omni-chain staking contract that allows users to stake their veNFT
 // and get some voting power. Once staked the voting power is available cross-chain.
-abstract contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
+contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     constructor() {
         _disableInitializers();
     }
