@@ -44,12 +44,10 @@ contract LockerToken is
 
     uint256 public supply;
     mapping(uint256 => LockedBalance) public locked;
-    mapping(uint256 => uint256) public ownershipChange;
 
     uint256 public override epoch;
     mapping(uint256 => Point) internal _pointHistory; // epoch -> unsigned point
     mapping(uint256 => Point[1000000000]) internal _userPointHistory; // user -> Point[userEpoch]
-
     mapping(uint256 => uint256) public override userPointEpoch;
     mapping(uint256 => int128) public slopeChanges; // time -> signed slope change
 
@@ -152,17 +150,6 @@ contract LockerToken is
             uint256 _tokenId = tokenOfOwnerByIndex(_owner, index);
             _power += _balanceOfNFT(_tokenId, block.timestamp);
         }
-    }
-
-    function _isContract(address account) internal view returns (bool) {
-        // This method relies on extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
-        // constructor execution.
-        uint256 size;
-        assembly {
-            size := extcodesize(account)
-        }
-        return size > 0;
     }
 
     /// @notice Record global and per-user data to checkpoint
@@ -634,7 +621,6 @@ contract LockerToken is
     function balanceOfNFT(
         uint256 _tokenId
     ) external view override returns (uint256) {
-        if (ownershipChange[_tokenId] == block.number) return 0;
         return _balanceOfNFT(_tokenId, block.timestamp);
     }
 
