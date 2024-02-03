@@ -13,12 +13,18 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+import {ILocker} from "../interfaces/ILocker.sol";
 import {IPoolHelper} from "../interfaces/IPoolHelper.sol";
 import {IERC20, IWETH} from "../interfaces/IWETH.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
+import {IERC165, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 
-contract LockerNFT is Initializable, AccessControlEnumerableUpgradeable {
+contract LockerNFT is
+    ILocker,
+    ERC721EnumerableUpgradeable,
+    AccessControlEnumerableUpgradeable
+{
     // A locker which is a soul bound token (SBT) that represents voting power
 
     /// @dev The staking contract where veZERO nfts are saved
@@ -26,12 +32,7 @@ contract LockerNFT is Initializable, AccessControlEnumerableUpgradeable {
 
     IWETH public weth;
     IERC20 public zero;
-
-    string public name;
-    string public symbol;
     string public version;
-    uint8 public decimals;
-
     IPoolHelper public poolHelper;
 
     function init(
@@ -40,15 +41,32 @@ contract LockerNFT is Initializable, AccessControlEnumerableUpgradeable {
         IWETH _weth,
         IERC20 _zero
     ) external initializer {
-        name = "Locked ZERO LP";
-        symbol = "ZERO-dlp";
+        __ERC721_init("Locked ZERO LP", "lpZERO");
         version = "1.0.0";
-        decimals = 18;
 
         poolHelper = _poolHelper;
         staking = _staking;
         weth = _weth;
         zero = _zero;
+    }
+
+    /// @dev Interface identification is specified in ERC-165.
+    /// @param _id Id of the interface
+    function supportsInterface(
+        bytes4 _id
+    )
+        public
+        view
+        override(
+            AccessControlEnumerableUpgradeable,
+            ERC721EnumerableUpgradeable,
+            IERC165
+        )
+        returns (bool)
+    {
+        return
+            AccessControlEnumerableUpgradeable.supportsInterface(_id) ||
+            ERC721EnumerableUpgradeable.supportsInterface(_id);
     }
 
     function lockFor(
@@ -67,5 +85,18 @@ contract LockerNFT is Initializable, AccessControlEnumerableUpgradeable {
         bool stake
     ) external payable {
         // todo
+    }
+
+    function balanceOfNFT(
+        uint256 _tokenId
+    ) external view override returns (uint256) {
+        return 0;
+    }
+
+    function balanceOfNFTAt(
+        uint256 _tokenId,
+        uint256 _t
+    ) external view override returns (uint256) {
+        return 0;
     }
 }

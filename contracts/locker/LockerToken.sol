@@ -767,4 +767,11 @@ contract LockerToken is
         // Now dt contains info on how far are we beyond point
         return _supplyAt(point, point.ts + dt);
     }
+
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        // todo
+        return "";
+    }
 }
