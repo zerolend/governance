@@ -38,7 +38,6 @@ contract LockerLP is
         IERC20 _zero
     ) external initializer {
         __ERC721_init("Locked ZERO LP", "lpZERO");
-
         poolHelper = _poolHelper;
         staking = _staking;
         weth = _weth;

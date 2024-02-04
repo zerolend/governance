@@ -14,6 +14,6 @@ pragma solidity ^0.8.20;
 
 import {BaseLPVault} from "./BaseLPVault.sol";
 
-contract SyncSwapVault is BaseLPVault {
+abstract contract SyncSwapVault is BaseLPVault {
     // LP ZERO/ETH into Uniswap V3 and collect trading fees
 }

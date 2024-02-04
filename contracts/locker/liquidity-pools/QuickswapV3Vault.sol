@@ -14,6 +14,6 @@ pragma solidity ^0.8.20;
 
 import {BaseLPVault} from "./BaseLPVault.sol";
 
-contract QuickswapV3Vault is BaseLPVault {
+abstract contract QuickswapV3Vault is BaseLPVault {
     // LP ZERO/ETH into Quickswap and collect trading fees
 }
