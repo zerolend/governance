@@ -13,7 +13,7 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {IBasicVesting} from "../interfaces/IBasicVesting.sol";
-import {IBonusPool} from "../interfaces/IBonusPool.sol";
+import {IStakingBonus} from "../interfaces/IStakingBonus.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC20Burnable} from "../interfaces/IERC20Burnable.sol";
 import {IERC2612} from "@openzeppelin/contracts/interfaces/IERC2612.sol";
@@ -21,20 +21,12 @@ import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 
-contract StakingBonus is OwnableUpgradeable, IBonusPool {
+contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     IERC20 public zero;
     IERC20Burnable public earlyZERO;
     IERC20Burnable public vestedZERO;
     IZeroLocker public locker;
     uint256 public bonusBps;
-
-    struct PermitData {
-        uint256 value;
-        uint256 deadline;
-        uint8 v;
-        bytes32 r;
-        bytes32 s;
-    }
 
     function init(
         address _zero,

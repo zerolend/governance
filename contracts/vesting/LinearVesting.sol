@@ -13,7 +13,7 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {IBasicVesting} from "../interfaces/IBasicVesting.sol";
-import {IBonusPool} from "../interfaces/IBonusPool.sol";
+import {IStakingBonus} from "../interfaces/IStakingBonus.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC20Burnable} from "../interfaces/IERC20Burnable.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
@@ -25,11 +25,10 @@ contract LinearVesting is
     OwnableUpgradeable,
     PausableUpgradeable
 {
-    address public dead;
-    IBonusPool public bonusPool;
+    IStakingBonus public bonusPool;
     IERC20 public underlying;
     IERC20Burnable public vestedToken;
-    IZeroLocker public locker;
+
     uint256 public duration;
     uint256 public lastId;
 
@@ -37,23 +36,20 @@ contract LinearVesting is
     mapping(address => uint256) public userVestCounts;
     mapping(address => mapping(uint256 => uint256)) public userToIds;
 
-    // constructor() {
-    //     _disableInitializers();
-    // }
+    constructor() {
+        _disableInitializers();
+    }
 
     function initialize(
         IERC20 _underlying,
         IERC20Burnable _vestedToken,
         IZeroLocker _locker,
-        IBonusPool _bonusPool
+        IStakingBonus _bonusPool
     ) external initializer {
         underlying = _underlying;
         vestedToken = _vestedToken;
-        locker = _locker;
         bonusPool = _bonusPool;
         underlying.approve(address(_locker), type(uint256).max);
-
-        dead = address(0xdead);
         duration = 3 * 30 days; // 3 months vesting
 
         __Ownable_init(msg.sender);
@@ -80,14 +76,14 @@ contract LinearVesting is
         address to,
         uint256 amount
     ) internal whenNotPaused {
-        vestedToken.burnFrom(from, amount);
+        vestedToken.transferFrom(from, address(this), amount);
         lastId++;
 
         vests[lastId] = VestInfo({
             who: to,
             id: lastId,
             amount: amount,
-            claimed: 0,
+            claimedAmount: 0,
             startAt: block.timestamp
         });
 
@@ -101,26 +97,22 @@ contract LinearVesting is
     function stakeTo4Year(uint256 id, bool _stake) external whenNotPaused {
         VestInfo memory vest = vests[id];
         require(msg.sender == vest.who, "not owner");
+        require(vest.claimedAmount == 0, "already claimed");
+        require(vest.amount > 0, "no vest");
 
-        uint256 lockAmount = vest.amount - vest.claimed;
+        uint256 lockAmount = vest.amount - vest.claimedAmount;
 
         // update the lock as fully claimed
-        vest.claimed = vest.amount;
+        vest.claimedAmount = vest.amount;
         vests[id] = vest;
 
-        // check if we can give a 20% bonus for 4 year staking
-        uint256 bonusAmount = bonusPool.calculateBonus(lockAmount);
-        if (underlying.balanceOf(address(bonusPool)) >= bonusAmount) {
-            underlying.transferFrom(
-                address(bonusPool),
-                address(this),
-                bonusAmount
-            );
-            lockAmount += bonusAmount;
-        }
-
-        // create a 4 year lock for the user
-        locker.createLockFor(lockAmount, 86400 * 365 * 4, msg.sender, _stake);
+        underlying.transfer(address(bonusPool), lockAmount);
+        bonusPool.convertVestedZERO4Year(
+            lockAmount,
+            msg.sender,
+            _stake,
+            IStakingBonus.PermitData({value: 0, deadline: 0, v: 0, r: 0, s: 0})
+        );
     }
 
     function claimVest(uint256 id) external whenNotPaused {
@@ -131,12 +123,15 @@ contract LinearVesting is
         require(val > 0, "no claimable amount");
 
         // update
-        vest.claimed += val;
+        vest.claimedAmount = val;
         vests[id] = vest;
 
         // send reward
         underlying.transfer(msg.sender, val);
         emit TokensReleased(msg.sender, id, val);
+
+        // burn vested tokens
+        vestedToken.burn(vest.amount);
     }
 
     function vestStatus(
@@ -148,7 +143,7 @@ contract LinearVesting is
         returns (
             uint256 _id,
             uint256 _amount,
-            uint256 _claimed,
+            bool _claimed,
             uint256 _claimableAmt,
             uint256 _penaltyAmt,
             uint256 _claimableWithPenalty
@@ -158,15 +153,14 @@ contract LinearVesting is
 
         VestInfo memory vest = vests[_id];
         _amount = vest.amount;
-        _claimed = vest.claimed;
+        _claimed = vest.claimedAmount > 0;
 
         _claimableAmt = _claimable(vest);
         _penaltyAmt = 0;
 
-        uint256 pendingAmt = vest.amount - vest.claimed;
         _claimableWithPenalty =
-            pendingAmt -
-            ((pendingAmt * _penaltyAmt) / 1e18);
+            vest.amount -
+            ((vest.amount * _penaltyAmt) / 1e18);
     }
 
     function claimable(uint256 id) external view returns (uint256) {
@@ -175,10 +169,8 @@ contract LinearVesting is
     }
 
     function _claimable(VestInfo memory vest) internal view returns (uint256) {
-        if (vest.claimed >= vest.amount) return 0;
-        return
-            _claimable(vest.amount, vest.startAt, block.timestamp) -
-            vest.claimed;
+        if (vest.claimedAmount > 0) return 0;
+        return _claimable(vest.amount, vest.startAt, block.timestamp);
     }
 
     function _claimable(
@@ -193,6 +185,7 @@ contract LinearVesting is
         if (nowTime < startTime) return 0;
 
         // else return a percentage
+        // todo add penalty here
         return (amount * (nowTime - startTime)) / duration;
     }
 

@@ -6,8 +6,8 @@ interface IBasicVesting {
         address who;
         uint256 id;
         uint256 amount;
-        uint256 claimed;
         uint256 startAt;
+        uint256 claimedAmount;
     }
 
     event PenaltyCharged(
@@ -41,7 +41,7 @@ interface IBasicVesting {
         returns (
             uint256 id,
             uint256 amount,
-            uint256 claimed,
+            bool claimed,
             uint256 claimable,
             uint256 penalty,
             uint256 claimableWithPenalty
