@@ -13,6 +13,7 @@
     "@types/mocha": "^10.0.1",
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
+    "ethereum-waffle": "^4.0.10",
     "ethers": "^5.7.2",
     "hardhat": "^2.12.4",
     "mocha": "^10.2.0",
@@ -32,6 +33,8 @@
     "@layerzerolabs/solidity-examples": "^1.1.0",
     "@openzeppelin/contracts": "^5.0.1",
     "@openzeppelin/contracts-upgradeable": "^5.0.1",
-    "@sablier/v2-core": "^1.1.2"
+    "@sablier/v2-core": "^1.1.2",
+    "@uniswap/v3-core": "^1.0.1",
+    "@uniswap/v3-periphery": "^1.4.4"
   }
 }

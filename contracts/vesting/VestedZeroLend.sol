@@ -12,16 +12,21 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
+import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {ERC20Burnable, ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract VestedZeroLend is ERC20, ERC20Burnable, Ownable {
+contract VestedZeroLend is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     mapping(address => bool) public whitelist;
     mapping(address => bool) public blacklist;
     bool public enableWhitelist;
     bool public enableBlacklist;
 
-    constructor() ERC20("Vested ZeroLend", "vZERO") Ownable(msg.sender) {
+    constructor()
+        ERC20("Vested ZeroLend", "vZERO")
+        ERC20Permit("vZERO")
+        Ownable(msg.sender)
+    {
         whitelist[msg.sender] = true;
         whitelist[address(this)] = true;
         whitelist[address(0)] = true;

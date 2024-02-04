@@ -11,3 +11,4 @@ todo
 - omnichain voting
 - zappers
 - eligibility criteria
+- allow users to convert their earlyZERO to vestake
