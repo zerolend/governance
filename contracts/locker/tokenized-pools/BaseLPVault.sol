@@ -30,45 +30,34 @@ abstract contract BaseLPVault is ILPVault, ERC20Upgradeable {
         zero = IERC20(_zero);
     }
 
-    function stakeEth() external payable {
-        _takeETH();
-
-        // swap approx 50% of eth to tokens
-        _swap(0, 0, 0, 0);
-
-        // add liquidity and mint shares to the user
-        uint256 liq = _addLiquidityWETH(0, 0, 0, 0);
-        _mint(msg.sender, liq);
-        _flush();
+    function deposit(
+        DepositParams calldata params
+    )
+        external
+        payable
+        virtual
+        override
+        checkDeadline(params.deadline)
+        returns (
+            uint256 shares,
+            uint128 addedLiquidity,
+            uint256 amount0,
+            uint256 amount1
+        )
+    {
+        // todo
     }
 
-    function stakeEthAndTokens(
-        uint256 amount,
-        PermitData memory permit
-    ) external payable {
-        _takeTokens(amount, permit);
-        _takeETH();
-
-        // swap approx 50% of tokens to eth
-        _swap(0, 0, 0, 0);
-
-        // add liquidity and mint shares to the user
-        uint256 liq = _addLiquidityWETH(0, 0, 0, 0);
-        _mint(msg.sender, liq);
-        _flush();
-    }
-
-    function stakeTokens(uint256 amount, PermitData memory permit) external {
-        _takeTokens(amount, permit);
-        _takeETH();
-
-        // swap approx 50% of tokens to eth
-        _swap(0, 0, 0, 0);
-
-        // add liquidity and mint shares to the user
-        uint256 liq = _addLiquidityWETH(0, 0, 0, 0);
-        _mint(msg.sender, liq);
-        _flush();
+    function withdraw(
+        WithdrawParams calldata params
+    )
+        external
+        virtual
+        override
+        checkDeadline(params.deadline)
+        returns (uint128 removedLiquidity, uint256 amount0, uint256 amount1)
+    {
+        // todo
     }
 
     function _takeTokens(uint256 amount, PermitData memory permit) internal {
@@ -94,25 +83,4 @@ abstract contract BaseLPVault is ILPVault, ERC20Upgradeable {
     function _flush() internal {
         // todo
     }
-
-    function _addLiquidityWETH(
-        uint256 tokenIn,
-        uint256 ethIn,
-        uint256 tokenInMin,
-        uint256 ethInMin
-    ) internal virtual returns (uint256 liquidity);
-
-    function _createPosition(
-        uint256 tokenIn,
-        uint256 ethIn,
-        uint256 tokenInMin,
-        uint256 ethInMin
-    ) internal virtual returns (uint256 liquidity);
-
-    function _swap(
-        uint256 tokenIn,
-        uint256 tokenOut,
-        uint256 tokenInMin,
-        uint256 tokenOutMin
-    ) internal virtual returns (uint256 liquidity);
 }

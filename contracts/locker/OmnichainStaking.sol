@@ -77,7 +77,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         // receive the veStaked supply on the mainnet
     }
 
-    function _transfer(address, address, uint256) internal override {
+    function _update(address, address, uint256) internal pure override {
         // don't allow users to transfer voting power. voting power can only
         // be minted or burnt and act like SBTs
         require(false, "transfer disabled");
