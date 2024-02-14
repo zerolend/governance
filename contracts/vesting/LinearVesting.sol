@@ -23,9 +23,15 @@ contract LinearVesting is BaseVesting {
     function init(
         IERC20 _underlying,
         IERC20Burnable _vestedToken,
-        IStakingBonus _bonusPool
+        IStakingBonus _bonusPool,
+        uint256 _claimStartDate
     ) external initializer {
-        __BaseVesting_init(_underlying, _vestedToken, _bonusPool);
+        __BaseVesting_init(
+            _underlying,
+            _vestedToken,
+            _bonusPool,
+            _claimStartDate
+        );
         duration = 3 * 30 days; // 3 months vesting
     }
 

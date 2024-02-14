@@ -25,9 +25,15 @@ contract CliffedPenaltyVesting is BaseVesting {
         IERC20 _underlying,
         IERC20Burnable _vestedToken,
         IStakingBonus _bonusPool,
-        address _penaltyDestination
+        address _penaltyDestination,
+        uint256 _claimStartDate
     ) external initializer {
-        __BaseVesting_init(_underlying, _vestedToken, _bonusPool);
+        __BaseVesting_init(
+            _underlying,
+            _vestedToken,
+            _bonusPool,
+            _claimStartDate
+        );
         penaltyDestination = _penaltyDestination;
         duration = 3 * 30 days; // 3 months vesting
     }

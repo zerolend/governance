@@ -2,7 +2,10 @@
 
 pragma solidity ^0.8.0;
 
-interface IStakingBonus {
+import {IERC20Burnable} from "./IERC20Burnable.sol";
+import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
+
+interface IStakingBonus is IERC721Receiver {
     struct PermitData {
         uint256 value;
         uint256 deadline;
@@ -17,21 +20,8 @@ interface IStakingBonus {
 
     function bonusBps() external returns (uint256);
 
-    function convertEarlyZERO4Year(
-        uint256 amount,
-        address who,
-        bool stake,
-        PermitData memory permit
-    ) external;
-
-    function convertVestedZERO4Year(
-        uint256 amount,
-        address who,
-        bool stake,
-        PermitData memory permit
-    ) external;
-
-    function convertPreSaleZERO4Year(
+    function convertVestedTokens4Year(
+        IERC20Burnable token,
         uint256 amount,
         address who,
         bool stake,

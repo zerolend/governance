@@ -67,6 +67,8 @@ contract BaseLocker is
         int128 _maxTime
     ) internal {
         __ERC721_init(_name, _symbol);
+        __ReentrancyGuard_init();
+
         version = "1.0.0";
         decimals = 18;
 

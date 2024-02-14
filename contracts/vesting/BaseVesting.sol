@@ -27,6 +27,7 @@ abstract contract BaseVesting is IBasicVesting, Initializable {
     mapping(uint256 => VestInfo) public vests;
     mapping(address => uint256) public userVestCounts;
     mapping(address => mapping(uint256 => uint256)) public userToIds;
+    uint256 public claimStartDate;
 
     constructor() {
         _disableInitializers();
@@ -35,11 +36,13 @@ abstract contract BaseVesting is IBasicVesting, Initializable {
     function __BaseVesting_init(
         IERC20 _underlying,
         IERC20Burnable _vestedToken,
-        IStakingBonus _bonusPool
+        IStakingBonus _bonusPool,
+        uint256 _claimStartDate
     ) internal {
         underlying = _underlying;
         vestedToken = _vestedToken;
         bonusPool = _bonusPool;
+        claimStartDate = _claimStartDate;
         // underlying.approve(address(_locker), type(uint256).max);
     }
 
@@ -83,8 +86,21 @@ abstract contract BaseVesting is IBasicVesting, Initializable {
         vests[id] = vest;
 
         underlying.transfer(address(bonusPool), lockAmount);
-        bonusPool.convertVestedZERO4Year(
+        bonusPool.convertVestedTokens4Year(
+            vestedToken,
             lockAmount,
+            msg.sender,
+            _stake,
+            IStakingBonus.PermitData({value: 0, deadline: 0, v: 0, r: 0, s: 0})
+        );
+    }
+
+    function stakeTo4YearDirectly(uint256 amt, bool _stake) external {
+        vestedToken.burnFrom(msg.sender, amt);
+        underlying.transfer(address(bonusPool), amt);
+        bonusPool.convertVestedTokens4Year(
+            vestedToken,
+            amt,
             msg.sender,
             _stake,
             IStakingBonus.PermitData({value: 0, deadline: 0, v: 0, r: 0, s: 0})
@@ -124,6 +140,7 @@ abstract contract BaseVesting is IBasicVesting, Initializable {
     }
 
     function claimable(uint256 id) external view virtual returns (uint256) {
+        if (block.timestamp > claimStartDate) return 0;
         VestInfo memory vest = vests[id];
         uint256 _penalty = penalty(vest);
         return vest.amount - ((vest.amount * _penalty) / 1e18);

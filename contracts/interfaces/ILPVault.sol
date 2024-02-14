@@ -12,6 +12,34 @@ interface ILPVault is IERC20 {
         bytes32 s;
     }
 
+    struct DepositParams {
+        // todo
+        uint256 deadline;
+    }
+
+    struct WithdrawParams {
+        // todo
+        uint256 deadline;
+    }
+
+    function deposit(
+        DepositParams calldata params
+    )
+        external
+        payable
+        returns (
+            uint256 shares,
+            uint128 addedLiquidity,
+            uint256 amount0,
+            uint256 amount1
+        );
+
+    function withdraw(
+        WithdrawParams calldata params
+    )
+        external
+        returns (uint128 removedLiquidity, uint256 amount0, uint256 amount1);
+
     function stakeEth() external payable;
 
     function stakeEthAndTokens(

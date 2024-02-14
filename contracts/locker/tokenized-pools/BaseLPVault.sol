@@ -23,11 +23,17 @@ abstract contract BaseLPVault is ILPVault, ERC20Upgradeable {
     // LP ZERO/ETH into Uniswap V3 and collect trading fees
     IWETH public weth;
     IERC20 public zero;
+    address public treasury;
 
-    function init(address _weth, address _zero) external initializer {
+    function init(
+        address _weth,
+        address _zero,
+        address _treasury
+    ) external initializer {
         __ERC20_init("ZERO/ETH LP", "Z/ETH-LP");
         weth = IWETH(_weth);
         zero = IERC20(_zero);
+        treasury = _treasury;
     }
 
     function deposit(
@@ -37,7 +43,6 @@ abstract contract BaseLPVault is ILPVault, ERC20Upgradeable {
         payable
         virtual
         override
-        checkDeadline(params.deadline)
         returns (
             uint256 shares,
             uint128 addedLiquidity,
@@ -45,7 +50,8 @@ abstract contract BaseLPVault is ILPVault, ERC20Upgradeable {
             uint256 amount1
         )
     {
-        // todo
+        require(block.timestamp <= params.deadline, "!deadline");
+        return _deposit(params);
     }
 
     function withdraw(
@@ -54,10 +60,10 @@ abstract contract BaseLPVault is ILPVault, ERC20Upgradeable {
         external
         virtual
         override
-        checkDeadline(params.deadline)
         returns (uint128 removedLiquidity, uint256 amount0, uint256 amount1)
     {
-        // todo
+        require(block.timestamp <= params.deadline, "!deadline");
+        return _withdraw(params);
     }
 
     function _takeTokens(uint256 amount, PermitData memory permit) internal {
@@ -79,6 +85,25 @@ abstract contract BaseLPVault is ILPVault, ERC20Upgradeable {
     function _takeETH() internal {
         if (msg.value > 0) weth.deposit{value: msg.value}();
     }
+
+    function _deposit(
+        DepositParams calldata params
+    )
+        internal
+        virtual
+        returns (
+            uint256 shares,
+            uint128 addedLiquidity,
+            uint256 amount0,
+            uint256 amount1
+        );
+
+    function _withdraw(
+        WithdrawParams calldata params
+    )
+        internal
+        virtual
+        returns (uint128 removedLiquidity, uint256 amount0, uint256 amount1);
 
     function _flush() internal {
         // todo
