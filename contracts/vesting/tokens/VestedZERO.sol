@@ -16,7 +16,7 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20P
 import {ERC20Burnable, ERC20} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract VestedZeroLend is ERC20, ERC20Permit, ERC20Burnable, Ownable {
+contract VestedZERO is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     mapping(address => bool) public whitelist;
     mapping(address => bool) public blacklist;
     bool public enableWhitelist;

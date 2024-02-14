@@ -17,6 +17,9 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC20Burnable} from "../interfaces/IERC20Burnable.sol";
 import {BaseVesting} from "./BaseVesting.sol";
 
+/// @title A vesting contract with a 3 month cliff with penalties for early withdrawal
+/// @author
+/// @notice
 contract CliffedPenaltyVesting is BaseVesting {
     address public penaltyDestination;
     uint256 public duration;
