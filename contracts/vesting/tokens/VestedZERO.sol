@@ -53,8 +53,9 @@ contract VestedZERO is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     function _update(
         address from,
         address to,
-        uint256
+        uint256 value
     ) internal virtual override {
+        super._update(from, to, value);
         if (enableWhitelist) {
             require(whitelist[from] || whitelist[to], "!whitelist");
         }
