@@ -5,6 +5,9 @@ import "@matterlabs/hardhat-zksync-solc";
 
 import "@matterlabs/hardhat-zksync-verify";
 
+import "@nomicfoundation/hardhat-ethers";
+import "@nomicfoundation/hardhat-toolbox";
+
 // dynamically changes endpoints for local tests
 const zkSyncTestnet =
   process.env.NODE_ENV == "test"

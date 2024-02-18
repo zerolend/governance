@@ -29,9 +29,9 @@ abstract contract BaseVesting is IBasicVesting, Initializable {
     mapping(address => mapping(uint256 => uint256)) public userToIds;
     uint256 public claimStartDate;
 
-    constructor() {
-        _disableInitializers();
-    }
+    // constructor() {
+    //     _disableInitializers();
+    // }
 
     function __BaseVesting_init(
         IERC20 _underlying,
