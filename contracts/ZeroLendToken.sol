@@ -20,7 +20,6 @@ import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions
 
 abstract contract ZeroLend is AccessControlEnumerable, ERC20Permit {
     bytes32 public constant RISK_MANAGER_ROLE = keccak256("RISK_MANAGER_ROLE");
-    bytes32 public constant GOVERNANCE_ROLE = keccak256("GOVERNANCE_ROLE");
 
     mapping(address => bool) public blacklisted;
     mapping(address => bool) public whitelisted;
@@ -30,14 +29,9 @@ abstract contract ZeroLend is AccessControlEnumerable, ERC20Permit {
         _mint(msg.sender, 100_000_000_000 * 10 ** decimals());
 
         _grantRole(RISK_MANAGER_ROLE, msg.sender);
-        _grantRole(GOVERNANCE_ROLE, msg.sender);
-        _setRoleAdmin(RISK_MANAGER_ROLE, GOVERNANCE_ROLE);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         paused = true;
-    }
-
-    function mint(address to, uint256 amt) public onlyRole(GOVERNANCE_ROLE) {
-        _mint(to, amt);
     }
 
     function toggleBlacklist(
@@ -61,14 +55,10 @@ abstract contract ZeroLend is AccessControlEnumerable, ERC20Permit {
     function _update(
         address from,
         address to,
-        uint256
+        uint256 value
     ) internal virtual override {
         require(!blacklisted[from] && !blacklisted[to], "blacklisted");
         require(!paused && !whitelisted[from], "paused");
-    }
-
-    function startTrading() external onlyRole(RISK_MANAGER_ROLE) {
-        // todo; enable trading on uniswap v3
-        paused = false;
+        super._update(from, to, value);
     }
 }
