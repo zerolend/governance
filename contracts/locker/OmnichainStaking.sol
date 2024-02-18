@@ -36,24 +36,33 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         __ERC20_init("ZERO Voting Power", "ZEROvp");
     }
 
-    function stakeLPFor(address who, uint256 tokenId) external {
-        lpLocker.transferFrom(msg.sender, address(this), tokenId);
-        lpPower[tokenId] = lpLocker.balanceOfNFT(tokenId);
-        _mint(who, lpPower[tokenId]);
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4) {
+        require(msg.sender == operator, "!operator");
+
+        if (data.length > 0) from = abi.decode(data, (address));
+
+        if (operator == address(lpLocker)) {
+            lpPower[tokenId] = lpLocker.balanceOfNFT(tokenId);
+            _mint(from, lpPower[tokenId]);
+        } else if (operator == address(tokenLocker)) {
+            tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
+            _mint(from, tokenPower[tokenId]);
+        } else require(false, "invalid operator");
+
+        return this.onERC721Received.selector;
     }
 
-    function stakeTokenFor(address who, uint256 tokenId) external {
-        tokenLocker.transferFrom(msg.sender, address(this), tokenId);
-        tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
-        _mint(who, tokenPower[tokenId]);
-    }
-
-    function withdrawLP(uint256 tokenId) external {
+    function unstakeLP(uint256 tokenId) external {
         _burn(msg.sender, lpPower[tokenId]);
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
-    function withdrawToken(uint256 tokenId) external {
+    function unstakeToken(uint256 tokenId) external {
         _burn(msg.sender, tokenPower[tokenId]);
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }

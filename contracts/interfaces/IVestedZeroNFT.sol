@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 
-interface IPrivateZERO is IERC721 {
+interface IVestedZeroNFT is IERC721 {
     struct LockDetails {
         uint256 cliffDuration;
         uint256 unlockDate;
@@ -13,6 +13,7 @@ interface IPrivateZERO is IERC721 {
         uint256 upfront;
         uint256 linearDuration;
         uint256 createdAt;
+        bool hasPenalty;
     }
 
     function mint(
@@ -21,7 +22,8 @@ interface IPrivateZERO is IERC721 {
         uint256 upfront,
         uint256 linearDuration,
         uint256 cliffDuration,
-        uint256 unlockDate
+        uint256 unlockDate,
+        bool hasPenalty
     ) external;
 
     function togglePause() external;

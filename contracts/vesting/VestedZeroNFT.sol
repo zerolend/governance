@@ -12,17 +12,21 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {IPrivateZERO} from "../../interfaces/IPrivateZERO.sol";
+import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {IERC165, ERC721Upgradeable, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
 
-contract PrivateZERO is
-    IPrivateZERO,
-    OwnableUpgradeable,
+/// @title VestedZeroNFT is a NFT based contract to hold all the user vests
+/// @author Deadshot Ryker <ryker@zerolend.xyz>
+/// @notice NFTs can be traded on secondary marketplaces like Opensea, can be split into smaller chunks to allow for smaller otc deals to happen in secondary markets
+contract VestedZeroNFT is
+    IVestedZeroNFT,
+    AccessControlEnumerableUpgradeable,
     ReentrancyGuardUpgradeable,
     PausableUpgradeable,
     ERC721EnumerableUpgradeable
@@ -37,10 +41,12 @@ contract PrivateZERO is
     mapping(uint256 => LockDetails) public tokenIdToLockDetails;
     mapping(uint256 => bool) public frozen;
 
+    bytes32 public MINTER_ROLE;
+
     function init(address _zero, address _stakingBonus) external initializer {
-        __ERC721_init("Private Sale ZeroLend Vest", "pZERO");
+        __ERC721_init("ZeroLend Vest", "ZEROv");
         __ERC721Enumerable_init();
-        __Ownable_init(msg.sender);
+        __AccessControlEnumerable_init();
         __Pausable_init();
         __ReentrancyGuard_init();
 
@@ -49,46 +55,53 @@ contract PrivateZERO is
         denominator = 10000;
         stakingBonus = _stakingBonus;
         royaltyReceiver = msg.sender;
+
+        MINTER_ROLE = keccak256("MINTER_ROLE");
     }
 
     function mint(
-        address who,
-        uint256 pending,
-        uint256 upfront,
-        uint256 linearDuration,
-        uint256 cliffDuration,
-        uint256 unlockDate
-    ) external onlyOwner {
-        _mint(who, ++lastTokenId);
+        address _who,
+        uint256 _pending,
+        uint256 _upfront,
+        uint256 _linearDuration,
+        uint256 _cliffDuration,
+        uint256 _unlockDate,
+        bool _hasPenalty
+    ) external onlyRole(MINTER_ROLE) {
+        _mint(_who, ++lastTokenId);
         tokenIdToLockDetails[lastTokenId] = LockDetails({
-            cliffDuration: cliffDuration,
-            unlockDate: unlockDate,
+            cliffDuration: _cliffDuration,
+            unlockDate: _unlockDate,
             pendingClaimed: 0,
             upfrontClaimed: 0,
-            pending: pending,
-            upfront: upfront,
-            linearDuration: linearDuration,
+            pending: _pending,
+            hasPenalty: _hasPenalty,
+            upfront: _upfront,
+            linearDuration: _linearDuration,
             createdAt: block.timestamp
         });
     }
 
-    /// @inheritdoc IPrivateZERO
-    function togglePause() external onlyOwner {
+    /// @inheritdoc IVestedZeroNFT
+    function togglePause() external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (paused()) _unpause();
         else _pause();
     }
 
-    /// @inheritdoc IPrivateZERO
-    function freeze(uint256 tokenId, bool what) external onlyOwner {
+    /// @inheritdoc IVestedZeroNFT
+    function freeze(
+        uint256 tokenId,
+        bool what
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         frozen[tokenId] = what;
     }
 
-    /// @inheritdoc IPrivateZERO
+    /// @inheritdoc IVestedZeroNFT
     function updateCliffDuration(
         uint256[] memory tokenIds,
         uint256[] memory linearDurations,
         uint256[] memory cliffDurations
-    ) external onlyOwner {
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
         for (uint i = 0; i < tokenIds.length; i++) {
             LockDetails memory lock = tokenIdToLockDetails[tokenIds[i]];
             lock.cliffDuration = cliffDurations[i];
@@ -98,13 +111,13 @@ contract PrivateZERO is
     }
 
     /// How much ZERO tokens this vesting nft can claim
-    /// @param tokenId the id of the nft contract
-    /// @return upfront how much tokens upfront this nft can claim
-    /// @return pending how much tokens in the linear vesting (after the cliff) this nft can claim
+    /// @param _tokenId the id of the nft contract
+    /// @return _upfront how much tokens upfront this nft can claim
+    /// @return _pending how much tokens in the linear vesting (after the cliff) this nft can claim
     function claimable(
-        uint256 tokenId
-    ) public view returns (uint256 upfront, uint256 pending) {
-        LockDetails memory lock = tokenIdToLockDetails[tokenId];
+        uint256 _tokenId
+    ) public view returns (uint256 _upfront, uint256 _pending) {
+        LockDetails memory lock = tokenIdToLockDetails[_tokenId];
         if (block.timestamp < lock.unlockDate) return (0, 0);
 
         // if after the unlock date and before the cliff
@@ -125,15 +138,20 @@ contract PrivateZERO is
         return (lock.upfront, ((lock.pending * pct) / denominator));
     }
 
-    /// @inheritdoc IPrivateZERO
+    /// @inheritdoc IVestedZeroNFT
     function claim(
         uint256 id
     ) public nonReentrant whenNotPaused returns (uint256 toClaim) {
-        _requireOwned(id);
         require(!frozen[id], "frozen");
 
         (uint256 _claimableUpfront, uint256 _claimablePending) = claimable(id);
         LockDetails memory lock = tokenIdToLockDetails[id];
+
+        if (lock.hasPenalty) {
+            // handle vesting with penalties enabled
+        } else {
+            // handle vesting without penalties
+        }
 
         if (_claimableUpfront > 0 && lock.upfrontClaimed == 0) {
             toClaim += _claimableUpfront;
@@ -147,16 +165,16 @@ contract PrivateZERO is
 
         tokenIdToLockDetails[id] = lock;
 
-        if (toClaim > 0) zero.transfer(msg.sender, toClaim);
+        if (toClaim > 0) zero.transfer(ownerOf(id), toClaim);
     }
 
-    /// @inheritdoc IPrivateZERO
+    /// @inheritdoc IVestedZeroNFT
     function claimed(uint256 tokenId) public view returns (uint256) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
         return lock.upfrontClaimed + lock.pendingClaimed;
     }
 
-    /// @inheritdoc IPrivateZERO
+    /// @inheritdoc IVestedZeroNFT
     function pending(uint256 tokenId) public view override returns (uint256) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
         return
@@ -171,7 +189,7 @@ contract PrivateZERO is
         zero.transfer(msg.sender, _pending);
     }
 
-    /// @inheritdoc IPrivateZERO
+    /// @inheritdoc IVestedZeroNFT
     function split(
         uint256 tokenId,
         uint256 fraction
@@ -197,7 +215,8 @@ contract PrivateZERO is
             pending: splitPendingAmount,
             pendingClaimed: splitUnlockedPendingAmount,
             upfrontClaimed: splitUnlockedUpfrontAmount,
-            upfront: splitUpfrontAmount
+            upfront: splitUpfrontAmount,
+            hasPenalty: lock.hasPenalty
         });
 
         _mint(msg.sender, ++lastTokenId);
@@ -209,11 +228,12 @@ contract PrivateZERO is
             pending: lock.pending - splitPendingAmount,
             pendingClaimed: lock.pendingClaimed - splitUnlockedPendingAmount,
             upfrontClaimed: lock.upfrontClaimed - splitUnlockedUpfrontAmount,
-            upfront: lock.upfront - splitUpfrontAmount
+            upfront: lock.upfront - splitUpfrontAmount,
+            hasPenalty: lock.hasPenalty
         });
     }
 
-    /// @inheritdoc IPrivateZERO
+    /// @inheritdoc IVestedZeroNFT
     function royaltyInfo(
         uint256,
         uint256 salePrice
@@ -222,18 +242,36 @@ contract PrivateZERO is
         return (royaltyReceiver, royaltyAmount);
     }
 
-    /// @inheritdoc IPrivateZERO
+    /// @inheritdoc IVestedZeroNFT
     function tokenURI(
         uint256 tokenId
     )
         public
         view
         virtual
-        override(ERC721Upgradeable, IPrivateZERO)
+        override(ERC721Upgradeable, IVestedZeroNFT)
         returns (string memory)
     {
         string memory base = "";
         return string.concat(base, "tokenId");
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    )
+        public
+        view
+        virtual
+        override(
+            AccessControlEnumerableUpgradeable,
+            ERC721EnumerableUpgradeable,
+            IERC165
+        )
+        returns (bool)
+    {
+        return
+            AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
+            ERC721EnumerableUpgradeable.supportsInterface(interfaceId);
     }
 
     function _update(

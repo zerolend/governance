@@ -8,28 +8,7 @@ import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receive
 interface IZeroLocker is IERC721 {
     function balanceOfNFT(uint256) external view returns (uint256);
 
-    function epoch() external view returns (uint256);
-
-    function userPointEpoch(uint256) external view returns (uint256);
-
-    function userPointHistory(
-        uint256,
-        uint256
-    ) external view returns (Point memory);
-
-    function pointHistory(uint256) external view returns (Point memory);
-
-    function totalSupplyWithoutDecay() external view returns (uint256);
-
-    // function totalSupply() external view returns (uint256);
-
-    function totalSupplyAt(uint256 _block) external view returns (uint256);
-
     function merge(uint256 _from, uint256 _to) external;
-
-    function blockNumber() external view returns (uint256);
-
-    function checkpoint() external;
 
     function depositFor(uint256 _tokenId, uint256 _value) external;
 
@@ -54,21 +33,11 @@ interface IZeroLocker is IERC721 {
         MERGE_TYPE
     }
 
-    struct Point {
-        int128 bias;
-        int128 slope; // # -dweight / dt
-        uint256 ts;
-        uint256 blk; // block
-    }
-
-    /* We cannot really do block numbers per se b/c slope is per time, not per block
-     * and per block could be fairly bad b/c Ethereum changes blocktimes.
-     * What we can do is to extrapolate ***At functions */
-
     struct LockedBalance {
-        int128 amount;
+        uint256 amount;
         uint256 end;
         uint256 start;
+        uint256 power;
     }
 
     event Deposit(

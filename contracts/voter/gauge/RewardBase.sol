@@ -98,6 +98,7 @@ abstract contract RewardBase is ReentrancyGuardUpgradeable {
             isIncentive[token] = true;
             incentives.push(token);
         }
+
         return true;
     }
 
