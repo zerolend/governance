@@ -18,7 +18,7 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 
-abstract contract ZeroLend is AccessControlEnumerable, ERC20Permit {
+contract ZeroLend is AccessControlEnumerable, ERC20Permit {
     bytes32 public constant RISK_MANAGER_ROLE = keccak256("RISK_MANAGER_ROLE");
 
     mapping(address => bool) public blacklisted;
