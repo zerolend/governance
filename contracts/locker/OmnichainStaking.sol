@@ -46,10 +46,13 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
 
         if (data.length > 0) from = abi.decode(data, (address));
 
+        // if the stake is from the LP locker, then give 4 times the voting power
         if (operator == address(lpLocker)) {
             lpPower[tokenId] = lpLocker.balanceOfNFT(tokenId);
             _mint(from, lpPower[tokenId] * 4);
-        } else if (operator == address(tokenLocker)) {
+        }
+        // if the stake is from a regular token locker, then give 1 times the voting power
+        else if (operator == address(tokenLocker)) {
             tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
             _mint(from, tokenPower[tokenId]);
         } else require(false, "invalid operator");
@@ -68,21 +71,24 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     }
 
     function updatePowerOnChain(uint256 chainId, uint256 nftId) external {
+        // TODO
         // ensure that the user has no votes anywhere and no delegation then send voting
         // power to another chain.
-        //
         // using layerzero, sends the updated voting power across the different chains
     }
 
     function deletePowerOnChain(uint256 chainId, uint256 nftId) external {
+        // TODO
         // using layerzero, deletes the updated voting power across the different chains
     }
 
     function updateSupplyToMainnetViaLZ() external {
+        // TODO
         // send the veStaked supply to the mainnet
     }
 
     function updateSupplyFromLZ() external {
+        // TODO
         // receive the veStaked supply on the mainnet
     }
 

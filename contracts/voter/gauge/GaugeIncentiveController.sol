@@ -14,7 +14,6 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
     IERC20 public aToken;
     IERC20 public reward;
     IEligibilityCriteria public eligibility;
-
     IAaveOracle public oracle;
     address public oracleAsset;
 

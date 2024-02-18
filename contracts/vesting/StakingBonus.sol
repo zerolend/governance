@@ -47,28 +47,9 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         bonusBps = _bonusBps;
     }
 
-    function convertVestedTokens4Year(
-        IERC20Burnable token,
-        uint256 amount,
-        address who,
-        bool stake,
-        PermitData memory permit
-    ) external {
-        require(token == earlyZERO, "invalid token");
-        if (permit.deadline > 0) {
-            IERC2612(address(token)).permit(
-                who,
-                address(this),
-                permit.value,
-                permit.deadline,
-                permit.v,
-                permit.r,
-                permit.s
-            );
-        }
-
+    function stakeEarlyZERO4Year(uint256 amount, address who) external {
         // burn the unvested token or early zero or presale tokens
-        token.burnFrom(msg.sender, amount);
+        earlyZERO.burnFrom(msg.sender, amount);
 
         // calculate the bonus
         uint256 bonus = calculateBonus(amount);
@@ -78,7 +59,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
             amount + bonus, // uint256 _value,
             86400 * 365 * 4, // uint256 _lockDuration,
             who, // address _to,
-            stake // bool _stakeNFT
+            true // bool _stakeNFT
         );
     }
 
@@ -98,11 +79,11 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         bool stake = true;
         if (data.length > 1) stake = abi.decode(data, (bool));
 
-        // get the unvested tokens into this contract
-        vestedZERO.claimUnvested(tokenId);
-
         // calculate the bonus
         uint256 bonus = calculateBonus(pending);
+
+        // get the unvested tokens into this contract
+        vestedZERO.claimUnvested(tokenId);
 
         // stake for 4 years for the user
         locker.createLockFor(
@@ -123,6 +104,9 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     function calculateBonus(
         uint256 amount
     ) public view override returns (uint256) {
+        uint256 bonus = (amount * bonusBps) / 100;
+        // if we don't have enough funds to pay out bonuses, then return 0
+        if (zero.balanceOf(address(this) < bonus)) return 0;
         return (amount * bonusBps) / 100;
     }
 }

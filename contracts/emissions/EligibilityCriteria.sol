@@ -50,6 +50,8 @@ contract EligibilityCriteria is VersionedInitializable, IEligibilityCriteria {
         // if less than 5% is staked, then not elibible
         if (percentageStaked < 5e16) return 0;
 
+        // TODO: this needs to be done to mirror the docs
+
         // else give 1x
         return 1e18;
     }
