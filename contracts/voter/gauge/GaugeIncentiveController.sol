@@ -3,25 +3,37 @@ pragma solidity ^0.8.6;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {RewardBase} from "./RewardBase.sol";
 import {IIncentivesController} from "../../interfaces/IIncentivesController.sol";
+import {IEligibilityCriteria} from "../../interfaces/IEligibilityCriteria.sol";
+import {IAaveOracle} from "@zerolendxyz/core-v3/contracts/interfaces/IAaveOracle.sol";
 
 // Gauges are used to incentivize pools, they emit reward tokens over 14 days for staked LP tokens
 // Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
 contract GaugeIncentiveController is RewardBase, IIncentivesController {
     IERC20 public aToken;
-    IVotes public staking;
     IERC20 public reward;
+    IEligibilityCriteria public eligibility;
+
+    IAaveOracle public oracle;
+    address public oracleAsset;
+
     uint256 public derivedSupply;
     mapping(address => uint256) public derivedBalances;
 
-    function init(IERC20 _aToken, address _staking, address _reward) external {
+    function init(
+        IERC20 _aToken,
+        address _reward,
+        address _eligibility,
+        address _oracle
+    ) external {
         __RewardBase_init();
         aToken = _aToken;
 
-        staking = IVotes(_staking);
+        eligibility = IEligibilityCriteria(_eligibility);
         reward = IERC20(_reward);
+        oracle = IAaveOracle(_oracle);
+
         incentives.push(reward);
         isIncentive[reward] = true;
     }
@@ -51,11 +63,11 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
     }
 
     function derivedBalance(address account) public view returns (uint256) {
-        uint256 _balance = balanceOf[account];
-        uint256 _derived = (_balance * 40) / 100;
-        uint256 _adjusted = (((totalSupply * staking.getVotes(account)) /
-            staking.getPastTotalSupply(block.timestamp)) * 60) / 100;
-        return Math.min(_derived + _adjusted, _balance);
+        uint256 _balance = (balanceOf[account] *
+            oracle.getAssetPrice(oracleAsset)) / 1e8;
+
+        uint256 multiplierE18 = eligibility.checkEligibility(account, _balance);
+        return (_balance * multiplierE18) / 1e18;
     }
 
     function earned(
@@ -72,21 +84,16 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
     /// @notice Called by an aToken to update the various incentives
     /// @dev If the user does not meet the eligibility critera, no incentives are given
     /// @param user the user with the new aToken balance
-    /// @param totalSupply the total supply of the aToken (not used)
     /// @param userBalance the user balance of the aToken
-    function handleAction(
-        address user,
-        uint256 totalSupply,
-        uint256 userBalance
-    ) external {
+    function handleAction(address user, uint256, uint256 userBalance) external {
         require(msg.sender == address(aToken), "only aToken");
-        _handleAction(user, totalSupply, userBalance);
+        _handleAction(user, userBalance);
     }
 
     /// @notice Manually update a user's balance in the ppol
     /// @param who the user to update for
     function updateUser(address who) external {
-        _handleAction(who, aToken.totalSupply(), aToken.balanceOf(who));
+        _handleAction(who, aToken.balanceOf(who));
     }
 
     modifier updateReward(IERC20 token, address account) override {
@@ -95,27 +102,9 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
         if (account != address(0)) reset(account);
     }
 
-    function _handleAction(
-        address user,
-        uint256 totalSupply,
-        uint256 userBalance
-    ) internal {
+    function _handleAction(address user, uint256 userBalance) internal {
         _updateReward(reward, user);
-
-        if (balanceOf[user] >= userBalance) {
-            // balance decreased
-            totalSupply -= balanceOf[user] - userBalance;
-            balanceOf[user] -= userBalance;
-        } else {
-            // balance increased
-            totalSupply += userBalance - balanceOf[user];
-            balanceOf[user] += userBalance;
-        }
-
-        // todo: conduct update reward for other tokens also
-        _updateReward(reward, user);
-
-        // reset elibility
+        balanceOf[user] = userBalance;
         reset(user);
     }
 
