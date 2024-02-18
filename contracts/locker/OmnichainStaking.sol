@@ -21,15 +21,15 @@ import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/E
 // An omni-chain staking contract that allows users to stake their veNFT
 // and get some voting power. Once staked the voting power is available cross-chain.
 contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
-    constructor() {
-        _disableInitializers();
-    }
-
     ILocker public lpLocker;
     ILocker public tokenLocker;
 
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
+
+    constructor() {
+        _disableInitializers();
+    }
 
     function init(address _endpoint) external initializer {
         __ERC20Votes_init();
@@ -48,7 +48,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
 
         if (operator == address(lpLocker)) {
             lpPower[tokenId] = lpLocker.balanceOfNFT(tokenId);
-            _mint(from, lpPower[tokenId]);
+            _mint(from, lpPower[tokenId] * 4);
         } else if (operator == address(tokenLocker)) {
             tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
             _mint(from, tokenPower[tokenId]);
@@ -58,7 +58,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     }
 
     function unstakeLP(uint256 tokenId) external {
-        _burn(msg.sender, lpPower[tokenId]);
+        _burn(msg.sender, lpPower[tokenId] * 4);
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 

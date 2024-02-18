@@ -49,7 +49,7 @@ contract BaseLocker is
     /// @dev Current count of token
     uint256 internal tokenId;
 
-    IERC20 public token;
+    IERC20 public underlying;
     IOmnichainStaking public staking;
 
     function __BaseLocker_init(
@@ -70,7 +70,7 @@ contract BaseLocker is
         MULTIPLIER = 1 ether;
 
         staking = IOmnichainStaking(_staking);
-        token = IERC20(_token);
+        underlying = IERC20(_token);
     }
 
     /// @dev Interface identification is specified in ERC-165.
@@ -149,7 +149,7 @@ contract BaseLocker is
         // _locked.end > block.timestamp (always)
 
         if (_value != 0 && _type != DepositType.MERGE_TYPE)
-            assert(token.transferFrom(msg.sender, address(this), _value));
+            assert(underlying.transferFrom(msg.sender, address(this), _value));
 
         emit Deposit(
             msg.sender,
@@ -304,7 +304,7 @@ contract BaseLocker is
         uint256 supplyBefore = supply;
         supply = supplyBefore - value;
 
-        assert(token.transfer(msg.sender, value));
+        assert(underlying.transfer(msg.sender, value));
 
         // Burn the NFT
         _burn(_tokenId);

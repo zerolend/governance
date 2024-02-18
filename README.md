@@ -2,9 +2,9 @@
 
 todo
 
-~~- gauge voting~~
-~~- locker for ve~~
-~~ - investors can otc vested tokens~~
+~~-gauge voting~~
+~~ locker for ve~~
+~~ investors can otc vested tokens~~
 
 - locker for DLP
 - pool integration
