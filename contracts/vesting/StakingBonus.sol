@@ -106,7 +106,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     ) public view override returns (uint256) {
         uint256 bonus = (amount * bonusBps) / 100;
         // if we don't have enough funds to pay out bonuses, then return 0
-        if (zero.balanceOf(address(this) < bonus)) return 0;
+        if (zero.balanceOf(address(this))< bonus) return 0;
         return (amount * bonusBps) / 100;
     }
 }

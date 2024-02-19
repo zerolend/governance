@@ -25,7 +25,8 @@ contract ZeroLend is AccessControlEnumerable, ERC20Permit {
     mapping(address => bool) public whitelisted;
     bool public paused;
 
-    constructor() ERC20Permit("ZeroLend") {
+    constructor() ERC20("ZeroLend", "ZERO") ERC20Permit("ZeroLend") {
+
         _mint(msg.sender, 100_000_000_000 * 10 ** decimals());
 
         _grantRole(RISK_MANAGER_ROLE, msg.sender);
