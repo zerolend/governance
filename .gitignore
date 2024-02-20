@@ -113,3 +113,4 @@ dist
 .tern-port
 
 typechain-types/
+generated-abi
