@@ -57,6 +57,8 @@ contract VestedZeroNFT is
         royaltyReceiver = msg.sender;
 
         MINTER_ROLE = keccak256("MINTER_ROLE");
+
+        _grantRole(MINTER_ROLE, msg.sender);
     }
 
     function mint(
