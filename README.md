@@ -13,3 +13,5 @@ todo
 - unit tests
 - omnichain voting
 - zappers
+- field for vesting role
+- claim all vest
