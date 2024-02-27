@@ -78,6 +78,10 @@ interface IVestedZeroNFT is IERC721 {
     /// @param tokenId the nft id
     function unclaimed(uint256 tokenId) external view returns (uint256);
 
+    /// Calculate how much penalty the user will have to pay
+    /// @param tokenId the nft id
+    function penalty(uint256 tokenId) external view returns (uint256);
+
     /// Splits a vesting NFT into smaller vests so that it can be easily traded
     /// @param tokenId The nft to split for
     /// @param fraction By how much bps the split should happen (10000 bps = 100%)
