@@ -10,31 +10,30 @@ export async function deployGovernance() {
 
   // Deploy contracts
   const EarlyZERO = await hre.ethers.getContractFactory("EarlyZERO");
-  const earlyZERO = await EarlyZERO.deploy();
-
+  const EarlyZEROVesting = await hre.ethers.getContractFactory(
+    "EarlyZEROVesting"
+  );
   const ZeroLendToken = await hre.ethers.getContractFactory("ZeroLend");
-  const zero = await ZeroLendToken.deploy();
-
   const VestedZeroNFT = await hre.ethers.getContractFactory("VestedZeroNFT");
-  const vestedZeroNFT = await VestedZeroNFT.deploy();
-
   const StakingBonus = await hre.ethers.getContractFactory("StakingBonus");
-  const stakingBonus = await StakingBonus.deploy();
-
   const OmnichainStaking = await hre.ethers.getContractFactory(
     "OmnichainStaking"
   );
-  const omnichainStaking = await OmnichainStaking.deploy();
-
   const LockerToken = await hre.ethers.getContractFactory("LockerToken");
+
+  const stakingBonus = await StakingBonus.deploy();
+  const omnichainStaking = await OmnichainStaking.deploy();
   const lockerToken = await LockerToken.deploy();
   const lockerLP = await LockerToken.deploy();
+  const earlyZERO = await EarlyZERO.deploy();
+  const earlyZEROVesting = await EarlyZEROVesting.deploy();
+  const zero = await ZeroLendToken.deploy();
+  const vestedZeroNFT = await VestedZeroNFT.deploy();
 
   // init contracts
   await vestedZeroNFT.init(zero.target, stakingBonus.target);
   await stakingBonus.init(
     zero.target,
-    earlyZERO.target,
     lockerToken.target,
     vestedZeroNFT.target,
     2000
@@ -42,6 +41,11 @@ export async function deployGovernance() {
   await lockerToken.init(
     zero.target,
     omnichainStaking.target,
+    stakingBonus.target
+  );
+  await earlyZEROVesting.init(
+    earlyZERO.target,
+    lockerToken.target,
     stakingBonus.target
   );
   // TODO use lp tokens
@@ -61,6 +65,7 @@ export async function deployGovernance() {
 
   // give necessary approvals
   await zero.approve(vestedZeroNFT.target, 100n * supply);
+  await earlyZERO.addwhitelist(earlyZEROVesting.target, true);
 
   return {
     ant,

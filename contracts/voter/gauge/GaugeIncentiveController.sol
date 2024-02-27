@@ -14,7 +14,6 @@ import "hardhat/console.sol";
 // Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
 contract GaugeIncentiveController is RewardBase, IIncentivesController {
     IERC20 public aToken;
-    IERC20 public reward;
     IEligibilityCriteria public eligibility;
     IAaveOracle public oracle;
     address public oracleAsset;
@@ -24,19 +23,16 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
 
     function init(
         IERC20 _aToken,
-        address _reward,
+        address _zero,
         address _eligibility,
-        address _oracle
+        address _oracle,
+        address _vesting
     ) external {
-        __RewardBase_init(_reward);
+        __RewardBase_init(_zero, _vesting);
         aToken = _aToken;
 
         eligibility = IEligibilityCriteria(_eligibility);
-        reward = IERC20(_reward);
         oracle = IAaveOracle(_oracle);
-
-        incentives.push(reward);
-        isIncentive[reward] = true;
     }
 
     function rewardPerToken(
@@ -110,7 +106,7 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
         uint256 oldUserBalance,
         uint256 newUserBalance
     ) internal {
-        _updateReward(reward, user);
+        _updateReward(zero, user);
         totalSupply -= balanceOf[user];
         balanceOf[user] = newUserBalance;
         totalSupply += newUserBalance;

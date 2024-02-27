@@ -15,7 +15,8 @@ interface IGuageIncentiveController {
         address _aToken,
         address _reward,
         address _eligibility,
-        address _oracle
+        address _oracle,
+        address _vesting
     ) external;
 }
 
@@ -24,6 +25,7 @@ contract LendingPoolGaugeFactory is Ownable {
     address public zero;
     address public eligibility;
     address public oracle;
+    address public vesting;
     IPoolDataProvider public dataProvider;
 
     struct GaugeInfo {
@@ -48,6 +50,7 @@ contract LendingPoolGaugeFactory is Ownable {
         address _zero,
         address _eligibility,
         address _oracle,
+        address _vesting,
         IPoolDataProvider _dataProvider
     ) external onlyOwner {
         gaugeImplementation = _gaugeImplementation;
@@ -55,6 +58,7 @@ contract LendingPoolGaugeFactory is Ownable {
         eligibility = _eligibility;
         oracle = _oracle;
         dataProvider = _dataProvider;
+        vesting = _vesting;
     }
 
     function createGauge(address reserve) external onlyOwner {
@@ -86,8 +90,20 @@ contract LendingPoolGaugeFactory is Ownable {
             );
 
         // init the proxies
-        aTokenIncentiveProxy.init(atokenAddr, zero, eligibility, oracle);
-        varTokenIncentiveProxy.init(varTokenAddr, zero, eligibility, oracle);
+        aTokenIncentiveProxy.init(
+            atokenAddr,
+            zero,
+            eligibility,
+            oracle,
+            vesting
+        );
+        varTokenIncentiveProxy.init(
+            varTokenAddr,
+            zero,
+            eligibility,
+            oracle,
+            vesting
+        );
 
         // set the incentive controllers in the atokens
         aToken.setIncentivesController(address(aTokenIncentiveProxy));

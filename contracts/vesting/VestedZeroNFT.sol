@@ -43,8 +43,6 @@ contract VestedZeroNFT is
     mapping(uint256 => LockDetails) public tokenIdToLockDetails;
     mapping(uint256 => bool) public frozen;
 
-    bytes32 public MINTER_ROLE;
-
     function init(address _zero, address _stakingBonus) external initializer {
         __ERC721_init("ZeroLend Vest", "ZEROv");
         __ERC721Enumerable_init();
@@ -58,9 +56,7 @@ contract VestedZeroNFT is
         stakingBonus = _stakingBonus;
         royaltyReceiver = msg.sender;
 
-        MINTER_ROLE = keccak256("MINTER_ROLE");
-
-        _grantRole(MINTER_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     /// @inheritdoc IVestedZeroNFT
@@ -73,7 +69,7 @@ contract VestedZeroNFT is
         uint256 _unlockDate,
         bool _hasPenalty,
         VestCategory _category
-    ) external onlyRole(MINTER_ROLE) returns (uint256) {
+    ) external returns (uint256) {
         _mint(_who, ++lastTokenId);
 
         if (_unlockDate == 0) _unlockDate = block.timestamp;

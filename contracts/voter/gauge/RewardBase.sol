@@ -6,6 +6,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import {IVestedZeroNFT} from "../../interfaces/IVestedZeroNFT.sol";
 
 abstract contract RewardBase is ReentrancyGuardUpgradeable {
     using SafeERC20 for IERC20;
@@ -13,6 +14,7 @@ abstract contract RewardBase is ReentrancyGuardUpgradeable {
     uint256 public DURATION;
     uint256 public PRECISION;
 
+    IVestedZeroNFT public vesting;
     IERC20 public zero;
     IERC20[] public incentives; // array of incentives for a given gauge/bribe
     mapping(IERC20 => bool) public isIncentive; // confirms if the incentive is currently valid for the gauge/bribe
@@ -29,11 +31,21 @@ abstract contract RewardBase is ReentrancyGuardUpgradeable {
     uint256 public totalSupply;
     mapping(address => uint256) public balanceOf;
 
-    function __RewardBase_init(address _zero) internal initializer {
+    function __RewardBase_init(
+        address _zero,
+        address _vesting
+    ) internal initializer {
+        __ReentrancyGuard_init();
+
         DURATION = 14 days; // rewards are released over 14 days
         PRECISION = 10 ** 18;
         zero = IERC20(_zero);
-        __ReentrancyGuard_init();
+        vesting = IVestedZeroNFT(_vesting);
+
+        zero.approve(address(vesting), type(uint256).max);
+
+        incentives.push(zero);
+        isIncentive[zero] = true;
     }
 
     function incentivesLength() external view returns (uint256) {
@@ -70,7 +82,21 @@ abstract contract RewardBase is ReentrancyGuardUpgradeable {
     ) public nonReentrant updateReward(token, account) {
         uint256 _reward = rewards[token][account];
         rewards[token][account] = 0;
-        token.safeTransfer(account, _reward);
+
+        if (token == zero) {
+            // if the token is ZERO; then vest it linearly for 3 months with a pentalty for
+            // early withdrawals.
+            vesting.mint(
+                account, // address _who,
+                _reward, // uint256 _pending,
+                0, // uint256 _upfront,
+                86400 * 30 * 3, // uint256 _linearDuration,
+                0, // uint256 _cliffDuration,
+                0, // uint256 _unlockDate,
+                true, // bool _hasPenalty,
+                IVestedZeroNFT.VestCategory.NORMAL // VestCategory _category
+            );
+        } else token.safeTransfer(account, _reward);
     }
 
     // used to notify a gauge/bribe of a given reward, this can create griefing attacks by extending rewards
