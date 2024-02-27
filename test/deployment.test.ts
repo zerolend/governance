@@ -44,17 +44,24 @@ describe("Deployment Checks", function () {
     expect(await vestedZeroNFT.stakingBonus()).eq(stakingBonus.target);
   });
 
-  it.only("Should init voter properly", async function () {
+  it("Should init voter properly", async function () {
     const {
       aggregator,
       aToken,
       aTokenGauge,
       eligibilityCriteria,
       lending,
+      governance,
       poolVoter,
       varToken,
       varTokenGauge,
     } = await loadFixture(deployVoters);
+
+    expect(await poolVoter.staking()).eq(governance.omnichainStaking.target);
+    expect(await poolVoter.reward()).eq(governance.zero.target);
+    expect(await poolVoter.totalWeight()).eq(0);
+    // expect(await poolVoter.lzEndpoint()).eq(governance.zero.target);
+    // expect(await poolVoter.mainnetEmissions()).eq(governance.zero.target);
 
     expect(await aToken.getIncentivesController()).eq(aTokenGauge.target);
     expect(await varToken.getIncentivesController()).eq(varTokenGauge.target);

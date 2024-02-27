@@ -119,7 +119,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     ) public pure override returns (bool) {
         // don't allow users to transfer voting power. voting power can only
         // be minted or burnt and act like SBTs
-        require(false, "transfer disabled");
+        require(false, "transferFrom disabled");
         return false;
     }
 }

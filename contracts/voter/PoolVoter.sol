@@ -8,10 +8,12 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import "hardhat/console.sol";
+
 contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
-    IVotes public staking; // the ve token that governs these contracts
+    IERC20 public staking; // the ve token that governs these contracts
     IERC20 public reward;
     uint256 public totalWeight; // total voting weight
     address public lzEndpoint;
@@ -40,7 +42,7 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     function init(address _staking, address _reward) external initializer {
-        staking = IVotes(_staking);
+        staking = IERC20(_staking);
         reward = IERC20(_reward);
         __ReentrancyGuard_init();
         __Ownable_init(msg.sender);
@@ -75,7 +77,7 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         uint256[] memory _weights = new uint256[](_poolCnt);
 
         uint256 _prevUsedWeight = usedWeights[who];
-        uint256 _weight = staking.getVotes(who);
+        uint256 _weight = staking.balanceOf(who);
 
         for (uint256 i = 0; i < _poolCnt; i++) {
             uint256 _prevWeight = votes[who][_poolVote[i]];
@@ -93,7 +95,7 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         // require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId));
         _reset(_who);
         uint256 _poolCnt = _poolVote.length;
-        uint256 _weight = staking.getVotes(_who);
+        uint256 _weight = staking.balanceOf(_who);
         uint256 _totalVoteWeight = 0;
         uint256 _usedWeight = 0;
 

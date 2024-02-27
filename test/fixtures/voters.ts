@@ -41,7 +41,7 @@ export async function deployVoters() {
     guageImpl.target,
     governance.zero.target,
     eligibilityCriteria.target,
-    aggregator.target,
+    governance.lending.oracle.target,
     lending.protocolDataProvider.target
   );
   await lending.aclManager.addPoolAdmin(factory.target);

@@ -8,6 +8,8 @@ import {IIncentivesController} from "../../interfaces/IIncentivesController.sol"
 import {IEligibilityCriteria} from "../../interfaces/IEligibilityCriteria.sol";
 import {IAaveOracle} from "@zerolendxyz/core-v3/contracts/interfaces/IAaveOracle.sol";
 
+import "hardhat/console.sol";
+
 // Gauges are used to incentivize pools, they emit reward tokens over 14 days for staked LP tokens
 // Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
 contract GaugeIncentiveController is RewardBase, IIncentivesController {
@@ -88,13 +90,13 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
     /// @param userBalance the user balance of the aToken
     function handleAction(address user, uint256, uint256 userBalance) external {
         require(msg.sender == address(aToken), "only aToken");
-        _handleAction(user, userBalance);
+        _handleAction(user, userBalance, aToken.balanceOf(user));
     }
 
     /// @notice Manually update a user's balance in the ppol
     /// @param who the user to update for
     function updateUser(address who) external {
-        _handleAction(who, aToken.balanceOf(who));
+        _handleAction(who, aToken.balanceOf(who), aToken.balanceOf(who));
     }
 
     modifier updateReward(IERC20 token, address account) override {
@@ -103,9 +105,15 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
         if (account != address(0)) reset(account);
     }
 
-    function _handleAction(address user, uint256 userBalance) internal {
+    function _handleAction(
+        address user,
+        uint256 oldUserBalance,
+        uint256 newUserBalance
+    ) internal {
         _updateReward(reward, user);
-        balanceOf[user] = userBalance;
+        totalSupply -= balanceOf[user];
+        balanceOf[user] = newUserBalance;
+        totalSupply += newUserBalance;
         reset(user);
     }
 

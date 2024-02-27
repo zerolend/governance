@@ -187,6 +187,7 @@ export async function deployLendingPool() {
     configurator,
     erc20,
     pool,
+    oracle,
     addressesProvider,
     aclManager,
     protocolDataProvider,
