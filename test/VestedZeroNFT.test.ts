@@ -4,7 +4,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { VestedZeroNFT } from "../typechain-types";
 
-describe.only("VestedZeroNFT", () => {
+describe("VestedZeroNFT", () => {
   let ant: SignerWithAddress;
   let vest: VestedZeroNFT;
   let now: number;

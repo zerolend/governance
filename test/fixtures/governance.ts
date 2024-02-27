@@ -1,6 +1,5 @@
-const { ethers } = require("hardhat");
 import hre from "hardhat";
-import { deployLendingPool } from "./lending";
+import { ZERO_ADDRESS, deployLendingPool } from "./lending";
 
 export const e18 = BigInt(10) ** 18n;
 
@@ -25,6 +24,11 @@ export async function deployCore() {
   const StakingBonus = await hre.ethers.getContractFactory("StakingBonus");
   const stakingBonus = await StakingBonus.deploy();
 
+  const OmnichainStaking = await hre.ethers.getContractFactory(
+    "OmnichainStaking"
+  );
+  const omnichainStaking = await OmnichainStaking.deploy();
+
   const LockerToken = await hre.ethers.getContractFactory("LockerToken");
   const lockerToken = await LockerToken.deploy();
 
@@ -37,22 +41,29 @@ export async function deployCore() {
     vestedZeroNFT.target,
     2000
   );
-  await lockerToken.init(zero.target, stakingBonus.target);
+  await lockerToken.init(
+    zero.target,
+    omnichainStaking.target,
+    stakingBonus.target
+  );
+  await omnichainStaking.init(ZERO_ADDRESS, lockerToken.target, ZERO_ADDRESS);
 
   // unpause zero
   await zero.togglePause(false);
-  await zero.transfer(vestedZeroNFT.target, 20n * supply);
+
+  // give necessary approvals
+  await zero.approve(vestedZeroNFT.target, 100n * supply);
 
   return {
-    ethers,
-    zero,
-    deployer,
     ant,
-    whale,
-    vestedZeroNFT,
-    stakingBonus,
-    lockerToken,
+    deployer,
     earlyZERO,
     lendingPool,
+    lockerToken,
+    omnichainStaking,
+    stakingBonus,
+    vestedZeroNFT,
+    whale,
+    zero,
   };
 }

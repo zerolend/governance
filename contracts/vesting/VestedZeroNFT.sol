@@ -96,6 +96,9 @@ contract VestedZeroNFT is
             createdAt: block.timestamp,
             category: _category
         });
+
+        // fund the contract
+        zero.transferFrom(msg.sender, address(this), _pending + _upfront);
     }
 
     /// @inheritdoc IVestedZeroNFT

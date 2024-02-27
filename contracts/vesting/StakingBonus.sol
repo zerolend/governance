@@ -19,6 +19,7 @@ import {IERC20Burnable} from "../interfaces/IERC20Burnable.sol";
 import {IERC2612} from "@openzeppelin/contracts/interfaces/IERC2612.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "hardhat/console.sol";
 
 /// @title Staking bonus contract
 /// @author Deadshot Ryker <ryker@zerolend.xyz>
@@ -47,6 +48,8 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         locker = IZeroLocker(_locker);
         vestedZERO = IVestedZeroNFT(_vestedZERO);
         bonusBps = _bonusBps;
+
+        zero.approve(_locker, type(uint256).max);
     }
 
     function stakeEarlyZERO4Year(uint256 amount, address who) external {
@@ -66,20 +69,20 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     }
 
     function onERC721Received(
-        address operator,
+        address,
         address from,
         uint256 tokenId,
         bytes calldata data
     ) external returns (bytes4) {
-        require(msg.sender == operator, "!operator");
-        require(operator == address(vestedZERO), "!vestedZERO");
+        require(msg.sender == address(vestedZERO), "!vestedZERO");
 
         // check how much unvested tokens the nft has
         uint256 pending = vestedZERO.unclaimed(tokenId);
 
         // decode data; by default stake the NFT
         bool stake = true;
-        if (data.length > 1) stake = abi.decode(data, (bool));
+        address to = from;
+        if (data.length > 1) (stake, to) = abi.decode(data, (bool, address));
 
         // calculate the bonus
         uint256 bonus = calculateBonus(pending);
@@ -91,7 +94,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         locker.createLockFor(
             pending + bonus, // uint256 _value,
             86400 * 365 * 4, // uint256 _lockDuration,
-            from, // address _to,
+            to, // address _to,
             stake // bool _stakeNFT
         );
 

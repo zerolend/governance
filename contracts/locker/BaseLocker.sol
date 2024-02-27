@@ -57,6 +57,7 @@ contract BaseLocker is
         string memory _symbol,
         address _token,
         address _staking,
+        address _stakingBonus,
         uint256 _maxTime
     ) internal {
         __ERC721_init(_name, _symbol);
@@ -71,6 +72,9 @@ contract BaseLocker is
 
         staking = IOmnichainStaking(_staking);
         underlying = IERC20(_token);
+
+        _setApprovalForAll(address(this), _stakingBonus, true);
+        _setApprovalForAll(address(this), _staking, true);
     }
 
     /// @dev Interface identification is specified in ERC-165.
