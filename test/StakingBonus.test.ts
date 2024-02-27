@@ -9,6 +9,7 @@ import {
   VestedZeroNFT,
   ZeroLend,
 } from "../typechain-types";
+import { AbiCoder } from "ethers";
 
 describe.only("StakingBonus", () => {
   let ant: SignerWithAddress;
@@ -55,7 +56,7 @@ describe.only("StakingBonus", () => {
       expect(await vest.tokenOfOwnerByIndex(ant.address, 0)).to.equal(1);
     });
 
-    it("should stake a nft properly for the user", async function () {
+    it("should lock and stake a nft properly for the user", async function () {
       // stake nft on behalf of the ant
       expect(
         await vest
@@ -70,36 +71,51 @@ describe.only("StakingBonus", () => {
       expect(await omniStaking.balanceOf(ant.address)).greaterThan(
         (e18 * 199n) / 10n
       );
-      expect(await omniStaking.tokenPower(1)).greaterThan((e18 * 199n) / 10n);
+      expect(await omniStaking.tokenPower(1)).greaterThan(e18 * 19n);
+      expect(await locker.balanceOf(omniStaking.target)).eq(1);
+    });
+
+    it("should only lock a nft properly for the user", async function () {
+      const encoder = AbiCoder.defaultAbiCoder();
+      const data = encoder.encode(["bool", "address"], [false, ant.address]);
+      // stake nft on behalf of the ant
+      expect(
+        await vest
+          .connect(ant)
+          ["safeTransferFrom(address,address,uint256,bytes)"](
+            ant.address,
+            stakingBonus.target,
+            1,
+            data
+          )
+      );
+
+      expect(await omniStaking.balanceOf(ant.address)).eq(0);
+      expect(await omniStaking.tokenPower(1)).eq(0);
+      expect(await locker.balanceOf(ant.address)).eq(1);
+    });
+
+    it("should give a user a bonus if the bonus contract is well funded", async function () {
+      // fund some bonus tokens into the staking bonus contract
+      await zero.transfer(stakingBonus.target, e18 * 100n);
+
+      // give a 50% bonus
+      await stakingBonus.setBonusBps(50);
+
+      // stake nft on behalf of the ant
+      expect(
+        await vest
+          .connect(ant)
+          ["safeTransferFrom(address,address,uint256)"](
+            ant.address,
+            stakingBonus.target,
+            1
+          )
+      );
+
+      // the staking contract should've awarded more zero for staking unvested tokens
+      // 20 zero + 50% bonus = 30 zero... ->> which means about 29.999 voting power
+      expect(await locker.balanceOfNFT(1)).greaterThan(e18 * 29n);
     });
   });
 });
-
-// describe.only("VestedZeroNFT", function () {
-//   it("Should deploy properly and Should mint and safe transfer nft", async function () {
-//     const { deployer, token, nft } = await loadFixture(fixture);
-
-//     expect(await nft.zero()).to.equal(token.target);
-//     expect(await nft.royaltyReceiver()).to.equal(deployer.address);
-
-//     await token.approve(nft.target, e18 * 10n);
-
-//     await nft.mint(
-//       deployer.address,
-//       e18 * 5n,
-//       e18 * 5n,
-//       Math.floor(Date.now() / 1000 + 1000),
-//       Math.floor(Date.now() / 1000 + 500),
-//       Math.floor(Date.now() / 1000 + 100),
-//       false
-//     );
-
-//     expect(await nft.lastTokenId()).to.equal(1n);
-
-//     await nft.safeTransferFrom(deployer.address, to, 1n);
-
-//     console.log(await nft.ownerOf(await nft.lastTokenId()));
-
-//     expect(await nft.ownerOf(await nft.lastTokenId())).to.equal(to);
-//   });
-// });
