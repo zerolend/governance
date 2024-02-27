@@ -61,6 +61,7 @@ contract VestedZeroNFT is
         _grantRole(MINTER_ROLE, msg.sender);
     }
 
+    /// @inheritdoc IVestedZeroNFT
     function mint(
         address _who,
         uint256 _pending,
@@ -68,7 +69,8 @@ contract VestedZeroNFT is
         uint256 _linearDuration,
         uint256 _cliffDuration,
         uint256 _unlockDate,
-        bool _hasPenalty
+        bool _hasPenalty,
+        VestCategory _category
     ) external onlyRole(MINTER_ROLE) {
         _mint(_who, ++lastTokenId);
         tokenIdToLockDetails[lastTokenId] = LockDetails({
@@ -80,7 +82,8 @@ contract VestedZeroNFT is
             hasPenalty: _hasPenalty,
             upfront: _upfront,
             linearDuration: _linearDuration,
-            createdAt: block.timestamp
+            createdAt: block.timestamp,
+            category: _category
         });
     }
 
@@ -218,7 +221,8 @@ contract VestedZeroNFT is
             pendingClaimed: splitUnlockedPendingAmount,
             upfrontClaimed: splitUnlockedUpfrontAmount,
             upfront: splitUpfrontAmount,
-            hasPenalty: lock.hasPenalty
+            hasPenalty: lock.hasPenalty,
+            category: lock.category
         });
 
         _mint(msg.sender, ++lastTokenId);
@@ -231,7 +235,8 @@ contract VestedZeroNFT is
             pendingClaimed: lock.pendingClaimed - splitUnlockedPendingAmount,
             upfrontClaimed: lock.upfrontClaimed - splitUnlockedUpfrontAmount,
             upfront: lock.upfront - splitUpfrontAmount,
-            hasPenalty: lock.hasPenalty
+            hasPenalty: lock.hasPenalty,
+            category: lock.category
         });
     }
 

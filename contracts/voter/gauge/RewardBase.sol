@@ -31,7 +31,6 @@ abstract contract RewardBase is ReentrancyGuardUpgradeable {
     function __RewardBase_init() internal initializer {
         DURATION = 14 days; // rewards are released over 14 days
         PRECISION = 10 ** 18;
-
         __ReentrancyGuard_init();
     }
 
@@ -64,11 +63,12 @@ abstract contract RewardBase is ReentrancyGuardUpgradeable {
 
     // allows a user to claim rewards for a given token
     function getReward(
+        address account,
         IERC20 token
-    ) public nonReentrant updateReward(token, msg.sender) {
-        uint256 _reward = rewards[token][msg.sender];
-        rewards[token][msg.sender] = 0;
-        token.safeTransfer(msg.sender, _reward);
+    ) public nonReentrant updateReward(token, account) {
+        uint256 _reward = rewards[token][account];
+        rewards[token][account] = 0;
+        token.safeTransfer(account, _reward);
     }
 
     // used to notify a gauge/bribe of a given reward, this can create griefing attacks by extending rewards

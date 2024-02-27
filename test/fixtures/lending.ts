@@ -7,7 +7,7 @@ export const e18 = BigInt(10) ** 18n;
 
 export async function deployLendingPool() {
   // Contracts are deployed using the first signer/account by default
-  const [owner, otherAccount, vault] = await ethers.getSigners();
+  const [owner] = await ethers.getSigners();
 
   // factories
   const SupplyLogic = await ethers.getContractFactory("SupplyLogic");

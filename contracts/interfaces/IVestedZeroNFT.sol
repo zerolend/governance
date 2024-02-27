@@ -4,6 +4,13 @@ pragma solidity ^0.8.20;
 import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 
 interface IVestedZeroNFT is IERC721 {
+    enum VestCategory {
+        PRIVATE_SALE,
+        EARLY_ZERO,
+        NORMAL,
+        AIRDROP
+    }
+
     struct LockDetails {
         uint256 cliffDuration;
         uint256 unlockDate;
@@ -14,8 +21,18 @@ interface IVestedZeroNFT is IERC721 {
         uint256 linearDuration;
         uint256 createdAt;
         bool hasPenalty;
+        VestCategory category;
     }
 
+    /// Mints a vesting nft for a user. This is a privileged function meant to only be called by a contract or a deployer
+    /// @param who For whom we are vesting tokesn for
+    /// @param pending How much tokens the user gets after the cliff is over during the linear vesting
+    /// @param upfront How much tokens the user gets upfront (befoer the cliff after the unlockDate)
+    /// @param linearDuration How long is the linear vesting
+    /// @param cliffDuration How long is the cliff (normally 1 month)
+    /// @param unlockDate When will this vest start
+    /// @param hasPenalty Will the user get penalized for withdrawing early (Radiant-style punishements)
+    /// @param category A read-only value just to keep track of a NFT.
     function mint(
         address who,
         uint256 pending,
@@ -23,7 +40,8 @@ interface IVestedZeroNFT is IERC721 {
         uint256 linearDuration,
         uint256 cliffDuration,
         uint256 unlockDate,
-        bool hasPenalty
+        bool hasPenalty,
+        VestCategory category
     ) external;
 
     function togglePause() external;

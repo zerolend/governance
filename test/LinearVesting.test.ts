@@ -1,18 +1,12 @@
 import { expect } from "chai";
-import { e18, deployFixture as fixture } from "./fixtures/core";
-const {
-  loadFixture,
-  time,
-} = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+import { e18, deployCore as fixture } from "./fixtures/governance";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 describe("LinearVesting", function () {
   it("Should deploy properly", async function () {
-    const {
-      linearVest: linearVest,
-      token,
-      burnableToken,
-      deployer,
-    } = await loadFixture(fixture);
+    const { linearVest, token, burnableToken, deployer } = await loadFixture(
+      fixture
+    );
 
     expect(await linearVest.underlying()).to.equal(token.target);
     expect(await linearVest.vestedToken()).to.equal(burnableToken.target);

@@ -30,20 +30,22 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     IZeroLocker public locker;
     uint256 public bonusBps;
 
-    constructor() {
-        _disableInitializers();
-    }
+    // constructor() {
+    //     _disableInitializers();
+    // }
 
     function init(
         address _zero,
         address _earlyZERO,
         address _locker,
+        address _vestedZERO,
         uint256 _bonusBps
     ) external initializer {
         __Ownable_init(msg.sender);
         zero = IERC20(_zero);
         earlyZERO = IERC20Burnable(_earlyZERO);
         locker = IZeroLocker(_locker);
+        vestedZERO = IVestedZeroNFT(_vestedZERO);
         bonusBps = _bonusBps;
     }
 
@@ -106,7 +108,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     ) public view override returns (uint256) {
         uint256 bonus = (amount * bonusBps) / 100;
         // if we don't have enough funds to pay out bonuses, then return 0
-        if (zero.balanceOf(address(this))< bonus) return 0;
+        if (zero.balanceOf(address(this)) < bonus) return 0;
         return (amount * bonusBps) / 100;
     }
 }

@@ -65,6 +65,8 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
         uint256 _balance = (balanceOf[account] *
             oracle.getAssetPrice(oracleAsset)) / 1e8;
 
+        if (_balance == 0) return 0;
+
         uint256 multiplierE18 = eligibility.checkEligibility(account, _balance);
         return (_balance * multiplierE18) / 1e18;
     }

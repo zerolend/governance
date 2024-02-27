@@ -1,7 +1,6 @@
 import hre from "hardhat";
 
-export const e18 = BigInt(10) ** 18n;
-
+export const e18 = 10n ** 18n;
 const supply = (100000000000n * e18) / 100n;
 
 export async function deployFixture() {

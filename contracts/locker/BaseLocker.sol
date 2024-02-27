@@ -26,7 +26,7 @@ import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
   #   |      /
   #   |    /
   #   |  /
-  #   |/
+  #   |/c
   # 0 +--------+------> time
   # maxtime (4 years?)
 */

@@ -39,7 +39,8 @@ contract EarlyZEROVesting {
             86400 * 30 * 6, // uint256 _linearDuration,
             86400 * 30, // uint256 _cliffDuration,
             block.timestamp, // uint256 _unlockDate,
-            false // bool _hasPenalty
+            false, // bool _hasPenalty
+            IVestedZeroNFT.VestCategory.EARLY_ZERO
         );
     }
 
@@ -56,7 +57,8 @@ contract EarlyZEROVesting {
             86400 * 30 * 6, // uint256 _linearDuration,
             86400 * 30, // uint256 _cliffDuration,
             block.timestamp, // uint256 _unlockDate,
-            false // bool _hasPenalty
+            false, // bool _hasPenalty
+            IVestedZeroNFT.VestCategory.EARLY_ZERO
         );
     }
 }
