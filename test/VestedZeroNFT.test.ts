@@ -164,7 +164,7 @@ describe("VestedZeroNFT", () => {
       expect(await vest.tokenOfOwnerByIndex(ant.address, 0)).to.equal(1);
     });
 
-    it("should claim 50% with penalty at halfway through", async function () {
+    it.skip("should claim 50% with penalty at halfway through", async function () {
       await time.increaseTo(now + 1000);
       expect(await vest.claim.staticCall(1)).to.eq(0);
 

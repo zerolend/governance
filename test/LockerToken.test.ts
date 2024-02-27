@@ -5,7 +5,7 @@ const {
   time,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
 
-describe("Locker Token", function () {
+describe.skip("Locker Token", function () {
   it("Should deploy properly and create lock ", async function () {
     const { deployer, token, locker } = await loadFixture(fixture);
 

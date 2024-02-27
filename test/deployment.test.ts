@@ -16,15 +16,20 @@ describe("Deployment Checks", function () {
   it("Should init governance properly", async function () {
     const {
       deployer,
-      zero,
+      earlyZERO,
+      lockerLP,
       lockerToken,
+      omnichainStaking,
       stakingBonus,
       vestedZeroNFT,
-      earlyZERO,
+      zero,
     } = await loadFixture(deployCore);
 
     expect(await lockerToken.underlying()).eq(zero.target);
-    expect(await lockerToken.staking()).eq(stakingBonus.target);
+    expect(await lockerToken.staking()).eq(omnichainStaking.target);
+
+    expect(await omnichainStaking.lpLocker()).eq(lockerLP.target);
+    expect(await omnichainStaking.tokenLocker()).eq(lockerToken.target);
 
     expect(await stakingBonus.zero()).eq(zero.target);
     expect(await stakingBonus.earlyZERO()).eq(earlyZERO.target);

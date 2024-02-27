@@ -11,7 +11,7 @@ import {
 } from "../typechain-types";
 import { AbiCoder } from "ethers";
 
-describe.only("StakingBonus", () => {
+describe("StakingBonus", () => {
   let ant: SignerWithAddress;
   let vest: VestedZeroNFT;
   let now: number;

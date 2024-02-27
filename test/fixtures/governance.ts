@@ -31,6 +31,7 @@ export async function deployCore() {
 
   const LockerToken = await hre.ethers.getContractFactory("LockerToken");
   const lockerToken = await LockerToken.deploy();
+  const lockerLP = await LockerToken.deploy();
 
   // init contracts
   await vestedZeroNFT.init(zero.target, stakingBonus.target);
@@ -46,7 +47,17 @@ export async function deployCore() {
     omnichainStaking.target,
     stakingBonus.target
   );
-  await omnichainStaking.init(ZERO_ADDRESS, lockerToken.target, ZERO_ADDRESS);
+  // TODO use lp tokens
+  await lockerLP.init(
+    zero.target,
+    omnichainStaking.target,
+    stakingBonus.target
+  );
+  await omnichainStaking.init(
+    ZERO_ADDRESS,
+    lockerToken.target,
+    lockerLP.target
+  );
 
   // unpause zero
   await zero.togglePause(false);
@@ -60,6 +71,7 @@ export async function deployCore() {
     earlyZERO,
     lendingPool,
     lockerToken,
+    lockerLP,
     omnichainStaking,
     stakingBonus,
     vestedZeroNFT,
