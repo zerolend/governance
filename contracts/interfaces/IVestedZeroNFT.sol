@@ -42,7 +42,7 @@ interface IVestedZeroNFT is IERC721 {
         uint256 unlockDate,
         bool hasPenalty,
         VestCategory category
-    ) external;
+    ) external returns (uint256);
 
     function togglePause() external;
 

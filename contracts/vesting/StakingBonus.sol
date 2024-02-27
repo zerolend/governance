@@ -19,14 +19,12 @@ import {IERC20Burnable} from "../interfaces/IERC20Burnable.sol";
 import {IERC2612} from "@openzeppelin/contracts/interfaces/IERC2612.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "hardhat/console.sol";
 
 /// @title Staking bonus contract
 /// @author Deadshot Ryker <ryker@zerolend.xyz>
 /// @notice A contract that rewards users with tokens for converting their unvested/unclaimed tokens into a 4 year stake
 contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     IERC20 public zero;
-    IERC20Burnable public earlyZERO;
     IVestedZeroNFT public vestedZERO;
     IZeroLocker public locker;
     uint256 public bonusBps;
@@ -37,35 +35,17 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
 
     function init(
         address _zero,
-        address _earlyZERO,
         address _locker,
         address _vestedZERO,
         uint256 _bonusBps
     ) external initializer {
         __Ownable_init(msg.sender);
         zero = IERC20(_zero);
-        earlyZERO = IERC20Burnable(_earlyZERO);
         locker = IZeroLocker(_locker);
         vestedZERO = IVestedZeroNFT(_vestedZERO);
         bonusBps = _bonusBps;
 
         zero.approve(_locker, type(uint256).max);
-    }
-
-    function stakeEarlyZERO4Year(uint256 amount, address who) external {
-        // burn the unvested token or early zero or presale tokens
-        earlyZERO.burnFrom(msg.sender, amount);
-
-        // calculate the bonus
-        uint256 bonus = calculateBonus(amount);
-
-        // stake for 4 years for the user
-        locker.createLockFor(
-            amount + bonus, // uint256 _value,
-            86400 * 365 * 4, // uint256 _lockDuration,
-            who, // address _to,
-            true // bool _stakeNFT
-        );
     }
 
     function onERC721Received(

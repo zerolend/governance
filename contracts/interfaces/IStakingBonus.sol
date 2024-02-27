@@ -12,7 +12,5 @@ interface IStakingBonus is IERC721Receiver {
 
     function bonusBps() external returns (uint256);
 
-    function stakeEarlyZERO4Year(uint256 amount, address who) external;
-
     event SetBonusBPS(uint256 oldValue, uint256 newValue);
 }

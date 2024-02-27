@@ -73,7 +73,7 @@ contract VestedZeroNFT is
         uint256 _unlockDate,
         bool _hasPenalty,
         VestCategory _category
-    ) external onlyRole(MINTER_ROLE) {
+    ) external onlyRole(MINTER_ROLE) returns (uint256) {
         _mint(_who, ++lastTokenId);
 
         if (_unlockDate == 0) _unlockDate = block.timestamp;
@@ -99,6 +99,8 @@ contract VestedZeroNFT is
 
         // fund the contract
         zero.transferFrom(msg.sender, address(this), _pending + _upfront);
+
+        return lastTokenId;
     }
 
     /// @inheritdoc IVestedZeroNFT
