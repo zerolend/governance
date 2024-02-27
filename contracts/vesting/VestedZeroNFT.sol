@@ -21,6 +21,8 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/ut
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
 
+import "hardhat/console.sol";
+
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
 /// @author Deadshot Ryker <ryker@zerolend.xyz>
 /// @notice NFTs can be traded on secondary marketplaces like Opensea, can be split into smaller chunks to allow for smaller otc deals to happen in secondary markets
@@ -73,6 +75,13 @@ contract VestedZeroNFT is
         VestCategory _category
     ) external onlyRole(MINTER_ROLE) {
         _mint(_who, ++lastTokenId);
+        require(_unlockDate >= block.timestamp, "invalid _unlockDate");
+
+        if (_hasPenalty) {
+            require(_upfront == 0, "no upfront when there is a penalty");
+            require(_cliffDuration == 0, "no cliff when there is a penalty");
+        }
+
         tokenIdToLockDetails[lastTokenId] = LockDetails({
             cliffDuration: _cliffDuration,
             unlockDate: _unlockDate,
@@ -117,22 +126,22 @@ contract VestedZeroNFT is
 
     /// How much ZERO tokens this vesting nft can claim
     /// @param _tokenId the id of the nft contract
-    /// @return _upfront how much tokens upfront this nft can claim
-    /// @return _pending how much tokens in the linear vesting (after the cliff) this nft can claim
+    /// @return upfront how much tokens upfront this nft can claim
+    /// @return pending how much tokens in the linear vesting (after the cliff) this nft can claim
     function claimable(
         uint256 _tokenId
-    ) public view returns (uint256 _upfront, uint256 _pending) {
+    ) public view returns (uint256 upfront, uint256 pending) {
         LockDetails memory lock = tokenIdToLockDetails[_tokenId];
         if (block.timestamp < lock.unlockDate) return (0, 0);
 
         // if after the unlock date and before the cliff
         if (
-            block.timestamp > lock.unlockDate &&
+            block.timestamp >= lock.unlockDate &&
             block.timestamp < lock.unlockDate + lock.cliffDuration
         ) return (lock.upfront, 0);
 
         if (
-            block.timestamp >
+            block.timestamp >=
             lock.unlockDate + lock.cliffDuration + lock.linearDuration
         ) return (lock.upfront, lock.pending);
 
@@ -180,7 +189,7 @@ contract VestedZeroNFT is
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function pending(uint256 tokenId) public view override returns (uint256) {
+    function unclaimed(uint256 tokenId) public view override returns (uint256) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
         return
             lock.upfront +
@@ -190,7 +199,7 @@ contract VestedZeroNFT is
 
     function claimUnvested(uint256 tokenId) external {
         require(msg.sender == stakingBonus, "!stakingBonus");
-        uint256 _pending = pending(tokenId);
+        uint256 _pending = unclaimed(tokenId);
         zero.transfer(msg.sender, _pending);
     }
 

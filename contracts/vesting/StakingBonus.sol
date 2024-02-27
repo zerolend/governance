@@ -75,7 +75,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         require(operator == address(vestedZERO), "!vestedZERO");
 
         // check how much unvested tokens the nft has
-        uint256 pending = vestedZERO.pending(tokenId);
+        uint256 pending = vestedZERO.unclaimed(tokenId);
 
         // decode data; by default stake the NFT
         bool stake = true;

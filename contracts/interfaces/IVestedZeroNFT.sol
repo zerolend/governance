@@ -70,13 +70,13 @@ interface IVestedZeroNFT is IERC721 {
     /// @param id the nft id to claim tokens for
     function claim(uint256 id) external returns (uint256 toClaim);
 
-    /// How much tokens have been claiemd so far
+    /// How much tokens have been claimed so far
     /// @param tokenId the nft id
     function claimed(uint256 tokenId) external view returns (uint256);
 
-    /// How much tokens have been claiemd so far
+    /// How much tokens haven't been claimed so far
     /// @param tokenId the nft id
-    function pending(uint256 tokenId) external view returns (uint256);
+    function unclaimed(uint256 tokenId) external view returns (uint256);
 
     /// Splits a vesting NFT into smaller vests so that it can be easily traded
     /// @param tokenId The nft to split for
