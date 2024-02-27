@@ -26,7 +26,7 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
         address _eligibility,
         address _oracle
     ) external {
-        __RewardBase_init();
+        __RewardBase_init(_reward);
         aToken = _aToken;
 
         eligibility = IEligibilityCriteria(_eligibility);

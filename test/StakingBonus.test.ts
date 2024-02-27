@@ -1,6 +1,6 @@
 import { expect } from "chai";
-import { e18, deployCore } from "./fixtures/governance";
-import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
+import { deployGovernance } from "./fixtures/governance";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import {
   LockerToken,
@@ -10,6 +10,7 @@ import {
   ZeroLend,
 } from "../typechain-types";
 import { AbiCoder } from "ethers";
+import { e18 } from "./fixtures/utils";
 
 describe("StakingBonus", () => {
   let ant: SignerWithAddress;
@@ -21,7 +22,7 @@ describe("StakingBonus", () => {
   let omniStaking: OmnichainStaking;
 
   beforeEach(async () => {
-    const deployment = await loadFixture(deployCore);
+    const deployment = await loadFixture(deployGovernance);
     ant = deployment.ant;
     zero = deployment.zero;
     vest = deployment.vestedZeroNFT;

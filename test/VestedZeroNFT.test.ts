@@ -1,8 +1,9 @@
 import { expect } from "chai";
-import { e18, deployCore } from "./fixtures/governance";
+import { deployGovernance } from "./fixtures/governance";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { VestedZeroNFT } from "../typechain-types";
+import { e18 } from "./fixtures/utils";
 
 describe("VestedZeroNFT", () => {
   let ant: SignerWithAddress;
@@ -10,7 +11,7 @@ describe("VestedZeroNFT", () => {
   let now: number;
 
   beforeEach(async () => {
-    const deployment = await loadFixture(deployCore);
+    const deployment = await loadFixture(deployGovernance);
     ant = deployment.ant;
     vest = deployment.vestedZeroNFT;
     now = Math.floor(Date.now() / 1000);

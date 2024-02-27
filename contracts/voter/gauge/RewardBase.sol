@@ -13,6 +13,7 @@ abstract contract RewardBase is ReentrancyGuardUpgradeable {
     uint256 public DURATION;
     uint256 public PRECISION;
 
+    IERC20 public zero;
     IERC20[] public incentives; // array of incentives for a given gauge/bribe
     mapping(IERC20 => bool) public isIncentive; // confirms if the incentive is currently valid for the gauge/bribe
 
@@ -28,9 +29,10 @@ abstract contract RewardBase is ReentrancyGuardUpgradeable {
     uint256 public totalSupply;
     mapping(address => uint256) public balanceOf;
 
-    function __RewardBase_init() internal initializer {
+    function __RewardBase_init(address _zero) internal initializer {
         DURATION = 14 days; // rewards are released over 14 days
         PRECISION = 10 ** 18;
+        zero = IERC20(_zero);
         __ReentrancyGuard_init();
     }
 

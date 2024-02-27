@@ -1,11 +1,8 @@
 import hre from "hardhat";
-import { ZERO_ADDRESS, deployLendingPool } from "./lending";
+import { deployLendingPool } from "./lending";
+import { ZERO_ADDRESS, supply } from "./utils";
 
-export const e18 = BigInt(10) ** 18n;
-
-const supply = (100000000000n * e18) / 100n;
-
-export async function deployCore() {
+export async function deployGovernance() {
   const lendingPool = await deployLendingPool();
 
   // Contracts are deployed using the first signer/account by default
@@ -69,7 +66,7 @@ export async function deployCore() {
     ant,
     deployer,
     earlyZERO,
-    lendingPool,
+    lending: lendingPool,
     lockerToken,
     lockerLP,
     omnichainStaking,

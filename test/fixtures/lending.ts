@@ -1,9 +1,6 @@
 import { ethers } from "hardhat";
 import { parseUnits } from "ethers";
-
-export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-
-export const e18 = BigInt(10) ** 18n;
+import { ZERO_ADDRESS } from "./utils";
 
 export async function deployLendingPool() {
   // Contracts are deployed using the first signer/account by default

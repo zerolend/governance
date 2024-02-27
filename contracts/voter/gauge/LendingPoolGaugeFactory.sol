@@ -7,7 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 // Gauges are used to incentivize pools, they emit reward tokens over 14 days for staked LP tokens
 // Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
-contract LendingPoolGauge is IRewardDistributor {
+contract LendingPoolGaugeFactory is IRewardDistributor {
     using SafeERC20 for IERC20;
     IRewardDistributor public supplyGauge;
     IRewardDistributor public borrowGauge;

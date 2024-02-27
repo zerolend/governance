@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { deployLendingPool } from "./fixtures/lending";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { deployCore } from "./fixtures/governance";
+import { deployGovernance } from "./fixtures/governance";
 
 describe("Deployment Checks", function () {
   it("Should deploy lending pool properly", async function () {
@@ -23,7 +23,7 @@ describe("Deployment Checks", function () {
       stakingBonus,
       vestedZeroNFT,
       zero,
-    } = await loadFixture(deployCore);
+    } = await loadFixture(deployGovernance);
 
     expect(await lockerToken.underlying()).eq(zero.target);
     expect(await lockerToken.staking()).eq(omnichainStaking.target);
