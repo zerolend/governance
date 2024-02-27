@@ -33,7 +33,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     // }
 
     function init(
-        address _endpoint,
+        address, // LZ endpoint
         address _tokenLocker,
         address _lpLocker
     ) external initializer {

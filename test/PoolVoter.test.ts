@@ -10,8 +10,9 @@ import {
   ZeroLend,
 } from "../typechain-types";
 import { e18 } from "./fixtures/utils";
+import { deployVoters } from "./fixtures/voters";
 
-describe("SPoolVoter", () => {
+describe("PoolVoter", () => {
   let ant: SignerWithAddress;
   let vest: VestedZeroNFT;
   let now: number;
@@ -21,17 +22,23 @@ describe("SPoolVoter", () => {
   let omniStaking: OmnichainStaking;
 
   beforeEach(async () => {
-    const deployment = await loadFixture(deployGovernance);
+    const deployment = await loadFixture(deployVoters);
     ant = deployment.ant;
-    zero = deployment.zero;
-    vest = deployment.vestedZeroNFT;
-    stakingBonus = deployment.stakingBonus;
-    locker = deployment.lockerToken;
-    omniStaking = deployment.omnichainStaking;
-    now = Math.floor(Date.now() / 1000);
+    zero = deployment.governance.zero;
+    // vest = deployment.vestedZeroNFT;
+    // stakingBonus = deployment.stakingBonus;
+    // locker = deployment.lockerToken;
+    // omniStaking = deployment.omnichainStaking;
+    // now = Math.floor(Date.now() / 1000);
   });
 
-  describe("onERC721Received() - stake nft", () => {
+  it("should deploy properly", async function () {
+    expect(await vest.balanceOf(ant)).to.equal(1);
+    expect(await vest.ownerOf(1)).to.equal(ant.address);
+    expect(await vest.tokenOfOwnerByIndex(ant.address, 0)).to.equal(1);
+  });
+
+  describe("handleAction test", () => {
     beforeEach(async () => {
       expect(await vest.lastTokenId()).to.equal(0);
 

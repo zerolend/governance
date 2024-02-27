@@ -1,36 +1,116 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-import {IRewardDistributor} from "../../interfaces/IRewardDistributor.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IPoolDataProvider} from "@zerolendxyz/core-v3/contracts/interfaces/IPoolDataProvider.sol";
+import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import {LendingPoolGauge} from "./LendingPoolGauge.sol";
 
-// Gauges are used to incentivize pools, they emit reward tokens over 14 days for staked LP tokens
-// Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
-contract LendingPoolGaugeFactory is IRewardDistributor {
-    using SafeERC20 for IERC20;
-    IRewardDistributor public supplyGauge;
-    IRewardDistributor public borrowGauge;
+interface IAtokenIncentivized {
+    function setIncentivesController(address controller) external;
+}
 
-    constructor(address _supplyGauge, address _borrowGauge) {
-        supplyGauge = IRewardDistributor(_supplyGauge);
-        borrowGauge = IRewardDistributor(_borrowGauge);
+interface IGuageIncentiveController {
+    function init(
+        address _aToken,
+        address _reward,
+        address _eligibility,
+        address _oracle
+    ) external;
+}
+
+contract LendingPoolGaugeFactory is Ownable {
+    address public gaugeImplementation;
+    address public zero;
+    address public eligibility;
+    address public oracle;
+    IPoolDataProvider public dataProvider;
+
+    struct GaugeInfo {
+        address splitterGauge;
+        address aTokenGauge;
+        address varTokenGauge;
     }
 
-    function notifyRewardAmount(
-        address token,
-        uint256 amount
-    ) external returns (bool) {
-        IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+    mapping(address => GaugeInfo) public gauges;
+    event GaugeCreated(
+        address reserve,
+        address implementation,
+        address aTokenGaugeProxy,
+        address varTokenGaugeProxy,
+        address splitter
+    );
 
-        // send 1/4 to the supply side
-        IERC20(token).approve(address(supplyGauge), amount);
-        bool a = supplyGauge.notifyRewardAmount(token, amount / 4);
+    constructor() Ownable(msg.sender) {}
 
-        // send 3/4th to the borrow side
-        IERC20(token).approve(address(borrowGauge), amount);
-        bool b = borrowGauge.notifyRewardAmount(token, (amount / 4) * 3);
+    function setAddresses(
+        address _gaugeImplementation,
+        address _zero,
+        address _eligibility,
+        address _oracle,
+        IPoolDataProvider _dataProvider
+    ) external onlyOwner {
+        gaugeImplementation = _gaugeImplementation;
+        zero = _zero;
+        eligibility = _eligibility;
+        oracle = _oracle;
+        dataProvider = _dataProvider;
+    }
 
-        return a && b;
+    function createGauge(address reserve) external onlyOwner {
+        // fn needs to have pooladmin role to set Atoken's incentive controller
+        (address atokenAddr, , address varTokenAddr) = dataProvider
+            .getReserveTokensAddresses(reserve);
+
+        IAtokenIncentivized aToken = IAtokenIncentivized(atokenAddr);
+        IAtokenIncentivized varToken = IAtokenIncentivized(varTokenAddr);
+
+        IGuageIncentiveController aTokenIncentiveProxy = IGuageIncentiveController(
+                address(
+                    new TransparentUpgradeableProxy(
+                        gaugeImplementation,
+                        owner(),
+                        ""
+                    )
+                )
+            );
+
+        IGuageIncentiveController varTokenIncentiveProxy = IGuageIncentiveController(
+                address(
+                    new TransparentUpgradeableProxy(
+                        gaugeImplementation,
+                        owner(),
+                        ""
+                    )
+                )
+            );
+
+        // init the proxies
+        aTokenIncentiveProxy.init(atokenAddr, zero, eligibility, oracle);
+        varTokenIncentiveProxy.init(varTokenAddr, zero, eligibility, oracle);
+
+        // set the incentive controllers in the atokens
+        aToken.setIncentivesController(address(aTokenIncentiveProxy));
+        varToken.setIncentivesController(address(varTokenIncentiveProxy));
+
+        // create the splitter
+        LendingPoolGauge splitter = new LendingPoolGauge(
+            address(aTokenIncentiveProxy),
+            address(varTokenIncentiveProxy)
+        );
+
+        gauges[reserve] = GaugeInfo({
+            splitterGauge: address(splitter),
+            aTokenGauge: address(aTokenIncentiveProxy),
+            varTokenGauge: address(varTokenIncentiveProxy)
+        });
+
+        emit GaugeCreated(
+            reserve,
+            gaugeImplementation,
+            address(aTokenIncentiveProxy),
+            address(varTokenIncentiveProxy),
+            address(splitter)
+        );
     }
 }

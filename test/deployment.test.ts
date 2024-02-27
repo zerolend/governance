@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { deployLendingPool } from "./fixtures/lending";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { deployGovernance } from "./fixtures/governance";
+import { deployVoters } from "./fixtures/voters";
 
 describe("Deployment Checks", function () {
   it("Should deploy lending pool properly", async function () {
@@ -41,5 +42,21 @@ describe("Deployment Checks", function () {
     expect(await vestedZeroNFT.royaltyReceiver()).eq(deployer.address);
     expect(await vestedZeroNFT.royaltyFraction()).eq(100);
     expect(await vestedZeroNFT.stakingBonus()).eq(stakingBonus.target);
+  });
+
+  it.only("Should init voter properly", async function () {
+    const {
+      aggregator,
+      aToken,
+      aTokenGauge,
+      eligibilityCriteria,
+      lending,
+      poolVoter,
+      varToken,
+      varTokenGauge,
+    } = await loadFixture(deployVoters);
+
+    expect(await aToken.getIncentivesController()).eq(aTokenGauge.target);
+    expect(await varToken.getIncentivesController()).eq(varTokenGauge.target);
   });
 });

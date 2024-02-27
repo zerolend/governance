@@ -80,7 +80,7 @@ export async function deployLendingPool() {
 
   // setup tokens and mock aggregator
   const erc20 = await TestnetERC20.deploy("WETH", "WETH", 18, owner.address);
-  const mockAggregator = await MockAggregator.deploy(1800 * 1e8, owner.address);
+  const mockAggregator = await MockAggregator.deploy(1800 * 1e8);
 
   // 2. Set the MarketId
   await addressesProvider.setMarketId("Testnet");
