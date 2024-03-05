@@ -8,11 +8,12 @@ import {IIncentivesController} from "../../interfaces/IIncentivesController.sol"
 import {IEligibilityCriteria} from "../../interfaces/IEligibilityCriteria.sol";
 import {IAaveOracle} from "@zerolendxyz/core-v3/contracts/interfaces/IAaveOracle.sol";
 
+import "hardhat/console.sol";
+
 // Gauges are used to incentivize pools, they emit reward tokens over 14 days for staked LP tokens
 // Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
 contract GaugeIncentiveController is RewardBase, IIncentivesController {
     IERC20 public aToken;
-    IERC20 public reward;
     IEligibilityCriteria public eligibility;
     IAaveOracle public oracle;
     address public oracleAsset;
@@ -22,19 +23,16 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
 
     function init(
         IERC20 _aToken,
-        address _reward,
+        address _zero,
         address _eligibility,
-        address _oracle
+        address _oracle,
+        address _vesting
     ) external {
-        __RewardBase_init();
+        __RewardBase_init(_zero, _vesting);
         aToken = _aToken;
 
         eligibility = IEligibilityCriteria(_eligibility);
-        reward = IERC20(_reward);
         oracle = IAaveOracle(_oracle);
-
-        incentives.push(reward);
-        isIncentive[reward] = true;
     }
 
     function rewardPerToken(
@@ -65,6 +63,8 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
         uint256 _balance = (balanceOf[account] *
             oracle.getAssetPrice(oracleAsset)) / 1e8;
 
+        if (_balance == 0) return 0;
+
         uint256 multiplierE18 = eligibility.checkEligibility(account, _balance);
         return (_balance * multiplierE18) / 1e18;
     }
@@ -86,13 +86,13 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
     /// @param userBalance the user balance of the aToken
     function handleAction(address user, uint256, uint256 userBalance) external {
         require(msg.sender == address(aToken), "only aToken");
-        _handleAction(user, userBalance);
+        _handleAction(user, userBalance, aToken.balanceOf(user));
     }
 
     /// @notice Manually update a user's balance in the ppol
     /// @param who the user to update for
     function updateUser(address who) external {
-        _handleAction(who, aToken.balanceOf(who));
+        _handleAction(who, aToken.balanceOf(who), aToken.balanceOf(who));
     }
 
     modifier updateReward(IERC20 token, address account) override {
@@ -101,9 +101,15 @@ contract GaugeIncentiveController is RewardBase, IIncentivesController {
         if (account != address(0)) reset(account);
     }
 
-    function _handleAction(address user, uint256 userBalance) internal {
-        _updateReward(reward, user);
-        balanceOf[user] = userBalance;
+    function _handleAction(
+        address user,
+        uint256 oldUserBalance,
+        uint256 newUserBalance
+    ) internal {
+        _updateReward(zero, user);
+        totalSupply -= balanceOf[user];
+        balanceOf[user] = newUserBalance;
+        totalSupply += newUserBalance;
         reset(user);
     }
 

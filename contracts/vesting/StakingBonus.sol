@@ -25,59 +25,44 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 /// @notice A contract that rewards users with tokens for converting their unvested/unclaimed tokens into a 4 year stake
 contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     IERC20 public zero;
-    IERC20Burnable public earlyZERO;
     IVestedZeroNFT public vestedZERO;
     IZeroLocker public locker;
     uint256 public bonusBps;
 
-    constructor() {
-        _disableInitializers();
-    }
+    // constructor() {
+    //     _disableInitializers();
+    // }
 
     function init(
         address _zero,
-        address _earlyZERO,
         address _locker,
+        address _vestedZERO,
         uint256 _bonusBps
     ) external initializer {
         __Ownable_init(msg.sender);
         zero = IERC20(_zero);
-        earlyZERO = IERC20Burnable(_earlyZERO);
         locker = IZeroLocker(_locker);
+        vestedZERO = IVestedZeroNFT(_vestedZERO);
         bonusBps = _bonusBps;
-    }
 
-    function stakeEarlyZERO4Year(uint256 amount, address who) external {
-        // burn the unvested token or early zero or presale tokens
-        earlyZERO.burnFrom(msg.sender, amount);
-
-        // calculate the bonus
-        uint256 bonus = calculateBonus(amount);
-
-        // stake for 4 years for the user
-        locker.createLockFor(
-            amount + bonus, // uint256 _value,
-            86400 * 365 * 4, // uint256 _lockDuration,
-            who, // address _to,
-            true // bool _stakeNFT
-        );
+        zero.approve(_locker, type(uint256).max);
     }
 
     function onERC721Received(
-        address operator,
+        address,
         address from,
         uint256 tokenId,
         bytes calldata data
     ) external returns (bytes4) {
-        require(msg.sender == operator, "!operator");
-        require(operator == address(vestedZERO), "!vestedZERO");
+        require(msg.sender == address(vestedZERO), "!vestedZERO");
 
         // check how much unvested tokens the nft has
-        uint256 pending = vestedZERO.pending(tokenId);
+        uint256 pending = vestedZERO.unclaimed(tokenId);
 
         // decode data; by default stake the NFT
         bool stake = true;
-        if (data.length > 1) stake = abi.decode(data, (bool));
+        address to = from;
+        if (data.length > 1) (stake, to) = abi.decode(data, (bool, address));
 
         // calculate the bonus
         uint256 bonus = calculateBonus(pending);
@@ -89,7 +74,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         locker.createLockFor(
             pending + bonus, // uint256 _value,
             86400 * 365 * 4, // uint256 _lockDuration,
-            from, // address _to,
+            to, // address _to,
             stake // bool _stakeNFT
         );
 
@@ -106,7 +91,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     ) public view override returns (uint256) {
         uint256 bonus = (amount * bonusBps) / 100;
         // if we don't have enough funds to pay out bonuses, then return 0
-        if (zero.balanceOf(address(this))< bonus) return 0;
+        if (zero.balanceOf(address(this)) < bonus) return 0;
         return (amount * bonusBps) / 100;
     }
 }

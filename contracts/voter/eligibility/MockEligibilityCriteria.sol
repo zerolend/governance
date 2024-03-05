@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: AGPL-3.0-or-later
 pragma solidity ^0.8.20;
 
 // ███████╗███████╗██████╗  ██████╗
@@ -7,24 +7,25 @@ pragma solidity ^0.8.20;
 //  ███╔╝  ██╔══╝  ██╔══██╗██║   ██║
 // ███████╗███████╗██║  ██║╚██████╔╝
 // ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝
+
 // Website: https://zerolend.xyz
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
+import {IAaveOracle} from "@zerolendxyz/core-v3/contracts/interfaces/IAaveOracle.sol";
 
-contract MockAggregator is Ownable {
-    int256 public latestAnswer;
+import {IEligibilityCriteria} from "../../interfaces/IEligibilityCriteria.sol";
 
-    constructor(int256 _answer) Ownable(msg.sender) {
-        latestAnswer = _answer;
-    }
+contract MockEligibilityCriteria is IEligibilityCriteria {
+    IVotes public staking;
+    IAaveOracle public oracle;
+    address public zero;
 
-    function setAnswer(int256 _answer) external onlyOwner {
-        latestAnswer = _answer;
-    }
-
-    function decimals() external pure returns (uint8) {
-        return 8;
+    function checkEligibility(
+        address,
+        uint256
+    ) external pure returns (uint256 multiplierE18) {
+        return 1e18;
     }
 }

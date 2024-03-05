@@ -15,8 +15,8 @@ pragma solidity ^0.8.20;
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {IAaveOracle} from "@zerolendxyz/core-v3/contracts/interfaces/IAaveOracle.sol";
 
-import {IEligibilityCriteria} from "../interfaces/IEligibilityCriteria.sol";
-import {VersionedInitializable} from "../proxy/VersionedInitializable.sol";
+import {IEligibilityCriteria} from "../../interfaces/IEligibilityCriteria.sol";
+import {VersionedInitializable} from "../../proxy/VersionedInitializable.sol";
 
 contract EligibilityCriteria is VersionedInitializable, IEligibilityCriteria {
     IVotes public staking;

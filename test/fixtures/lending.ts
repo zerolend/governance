@@ -1,13 +1,10 @@
 import { ethers } from "hardhat";
 import { parseUnits } from "ethers";
-
-export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-
-export const e18 = BigInt(10) ** 18n;
+import { ZERO_ADDRESS } from "./utils";
 
 export async function deployLendingPool() {
   // Contracts are deployed using the first signer/account by default
-  const [owner, otherAccount, vault] = await ethers.getSigners();
+  const [owner] = await ethers.getSigners();
 
   // factories
   const SupplyLogic = await ethers.getContractFactory("SupplyLogic");
@@ -83,7 +80,7 @@ export async function deployLendingPool() {
 
   // setup tokens and mock aggregator
   const erc20 = await TestnetERC20.deploy("WETH", "WETH", 18, owner.address);
-  const mockAggregator = await MockAggregator.deploy(1800 * 1e8, owner.address);
+  const mockAggregator = await MockAggregator.deploy(1800 * 1e8);
 
   // 2. Set the MarketId
   await addressesProvider.setMarketId("Testnet");
@@ -190,6 +187,7 @@ export async function deployLendingPool() {
     configurator,
     erc20,
     pool,
+    oracle,
     addressesProvider,
     aclManager,
     protocolDataProvider,
