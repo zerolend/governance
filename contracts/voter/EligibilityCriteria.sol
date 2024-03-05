@@ -18,8 +18,6 @@ import {IAaveOracle} from "@zerolendxyz/core-v3/contracts/interfaces/IAaveOracle
 import {IEligibilityCriteria} from "../interfaces/IEligibilityCriteria.sol";
 import {VersionedInitializable} from "../proxy/VersionedInitializable.sol";
 
-import 'hardhat/console.sol';
-
 contract EligibilityCriteria is VersionedInitializable, IEligibilityCriteria {
     IVotes public staking;
     IAaveOracle public oracle;
@@ -30,8 +28,6 @@ contract EligibilityCriteria is VersionedInitializable, IEligibilityCriteria {
         address _oracle,
         address _zero
     )external {
-    // ) external initializer {
-        console.log('Hit');
         staking = IVotes(_staking);
         oracle = IAaveOracle(_oracle);
         zero = _zero;
