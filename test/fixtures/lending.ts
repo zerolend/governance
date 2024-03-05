@@ -193,5 +193,6 @@ export async function deployLendingPool() {
     addressesProvider,
     aclManager,
     protocolDataProvider,
+    mockAggregator,
   };
 }
