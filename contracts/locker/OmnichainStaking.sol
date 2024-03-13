@@ -17,7 +17,6 @@ import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
-import "hardhat/console.sol";
 
 // An omni-chain staking contract that allows users to stake their veNFT
 // and get some voting power. Once staked the voting power is available cross-chain.
