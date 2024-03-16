@@ -86,6 +86,15 @@ const config: HardhatUserConfig = {
       url: `https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161	`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
     },
+    mainnet: {
+      url: `https://rpc.ankr.com/eth`,
+      accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+    },
+  },
+  etherscan: {
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_KEY || "",
+    },
   },
 };
 
