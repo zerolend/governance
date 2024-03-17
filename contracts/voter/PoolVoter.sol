@@ -133,7 +133,7 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
         address _asset,
         address _gauge
     ) external onlyOwner returns (address) {
-        if (isPool[_asset]) {
+        if (!isPool[_asset]) {
             _pools.push(_asset);
             isPool[_asset] = true;
         }
