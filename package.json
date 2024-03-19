@@ -1,8 +1,15 @@
 {
-  "name": "zksync-hardhat-template",
+  "name": "@zerolendxyz/governance",
   "version": "1.0.0",
   "main": "index.js",
   "author": "Antonio <aug@matterlabs.dev>",
+  "files": [
+    "contracts",
+    "artifacts",
+    "artifacts-zk",
+    "typechain-types"
+  ],
+  "private": false,
   "license": "MIT",
   "devDependencies": {
     "@matterlabs/hardhat-zksync-deploy": "^0.6.3",
