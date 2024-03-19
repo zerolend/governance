@@ -27,7 +27,7 @@ contract EligibilityCriteria is VersionedInitializable, IEligibilityCriteria {
         address _staking,
         address _oracle,
         address _zero
-    )external {
+    ) external initializer {
         staking = IVotes(_staking);
         oracle = IAaveOracle(_oracle);
         zero = _zero;
