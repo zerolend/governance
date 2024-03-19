@@ -8,8 +8,6 @@ import {IIncentivesController} from "../../interfaces/IIncentivesController.sol"
 import {IEligibilityCriteria} from "../../interfaces/IEligibilityCriteria.sol";
 import {IAaveOracle} from "@zerolendxyz/core-v3/contracts/interfaces/IAaveOracle.sol";
 
-import "hardhat/console.sol";
-
 // Gauges are used to incentivize pools, they emit reward tokens over 14 days for staked LP tokens
 // Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
 contract GaugeIncentiveController is RewardBase, IIncentivesController {
