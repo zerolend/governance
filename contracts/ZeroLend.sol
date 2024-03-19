@@ -26,7 +26,6 @@ contract ZeroLend is AccessControlEnumerable, ERC20Permit {
     bool public paused;
 
     constructor() ERC20("ZeroLend", "ZERO") ERC20Permit("ZeroLend") {
-
         _mint(msg.sender, 100_000_000_000 * 10 ** decimals());
 
         _grantRole(RISK_MANAGER_ROLE, msg.sender);
@@ -58,8 +57,12 @@ contract ZeroLend is AccessControlEnumerable, ERC20Permit {
         address to,
         uint256 value
     ) internal virtual override {
+        // reject all blacklisted addresses
         require(!blacklisted[from] && !blacklisted[to], "blacklisted");
-        require(!paused && !whitelisted[from], "paused");
+
+        // if the contract is paused; only whitelisted addresses can transfer
+        if (paused) require(whitelisted[to] && whitelisted[from], "paused");
+
         super._update(from, to, value);
     }
 }

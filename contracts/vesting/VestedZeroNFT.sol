@@ -69,6 +69,7 @@ contract VestedZeroNFT is
         VestCategory _category
     ) external returns (uint256) {
         _mint(_who, ++lastTokenId);
+        require(_pending + _upfront > 0, "invalid amount");
 
         if (_unlockDate == 0) _unlockDate = block.timestamp;
         require(_unlockDate >= block.timestamp, "invalid _unlockDate");
@@ -229,7 +230,7 @@ contract VestedZeroNFT is
         uint256 tokenId,
         uint256 fraction
     ) external whenNotPaused nonReentrant {
-        _requireOwned(tokenId);
+        require(msg.sender == _requireOwned(tokenId), "!owner");
         require(fraction > 0 && fraction < denominator, "!fraction");
         require(!frozen[tokenId], "frozen");
 

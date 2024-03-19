@@ -90,6 +90,15 @@ const config: HardhatUserConfig = {
       url: `https://sepolia.blast.io`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
     },
+    mainnet: {
+      url: `https://rpc.ankr.com/eth`,
+      accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+    },
+  },
+  etherscan: {
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_KEY || "",
+    },
   },
 };
 
