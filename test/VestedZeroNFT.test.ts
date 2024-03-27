@@ -3,18 +3,27 @@ import { deployGovernance } from "./fixtures/governance";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { VestedZeroNFT } from "../typechain-types";
-import { e18 } from "./fixtures/utils";
-import { parseUnits } from "ethers";
+import { e18, initMainnetUser } from "./fixtures/utils";
+import { Contract, parseEther, parseUnits } from "ethers";
+import { ethers } from "hardhat";
 
-describe.only("VestedZeroNFT", () => {
+describe("VestedZeroNFT", () => {
   let ant: SignerWithAddress;
+  let deployer: SignerWithAddress;
   let vest: VestedZeroNFT;
   let now: number;
+  let zero: Contract;
 
   beforeEach(async () => {
     const deployment = await loadFixture(deployGovernance);
     ant = deployment.ant;
+    deployer = deployment.deployer;
     vest = deployment.vestedZeroNFT;
+    zero = await ethers.getContractAt(
+      "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
+      await deployment.zero.getAddress()
+    );
+
     now = Math.floor(Date.now() / 1000);
   });
 
@@ -188,51 +197,84 @@ describe.only("VestedZeroNFT", () => {
     });
 
     it("Should return the correct penalty amount if unlock period is not reached", async function () {
-      
       const lockDetails = await vest.tokenIdToLockDetails(1);
       const penaltyAmount = await vest.penalty(1);
 
       // Since already out of 1000 seconds around 48 seconds has passed so the penalty amount
       // will be calculated based on the time difference of 952
 
-      const penaltyFactorCalculated = 952n*65000n/lockDetails.linearDuration + 25000n; 
-      const penaltyAmountCalculated = penaltyFactorCalculated*lockDetails.pending/100000n;
+      const penaltyFactorCalculated =
+        (952n * 65000n) / lockDetails.linearDuration + 25000n;
+      const penaltyAmountCalculated =
+        (penaltyFactorCalculated * lockDetails.pending) / 100000n;
 
-      expect(penaltyAmount).to.closeTo(penaltyAmountCalculated, parseUnits('1', 17));
+      expect(penaltyAmount).to.closeTo(
+        penaltyAmountCalculated,
+        parseUnits("1", 17)
+      );
     });
 
     it("Should return the correct penalty amount 0 if unlock period is passed", async function () {
-      
       const lockDetails = await vest.tokenIdToLockDetails(1);
-      await time.increaseTo(lockDetails.unlockDate+1n);
+      await time.increaseTo(lockDetails.unlockDate + 1n);
       const penaltyAmount = await vest.penalty(1);
 
       expect(penaltyAmount).to.eq(0n);
     });
 
     it("Should return the penalty amount close to 25% if unlock period is reached", async function () {
-      
       const lockDetails = await vest.tokenIdToLockDetails(1);
       await time.increaseTo(lockDetails.unlockDate);
       const penaltyAmount = await vest.penalty(1);
 
-      expect(penaltyAmount).to.eq(e18*5n);
+      expect(penaltyAmount).to.eq(e18 * 5n);
     });
 
     it("should claim some amount with penalty at halfway through", async function () {
       await time.increaseTo(now + 800);
-      expect(await vest.claim.staticCall(1)).to.closeTo(12400000000000000000n, parseUnits('1', 16));
+      expect(await vest.claim.staticCall(1)).to.closeTo(
+        12400000000000000000n,
+        parseUnits("1", 16)
+      );
     });
   });
 
   it("Should update cliff durations for multiple tokens", async function () {
-    await vest.mint(ant.address,e18 * 20n,e18 * 5n,1000,500,now + 1000,false,0);
-    await vest.mint(ant.address,e18 * 25n,e18 * 5n,1000,500,now + 1000,false,0);
+    await vest.mint(
+      ant.address,
+      e18 * 10n,
+      e18 * 5n,
+      1000,
+      500,
+      now + 1000,
+      false,
+      0
+    );
+    await vest.mint(
+      ant.address,
+      e18 * 20n,
+      e18 * 5n,
+      1000,
+      500,
+      now + 1000,
+      false,
+      0
+    );
+
+    await vest.mint(
+      ant.address,
+      e18 * 30n,
+      e18 * 5n,
+      1000,
+      500,
+      now + 1000,
+      false,
+      0
+    );
 
     const tokenIds = [1, 2, 3];
     const linearDurations = [100, 200, 150];
     const cliffDurations = [50, 80, 60];
-
 
     // Call the updateCliffDuration function
     await vest.updateCliffDuration(tokenIds, linearDurations, cliffDurations);
@@ -257,5 +299,86 @@ describe.only("VestedZeroNFT", () => {
     // Check if the contract supports ERC721Enumerable interface
     const supportsERC721Enumerable = await vest.supportsInterface("0x780e9d63");
     expect(supportsERC721Enumerable).to.be.true;
+  });
+
+  it("Should return correct royalty information", async function () {
+    const [royaltyReceiverSigner] = await ethers.getSigners();
+    const tokenId = 1;
+    const salePrice = parseEther("1"); // Assuming sale price in Ether
+    const expectedRoyaltyAmount =
+      (salePrice * (await vest.royaltyFraction())) / (await vest.denominator());
+
+    const [royaltyReceiver, royaltyAmount] = await vest.royaltyInfo(
+      tokenId,
+      salePrice
+    );
+
+    expect(royaltyReceiver).to.equal(royaltyReceiverSigner.address); // Assuming the royalty receiver address
+    expect(royaltyAmount).to.equal(expectedRoyaltyAmount);
+  });
+
+  it("Should return correct token URI", async function () {
+    const tokenId = 1;
+    const expectedTokenURI = "tokenId"; // Assuming the base URI and token ID
+
+    const tokenURI = await vest.tokenURI(tokenId);
+
+    expect(tokenURI).to.equal(expectedTokenURI);
+  });
+
+  it("Should allow staking bonus to claim unvested tokens", async function () {
+    await vest.mint(
+      ant.address,
+      e18 * 15n,
+      e18 * 5n,
+      1000,
+      500,
+      now + 1000,
+      false,
+      0
+    );
+
+    const stakingBonusSigner = await initMainnetUser(
+      await vest.stakingBonus(),
+      parseEther("1")
+    );
+
+    const expectedPending = await vest.unclaimed(1);
+
+    await vest.connect(stakingBonusSigner).claimUnvested(1);
+
+    const stakingBonusBalance = await zero.balanceOf(
+      stakingBonusSigner.address
+    );
+    expect(stakingBonusBalance).to.equal(expectedPending);
+  });
+
+  it("Should toggle pause state", async function () {
+    const initialPauseState = await vest.paused();
+
+    await vest.togglePause();
+    const pauseStateAfterToggle = await vest.paused();
+
+    expect(pauseStateAfterToggle).to.equal(!initialPauseState);
+  });
+
+  it("Should freeze/unfreeze a token", async function () {
+    await vest.mint(
+      ant.address,
+      e18 * 15n,
+      e18 * 5n,
+      1000,
+      500,
+      now + 1000,
+      false,
+      0
+    );
+    const tokenId = 1;
+    const initialFrozenState = await vest.frozen(tokenId);
+
+    await vest.freeze(tokenId, !initialFrozenState);
+    const frozenStateAfterToggle = await vest.frozen(tokenId);
+
+    expect(frozenStateAfterToggle).to.equal(!initialFrozenState);
   });
 });
