@@ -31,6 +31,10 @@ contract VestedZeroNFT is
     PausableUpgradeable,
     ERC721EnumerableUpgradeable
 {
+	uint256 public constant QUART = 25000; //  25%
+	uint256 public constant HALF = 65000; //  65%
+	uint256 public constant WHOLE = 100000; // 100%
+
     IERC20 public zero;
     uint256 public lastTokenId;
     uint256 public denominator;
@@ -203,11 +207,13 @@ contract VestedZeroNFT is
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function penalty(uint256 tokenId) public view returns (uint256) {
+    function penalty(uint256 tokenId) public view returns (uint256 penaltyAmount) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
-        // (, uint256 _pending) = claimable(id);
-        // TODO
-        return (lock.pending * 5) / 10;
+
+        if (lock.unlockDate >= block.timestamp) {
+			uint256 penaltyFactor = ((lock.unlockDate - block.timestamp) * HALF) / lock.linearDuration + QUART;
+			penaltyAmount = (lock.pending * penaltyFactor) / WHOLE;
+		}
     }
 
     /// @inheritdoc IVestedZeroNFT
