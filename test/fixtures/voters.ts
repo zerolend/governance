@@ -42,8 +42,8 @@ export async function deployVoters() {
     governance.zero.target,
     eligibilityCriteria.target,
     governance.lending.oracle.target,
-    lending.protocolDataProvider.target,
-    governance.vestedZeroNFT.target
+    governance.vestedZeroNFT.target,
+    lending.protocolDataProvider.target
   );
   await lending.aclManager.addPoolAdmin(factory.target);
   await poolVoter.init(
