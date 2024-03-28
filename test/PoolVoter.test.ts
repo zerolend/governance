@@ -13,6 +13,8 @@ import {
 } from "../typechain-types";
 import { e18 } from "./fixtures/utils";
 import { deployVoters } from "./fixtures/voters";
+import { ethers as hardhatEthers } from "hardhat";
+import { ethers } from "ethers";
 
 describe.only("PoolVoter", () => {
   let ant: SignerWithAddress;
@@ -25,8 +27,13 @@ describe.only("PoolVoter", () => {
   let pool: Pool;
   let aTokenGauge: GaugeIncentiveController;
   let zero: ZeroLend;
+  let owner: SignerWithAddress;
+  let user1: SignerWithAddress;
+  let user2: SignerWithAddress;
 
   beforeEach(async () => {
+    [owner, user1, user2] = await hardhatEthers.getSigners();
+
     const deployment = await loadFixture(deployVoters);
     ant = deployment.ant;
     now = Math.floor(Date.now() / 1000);
@@ -84,5 +91,74 @@ describe.only("PoolVoter", () => {
       expect(await aTokenGauge.balanceOf(ant.address)).eq(e18 * 100n);
       expect(await aTokenGauge.totalSupply()).eq(e18 * 100n);
     });
+  });
+
+  it("should initialize the contract correctly", async function () {
+    expect(await poolVoter.staking()).to.equal(ethers.ZeroAddress);
+    expect(await poolVoter.reward()).to.equal(ethers.ZeroAddress);
+    expect(await poolVoter.totalWeight()).to.equal(0);
+    expect(await poolVoter.lzEndpoint()).to.equal(ethers.ZeroAddress);
+    expect(await poolVoter.mainnetEmissions()).to.equal(
+      ethers.ZeroAddress
+    );
+    expect(await poolVoter.index()).to.equal(0);
+  });
+
+  it("should allow owner to reset contract", async function () {
+    await poolVoter.reset();
+    expect(await poolVoter.usedWeights(owner.address)).to.equal(0);
+  });
+
+  it("should allow user to vote", async function () {
+    await poolVoter.init(owner.address, user1.address);
+    await poolVoter.vote([user1.address], [100]);
+    expect(await poolVoter.usedWeights(user1.address)).to.equal(100);
+  });
+
+  it("should allow owner to register gauge", async function () {
+    await poolVoter.init(owner.address, user1.address);
+    await poolVoter.registerGauge(user1.address, user2.address);
+    expect(await poolVoter.gauges(user1.address)).to.equal(user2.address);
+  });
+
+  it("should update for a gauge", async function () {
+    await poolVoter.init(owner.address, user1.address);
+    await poolVoter.registerGauge(user1.address, user2.address);
+    await poolVoter.updateFor(user2.address);
+    expect(await poolVoter.supplyIndex(user2.address)).to.equal(
+      await poolVoter.index()
+    );
+  });
+
+  it("should distribute rewards to gauges", async function () {
+    await poolVoter.init(owner.address, user1.address);
+    await poolVoter.registerGauge(user1.address, user2.address);
+    await poolVoter.notifyRewardAmount(100);
+    await poolVoter["distribute()"]();
+    expect(await poolVoter.claimable(user2.address)).to.equal(100);
+  });
+
+  it("should distribute rewards to specified gauges", async function () {
+    await poolVoter.init(owner.address, user1.address);
+    await poolVoter.registerGauge(user1.address, user2.address);
+    await poolVoter.notifyRewardAmount(100);
+    await poolVoter["distribute(address[])"]([user2.address]);
+    expect(await poolVoter.claimable(user2.address)).to.equal(100);
+  });
+
+  it("should distribute specified token rewards to gauges", async function () {
+    await poolVoter.init(owner.address, user1.address);
+    await poolVoter.registerGauge(user1.address, user2.address);
+    await poolVoter.notifyRewardAmount(100);
+    await poolVoter["distributeEx(address)"](user1.address);
+    expect(await poolVoter.claimable(user2.address)).to.equal(100);
+  });
+
+  it("should allow owner to distribute specified token rewards to specified gauges", async function () {
+    await poolVoter.init(owner.address, user1.address);
+    await poolVoter.registerGauge(user1.address, user2.address);
+    await poolVoter.notifyRewardAmount(100);
+    await poolVoter["distributeEx(address,uint256,uint256)"](user1.address, 0, 1);
+    expect(await poolVoter.claimable(user2.address)).to.equal(100);
   });
 });
