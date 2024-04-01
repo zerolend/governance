@@ -23,7 +23,7 @@ import { ethers } from "hardhat";
 import { deployLendingPool } from "./fixtures/lending";
 import { BaseContract, ContractTransactionResponse, parseEther, parseUnits } from "ethers";
 
-describe.only("PoolVoter", () => {
+describe("PoolVoter", () => {
   let ant: SignerWithAddress;
   let now: number;
   let omniStaking: OmnichainStaking;
