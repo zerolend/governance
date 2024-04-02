@@ -35,6 +35,7 @@
     "compile": "hardhat compile",
     "test-zk": "NODE_ENV=test hardhat test --network zkSyncTestnet",
     "test": "hardhat test",
+    "test:fork": "hardhat test test/fork/*",
     "deploy": "yarn hardhat deploy-zksync --script deploy-zeroNFT.ts",
     "greet": "yarn hardhat deploy-zksync --script use-greeter.ts"
   },
