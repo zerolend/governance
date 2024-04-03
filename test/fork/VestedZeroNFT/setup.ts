@@ -48,16 +48,6 @@ export async function setup(networkDetails: INetworkDetails) {
   const vestedZeroNFT = await VestedZeroNFT.deploy();
   await vestedZeroNFT.init(zero.target, stakingBonus.target);
 
-  //Logging Contract Addresses
-  console.log("stakingBonus", stakingBonus.target);
-  console.log("omnichainStaking", omnichainStaking.target);
-  console.log("lockerToken", lockerToken.target);
-  console.log("lockerLP", lockerLP.target);
-  console.log("earlyZERO", earlyZERO.target);
-  console.log("earlyZEROVesting", earlyZEROVesting.target);
-  console.log("zero", zero.target);
-  console.log("vestedZeroNFT", vestedZeroNFT.target);
-
   return {
     earlyZERO,
     lending: lendingPool,
