@@ -1,10 +1,9 @@
 import { ethers } from "hardhat";
 import { getLendingPoolContracts } from "./helper";
-import { getContractAddresses } from "./constants";
+import { INetworkDetails, getNetworkDetails } from "./constants";
 
 
-export async function setup(network: string) {
-  const networkAddresses = getContractAddresses(network);
+export async function setup(networkDetails: INetworkDetails) {
   const {
     EarlyZERO,
     EarlyZEROVesting,
@@ -13,9 +12,9 @@ export async function setup(network: string) {
     OmnichainStaking,
     LockerToken,
     LockerLP,
-  } = networkAddresses;
+  } = networkDetails;
 
-  const lendingPool = await getLendingPoolContracts(networkAddresses);
+  const lendingPool = await getLendingPoolContracts(networkDetails);
 
   const earlyZERO = await ethers.getContractAt(
     EarlyZERO.name,

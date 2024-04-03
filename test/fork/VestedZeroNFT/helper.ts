@@ -1,8 +1,8 @@
 import { ethers } from "hardhat";
-import { IContractAddresses } from "./constants";
+import { INetworkDetails } from "./constants";
 
 export async function getLendingPoolContracts(
-  networkAddresses: IContractAddresses
+  networkDetails: INetworkDetails
 ) {
   const {
     PoolConfigurator,
@@ -12,7 +12,7 @@ export async function getLendingPoolContracts(
     PoolAddressesProvider,
     ACLManager,
     AaveProtocolDataProvider,
-  } = networkAddresses;
+  } = networkDetails;
 
   const configurator = await ethers.getContractAt(
     PoolConfigurator.name,

@@ -24,9 +24,3 @@ export async function setForkBlock(blockNumber: number) {
     ],
   });
 }
-
-export const initMainnetUser = async (user: string, balance: NumberLike) => {
-  await impersonateAccount(user);
-  await setBalance(user, balance);
-  return ethers.getSigner(user);
-};
