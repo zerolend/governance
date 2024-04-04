@@ -41,7 +41,7 @@ return contractAddresses[networkName];
 
 export const contractAddresses: { [key: string]: INetworkDetails } = {
   blastSepolia: {
-    BLOCK_NUMBER: 3718314,
+    BLOCK_NUMBER: 3771749,
     ant: "0x99E0329e25e9b86395F3aBE20D2b33f688489d5B",
     deployer: "0x9790C67E6062ce2965517E636377B954FA2d1afA",
     AaveOracle: {
@@ -50,7 +50,7 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
     },
     AaveProtocolDataProvider: { 
       name: "AaveProtocolDataProvider",
-      address: ""
+      address: "0xCf044837cd89Cc754C45F954a6A452b302a7445d"
     },
     ACLManager: {
       name: "ACLManager",
