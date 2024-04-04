@@ -1,13 +1,13 @@
 import { expect } from "chai";
 import { e18, initMainnetUser } from "../../fixtures/utils";
-import { setup } from "./setup";
-import { VestedZeroNFT, ZeroLend } from "../../../typechain-types";
+import { VestedZeroNFT } from "../../../typechain-types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { setForkBlock } from "../utils";
-import { getNetworkDetails } from "./constants";
-import { Contract, parseEther, parseUnits } from "ethers";
+import { getNetworkDetails } from "../constants";
+import { Contract, ContractTransactionResponse, parseEther, parseUnits } from "ethers";
 import { ethers } from "hardhat";
+import { getGovernanceContracts } from "../helper";
 
 const FORK = process.env.FORK === "true";
 const FORKED_NETWORK = process.env.FORKED_NETWORK ?? "";
@@ -18,14 +18,14 @@ if (FORK) {
     let ant: SignerWithAddress;
     let deployer: SignerWithAddress;
     let deployerForked: SignerWithAddress;
-    let vest: VestedZeroNFT;
+    let vest: Contract | (VestedZeroNFT & { deploymentTransaction(): ContractTransactionResponse; });
     let zero: Contract;
 
     beforeEach(async () => {
       [deployerForked] = await ethers.getSigners();
       const networkDetails = getNetworkDetails(FORKED_NETWORK);
       await setForkBlock(networkDetails.BLOCK_NUMBER);
-      const deployment = await setup(networkDetails);
+      const deployment = await getGovernanceContracts(networkDetails);
       vest = deployment.vestedZeroNFT;
       zero = deployment.zero;
       now = Math.floor(Date.now() / 1000);
