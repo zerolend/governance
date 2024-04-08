@@ -16,6 +16,7 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20P
 import {IERC20Burnable} from "../../interfaces/IERC20Burnable.sol";
 import {IVestedZeroNFT} from "../../interfaces/IVestedZeroNFT.sol";
 import {IZeroLocker} from "../../interfaces/IZeroLocker.sol";
+import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract EarlyZEROVesting is OwnableUpgradeable {
@@ -58,7 +59,7 @@ contract EarlyZEROVesting is OwnableUpgradeable {
 
         // if the user chooses to stake then make sure to give the staking bonus
         if (stake) {
-            vesting.safeTransferFrom(
+            IERC721(address(vesting)).safeTransferFrom(
                 address(this),
                 stakingBonus,
                 id,

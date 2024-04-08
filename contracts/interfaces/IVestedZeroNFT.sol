@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.12;
 
-import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
+// import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 
-interface IVestedZeroNFT is IERC721 {
+interface IVestedZeroNFT {
     enum VestCategory {
         PRIVATE_SALE,
         EARLY_ZERO,

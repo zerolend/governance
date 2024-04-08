@@ -119,15 +119,6 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     /**
-     * @notice Distributes rewards in a specified token to all registered pools.
-     * @param token The address of the token for which rewards are being distributed.
-     * @dev This function distributes rewards in the specified token to all pools from index 0 to the total number of pools.
-     */
-    function distributeEx(address token) external {
-        distributeEx(token, 0, _pools.length);
-    }
-
-    /**
      * @notice Gets the array of all pool addresses registered in the contract.
      * @return An array containing all registered pool addresses.
      */
@@ -201,35 +192,6 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     function distribute(uint256 start, uint256 finish) public {
         for (uint256 x = start; x < finish; x++) {
             distribute(gauges[_pools[x]]);
-        }
-    }
-
-    /**
-     * @notice Distributes rewards to multiple gauge contracts for a specific token.
-     * @param token The address of the token for which rewards are being distributed.
-     * @param start The starting index of the pools to distribute rewards to.
-     * @param finish The ending index of the pools to distribute rewards to.
-     * @dev This function is reentrant and can be called multiple times.
-     */
-    function distributeEx(
-        address token,
-        uint256 start,
-        uint256 finish
-    ) public nonReentrant {
-        uint256 _balance = IERC20(token).balanceOf(address(this));
-        if (_balance > 0 && totalWeight > 0) {
-            uint256 _totalWeight = totalWeight;
-            for (uint256 x = start; x < finish; x++) {
-                uint256 _reward = (_balance * weights[_pools[x]]) /
-                    _totalWeight;
-                if (_reward > 0) {
-                    address _gauge = gauges[_pools[x]];
-
-                    IERC20(token).approve(_gauge, 0); // first set to 0, this helps reset some non-standard tokens
-                    IERC20(token).approve(_gauge, _reward);
-                    IGauge(_gauge).notifyRewardAmount(token, _reward); // can return false, will simply not distribute tokens
-                }
-            }
         }
     }
 

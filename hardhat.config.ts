@@ -61,6 +61,9 @@ const config: HardhatUserConfig = {
       "@zerolendxyz/core-v3/contracts/mocks/oracle/PriceOracle.sol",
       "@zerolendxyz/core-v3/contracts/mocks/tokens/MintableDelegationERC20.sol",
       "@zerolendxyz/periphery-v3/contracts/mocks/testnet-helpers/TestnetERC20.sol",
+      "@zerolendxyz/periphery-v3/contracts/rewards/RewardsController.sol",
+      "@zerolendxyz/periphery-v3/contracts/rewards/EmissionManager.sol",
+
       "@zerolendxyz/periphery-v3/contracts/rewards/transfer-strategies/TransferStrategyBase.sol",
     ],
   },

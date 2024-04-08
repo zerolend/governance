@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.8.12;
+pragma solidity 0.8.12;
 
 import {Ownable} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/Ownable.sol";
 import {IEACAggregatorProxy} from "@zerolendxyz/periphery-v3/contracts/misc/interfaces/IEACAggregatorProxy.sol";

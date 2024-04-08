@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-pragma solidity ^0.8.20;
+pragma solidity 0.8.12;
 
 // ███████╗███████╗██████╗  ██████╗
 // ╚══███╔╝██╔════╝██╔══██╗██╔═══██╗
@@ -12,19 +12,19 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
+import {Ownable} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/Ownable.sol";
 import {ITransferStrategyBase} from "@zerolendxyz/periphery-v3/contracts/rewards/interfaces/ITransferStrategyBase.sol";
 import {IVestedZeroNFT} from "../../../interfaces/IVestedZeroNFT.sol";
-import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IERC20} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol";
 
 /// @title A transfer strategy that create a vested NFT for every ZERO claimed
 /// @author Deadshot Ryker
-contract TransferStrategyZERO is ITransferStrategyBase {
+contract TransferStrategyZERO is Ownable, ITransferStrategyBase {
     IERC20 public immutable zero;
     IVestedZeroNFT public immutable vestedZERO;
     uint256 duration;
 
     address internal immutable INCENTIVES_CONTROLLER;
-    address internal immutable REWARDS_ADMIN;
 
     /**
      * @dev Modifier for incentives controller only functions
@@ -37,17 +37,8 @@ contract TransferStrategyZERO is ITransferStrategyBase {
         _;
     }
 
-    /**
-     * @dev Modifier for reward admin only functions
-     */
-    modifier onlyRewardsAdmin() {
-        require(msg.sender == REWARDS_ADMIN, "ONLY_REWARDS_ADMIN");
-        _;
-    }
-
     constructor(
         address _incentivesController,
-        address _rewardsAdmin,
         address _vestedZERO,
         address _zero
     ) {
@@ -56,7 +47,6 @@ contract TransferStrategyZERO is ITransferStrategyBase {
         vestedZERO = IVestedZeroNFT(_vestedZERO);
 
         INCENTIVES_CONTROLLER = _incentivesController;
-        REWARDS_ADMIN = _rewardsAdmin;
 
         duration = 86400 * 30 * 6; // 6 months vesting
     }
@@ -98,7 +88,7 @@ contract TransferStrategyZERO is ITransferStrategyBase {
 
     /// @inheritdoc ITransferStrategyBase
     function getRewardsAdmin() external view override returns (address) {
-        return REWARDS_ADMIN;
+        return owner();
     }
 
     /// @inheritdoc ITransferStrategyBase
@@ -106,12 +96,12 @@ contract TransferStrategyZERO is ITransferStrategyBase {
         address token,
         address to,
         uint256 amount
-    ) external onlyRewardsAdmin {
+    ) external onlyOwner {
         IERC20(token).transfer(to, amount);
         emit EmergencyWithdrawal(msg.sender, token, to, amount);
     }
 
-    function setVestingDuration(uint256 _duration) external onlyRewardsAdmin {
+    function setVestingDuration(uint256 _duration) external onlyOwner {
         duration = _duration;
     }
 }
