@@ -13,12 +13,15 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {ITransferStrategyBase} from "@zerolendxyz/periphery-v3/contracts/rewards/interfaces/ITransferStrategyBase.sol";
-import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
+import {IVestedZeroNFT} from "../../../interfaces/IVestedZeroNFT.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
+/// @title A transfer strategy that create a vested NFT for every ZERO claimed
+/// @author Deadshot Ryker
 contract TransferStrategyZERO is ITransferStrategyBase {
-    IERC20 public zero;
-    IVestedZeroNFT public vestedZERO;
+    IERC20 public immutable zero;
+    IVestedZeroNFT public immutable vestedZERO;
+    uint256 duration;
 
     address internal immutable INCENTIVES_CONTROLLER;
     address internal immutable REWARDS_ADMIN;
@@ -54,6 +57,8 @@ contract TransferStrategyZERO is ITransferStrategyBase {
 
         INCENTIVES_CONTROLLER = _incentivesController;
         REWARDS_ADMIN = _rewardsAdmin;
+
+        duration = 86400 * 30 * 6; // 6 months vesting
     }
 
     /// @inheritdoc ITransferStrategyBase
@@ -67,11 +72,12 @@ contract TransferStrategyZERO is ITransferStrategyBase {
         onlyIncentivesController
         returns (bool)
     {
+        require(reward == address(zero), "invalid reward");
         vestedZERO.mint(
             to, // address _who,
             0, // uint256 _pending,
             amount, // uint256 _upfront,
-            86400 * 30 * 6, // uint256 _linearDuration,
+            duration, // uint256 _linearDuration,
             0, // uint256 _cliffDuration,
             block.timestamp, // uint256 _unlockDate,
             true, // bool _hasPenalty,
@@ -103,5 +109,9 @@ contract TransferStrategyZERO is ITransferStrategyBase {
     ) external onlyRewardsAdmin {
         IERC20(token).transfer(to, amount);
         emit EmergencyWithdrawal(msg.sender, token, to, amount);
+    }
+
+    function setVestingDuration(uint256 _duration) external onlyRewardsAdmin {
+        duration = _duration;
     }
 }
