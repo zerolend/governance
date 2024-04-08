@@ -9,8 +9,9 @@ import {IRewardDistributor} from "../../../interfaces/IRewardDistributor.sol";
 import {RewardsDataTypes} from "@zerolendxyz/periphery-v3/contracts/rewards/libraries/RewardsDataTypes.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-// Gauges are used to incentivize pools, they emit reward tokens over 14 days for staked LP tokens
-// Nuance: getReward must be called at least once for tokens other than incentive[0] to start accrueing rewards
+/// @title Aave compatible lending pool gauge
+/// @author Deadshot Ryker <ryker@zerolend.xyz>
+/// @notice For a given asset, the gauge notifies the Aave incentive controller with the correct parameters.
 contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
     using SafeERC20 for IERC20;
 
@@ -18,16 +19,19 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
     IPoolDataProvider immutable dataProvider;
     IEmissionManager public immutable emissionManagerProxy;
 
+    address public zero;
     address public oracle;
     address public voter;
     address public z0Token;
     address public z0TokenDebt;
     ITransferStrategyBase public strategy;
     uint32 public duration;
+    uint32 public nextEpoch;
 
     event AmountNotified(address _asset, uint256 _amount);
 
     constructor(
+        address _zero,
         address _asset,
         address _oracle,
         address _voter,
@@ -37,10 +41,12 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         uint32 _duration
     ) Ownable(msg.sender) {
         emissionManagerProxy = _emissionManagerProxy;
+        zero = _zero;
         voter = _voter;
         asset = _asset;
         dataProvider = _data;
         updateData(_oracle, _strategy, _duration);
+        nextEpoch = uint32(block.timestamp);
     }
 
     function updateData(
@@ -68,11 +74,18 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         uint256 amount
     ) external returns (bool) {
         require(msg.sender == voter, "!voter");
+        require(block.timestamp > nextEpoch, "!epoch");
+        require(token == zero, "!token");
+        if (amount == 0) return true;
 
         // send tokens to the transfer strategy
         IERC20(token).safeTransferFrom(msg.sender, address(strategy), amount);
 
-        uint32 distributionEnd = uint32(block.timestamp) + duration;
+        nextEpoch = uint32(block.timestamp) + duration;
+
+        // calculate how much emissions per second we are giving out. Since we are looking
+        // receiving the rewards per second, then this should ideally amount / duration
+        // to get the per second rate.
         uint88 emissionPerSecond = uint88(amount / duration);
 
         // send 1/4 to the supply side if there is no debt. else send all the rewards to the supply side
@@ -94,7 +107,7 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         data[0] = RewardsDataTypes.RewardsConfigInput({
             emissionPerSecond: emissionPerSecondSupply,
             totalSupply: 0,
-            distributionEnd: distributionEnd,
+            distributionEnd: nextEpoch,
             asset: z0Token,
             reward: token,
             transferStrategy: strategy,
@@ -105,7 +118,7 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
             data[1] = RewardsDataTypes.RewardsConfigInput({
                 emissionPerSecond: emissionPerSecondDebt,
                 totalSupply: 0,
-                distributionEnd: distributionEnd,
+                distributionEnd: nextEpoch,
                 asset: z0TokenDebt,
                 reward: token,
                 transferStrategy: strategy,
