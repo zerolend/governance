@@ -61,6 +61,7 @@ const config: HardhatUserConfig = {
       "@zerolendxyz/core-v3/contracts/mocks/oracle/PriceOracle.sol",
       "@zerolendxyz/core-v3/contracts/mocks/tokens/MintableDelegationERC20.sol",
       "@zerolendxyz/periphery-v3/contracts/mocks/testnet-helpers/TestnetERC20.sol",
+      "@zerolendxyz/periphery-v3/contracts/rewards/transfer-strategies/TransferStrategyBase.sol",
     ],
   },
   solidity: {
@@ -69,7 +70,6 @@ const config: HardhatUserConfig = {
         version: "0.8.12",
         settings: {
           optimizer: { enabled: true, runs: 100_000 },
-          evmVersion: "berlin",
         },
       },
       {
