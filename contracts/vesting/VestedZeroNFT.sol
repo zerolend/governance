@@ -14,7 +14,11 @@ pragma solidity ^0.8.20;
 
 import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {IERC165, ERC721Upgradeable, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import {
+    IERC165, 
+    ERC721Upgradeable,
+    ERC721EnumerableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
@@ -23,7 +27,8 @@ import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgrad
 
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
 /// @author Deadshot Ryker <ryker@zerolend.xyz>
-/// @notice NFTs can be traded on secondary marketplaces like Opensea, can be split into smaller chunks to allow for smaller otc deals to happen in secondary markets
+/// @notice NFTs can be traded on secondary marketplaces like Opensea, can be split into smaller chunks 
+/// to allow for smaller otc deals to happen in secondary markets
 contract VestedZeroNFT is
     IVestedZeroNFT,
     AccessControlEnumerableUpgradeable,
@@ -31,6 +36,10 @@ contract VestedZeroNFT is
     PausableUpgradeable,
     ERC721EnumerableUpgradeable
 {
+	uint256 public constant QUART = 25000; //  25%
+	uint256 public constant HALF = 65000; //  65%
+	uint256 public constant WHOLE = 100000; // 100%
+
     IERC20 public zero;
     uint256 public lastTokenId;
     uint256 public denominator;
@@ -126,99 +135,6 @@ contract VestedZeroNFT is
         }
     }
 
-    /// How much ZERO tokens this vesting nft can claim
-    /// @param _tokenId the id of the nft contract
-    /// @return upfront how much tokens upfront this nft can claim
-    /// @return pending how much tokens in the linear vesting (after the cliff) this nft can claim
-    function claimable(
-        uint256 _tokenId
-    ) public view returns (uint256 upfront, uint256 pending) {
-        LockDetails memory lock = tokenIdToLockDetails[_tokenId];
-        if (block.timestamp < lock.unlockDate) return (0, 0);
-
-        // if after the unlock date and before the cliff
-        if (
-            block.timestamp >= lock.unlockDate &&
-            block.timestamp < lock.unlockDate + lock.cliffDuration
-        ) return (lock.upfront, 0);
-
-        if (
-            block.timestamp >=
-            lock.unlockDate + lock.cliffDuration + lock.linearDuration
-        ) return (lock.upfront, lock.pending);
-
-        uint256 pct = ((block.timestamp -
-            (lock.unlockDate + lock.cliffDuration)) * denominator) /
-            lock.linearDuration;
-
-        return (lock.upfront, ((lock.pending * pct) / denominator));
-    }
-
-    /// @inheritdoc IVestedZeroNFT
-    function claim(
-        uint256 id
-    ) public nonReentrant whenNotPaused returns (uint256 toClaim) {
-        require(!frozen[id], "frozen");
-
-        LockDetails memory lock = tokenIdToLockDetails[id];
-
-        if (lock.hasPenalty) {
-            // if the user hasn't claimed before, then calculate how much penalty should be charged
-            // and send the remaining tokens to the user
-            if (lock.pendingClaimed == 0) {
-                uint256 _penalty = penalty(id);
-                toClaim += lock.pending - _penalty;
-                lock.pendingClaimed = lock.pending;
-
-                // send the penalty tokens back to the staking bonus
-                // contract (used for staking bonuses)
-                zero.transfer(stakingBonus, _penalty);
-            }
-        } else {
-            (uint256 _upfront, uint256 _pending) = claimable(id);
-
-            // handle vesting without penalties
-            // handle the upfront vesting
-            if (_upfront > 0 && lock.upfrontClaimed == 0) {
-                toClaim += _upfront;
-                lock.upfrontClaimed = _upfront;
-            }
-
-            // handle the linear vesting
-            if (_pending > 0 && lock.pendingClaimed >= 0) {
-                toClaim += _pending - lock.pendingClaimed;
-                lock.pendingClaimed += _pending - lock.pendingClaimed;
-            }
-        }
-
-        tokenIdToLockDetails[id] = lock;
-
-        if (toClaim > 0) zero.transfer(ownerOf(id), toClaim);
-    }
-
-    /// @inheritdoc IVestedZeroNFT
-    function claimed(uint256 tokenId) public view returns (uint256) {
-        LockDetails memory lock = tokenIdToLockDetails[tokenId];
-        return lock.upfrontClaimed + lock.pendingClaimed;
-    }
-
-    /// @inheritdoc IVestedZeroNFT
-    function penalty(uint256 tokenId) public view returns (uint256) {
-        LockDetails memory lock = tokenIdToLockDetails[tokenId];
-        // (, uint256 _pending) = claimable(id);
-        // TODO
-        return (lock.pending * 5) / 10;
-    }
-
-    /// @inheritdoc IVestedZeroNFT
-    function unclaimed(uint256 tokenId) public view override returns (uint256) {
-        LockDetails memory lock = tokenIdToLockDetails[tokenId];
-        return
-            lock.upfront +
-            lock.pending -
-            (lock.upfrontClaimed + lock.pendingClaimed);
-    }
-
     function claimUnvested(uint256 tokenId) external {
         require(msg.sender == stakingBonus, "!stakingBonus");
         uint256 _pending = unclaimed(tokenId);
@@ -269,6 +185,101 @@ contract VestedZeroNFT is
             hasPenalty: lock.hasPenalty,
             category: lock.category
         });
+    }
+
+    /// @inheritdoc IVestedZeroNFT
+    function claim(
+        uint256 id
+    ) public nonReentrant whenNotPaused returns (uint256 toClaim) {
+        require(!frozen[id], "frozen");
+
+        LockDetails memory lock = tokenIdToLockDetails[id];
+
+        if (lock.hasPenalty) {
+            // if the user hasn't claimed before, then calculate how much penalty should be charged
+            // and send the remaining tokens to the user
+            if (lock.pendingClaimed == 0) {
+                uint256 _penalty = penalty(id);
+                toClaim += lock.pending - _penalty;
+                lock.pendingClaimed = lock.pending;
+
+                // send the penalty tokens back to the staking bonus
+                // contract (used for staking bonuses)
+                zero.transfer(stakingBonus, _penalty);
+            }
+        } else {
+            (uint256 _upfront, uint256 _pending) = claimable(id);
+
+            // handle vesting without penalties
+            // handle the upfront vesting
+            if (_upfront > 0 && lock.upfrontClaimed == 0) {
+                toClaim += _upfront;
+                lock.upfrontClaimed = _upfront;
+            }
+
+            // handle the linear vesting
+            if (_pending > 0 && lock.pendingClaimed >= 0) {
+                toClaim += _pending - lock.pendingClaimed;
+                lock.pendingClaimed += _pending - lock.pendingClaimed;
+            }
+        }
+
+        tokenIdToLockDetails[id] = lock;
+
+        if (toClaim > 0) zero.transfer(ownerOf(id), toClaim);
+    }
+
+    /// How much ZERO tokens this vesting nft can claim
+    /// @param _tokenId the id of the nft contract
+    /// @return upfront how much tokens upfront this nft can claim
+    /// @return pending how much tokens in the linear vesting (after the cliff) this nft can claim
+    function claimable(
+        uint256 _tokenId
+    ) public view returns (uint256 upfront, uint256 pending) {
+        LockDetails memory lock = tokenIdToLockDetails[_tokenId];
+        if (block.timestamp < lock.unlockDate) return (0, 0);
+
+        // if after the unlock date and before the cliff
+        if (
+            block.timestamp >= lock.unlockDate &&
+            block.timestamp < lock.unlockDate + lock.cliffDuration
+        ) return (lock.upfront, 0);
+
+        if (
+            block.timestamp >=
+            lock.unlockDate + lock.cliffDuration + lock.linearDuration
+        ) return (lock.upfront, lock.pending);
+
+        uint256 pct = ((block.timestamp -
+            (lock.unlockDate + lock.cliffDuration)) * denominator) /
+            lock.linearDuration;
+
+        return (lock.upfront, ((lock.pending * pct) / denominator));
+    }
+
+    /// @inheritdoc IVestedZeroNFT
+    function claimed(uint256 tokenId) public view returns (uint256) {
+        LockDetails memory lock = tokenIdToLockDetails[tokenId];
+        return lock.upfrontClaimed + lock.pendingClaimed;
+    }
+
+    /// @inheritdoc IVestedZeroNFT
+    function penalty(uint256 tokenId) public view returns (uint256 penaltyAmount) {
+        LockDetails memory lock = tokenIdToLockDetails[tokenId];
+
+        if (lock.unlockDate >= block.timestamp) {
+			uint256 penaltyFactor = ((lock.unlockDate - block.timestamp) * HALF) / lock.linearDuration + QUART;
+			penaltyAmount = (lock.pending * penaltyFactor) / WHOLE;
+		}
+    }
+
+    /// @inheritdoc IVestedZeroNFT
+    function unclaimed(uint256 tokenId) public view override returns (uint256) {
+        LockDetails memory lock = tokenIdToLockDetails[tokenId];
+        return
+            lock.upfront +
+            lock.pending -
+            (lock.upfrontClaimed + lock.pendingClaimed);
     }
 
     /// @inheritdoc IVestedZeroNFT
