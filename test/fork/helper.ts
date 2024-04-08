@@ -47,7 +47,10 @@ export async function getGovernanceContracts(networkDetails: INetworkDetails) {
     vestedZeroNFT = await VestedZeroNFT.deploy();
     await vestedZeroNFT.init(zero.target, stakingBonus.target);
   } else {
-    vestedZeroNFT = await ethers.getContractAt(VestedZeroNFT.name, VestedZeroNFT.address);
+    vestedZeroNFT = await ethers.getContractAt(
+      VestedZeroNFT.name,
+      VestedZeroNFT.address
+    );
   }
 
   return {
@@ -126,8 +129,6 @@ export async function getPoolVoterContracts(networkDetails: INetworkDetails) {
     "GaugeIncentiveController"
   );
 
-  
-
   const aggregator = await MockAggregator.deploy(1e8);
   const eligibilityCriteria = await MockEligibilityCriteria.deploy();
   const tokens = await lending.protocolDataProvider.getReserveTokensAddresses(
@@ -135,6 +136,7 @@ export async function getPoolVoterContracts(networkDetails: INetworkDetails) {
   );
 
   const factory = await LendingPoolGaugeFactory.deploy();
+
   const guageImpl = await GaugeIncentiveController.deploy();
 
   const PoolVoter = await ethers.getContractFactory("PoolVoter");
@@ -153,22 +155,22 @@ export async function getPoolVoterContracts(networkDetails: INetworkDetails) {
     governance.zero.target,
     eligibilityCriteria.target,
     lending.oracle.target,
-    lending.protocolDataProvider.target,
-    governance.vestedZeroNFT.target
+    governance.vestedZeroNFT.target,
+    lending.protocolDataProvider.target
   );
 
-  console.log(">>>>>>>>>");
-  
-  const deployer = await initMainnetUser("0x0F6e98A756A40dD050dC78959f45559F98d3289d", parseEther('1'))
-  console.log("🚀 ~ getPoolVoterContracts ~ deployer:", deployer);
+  const deployer = await initMainnetUser(
+    "0x0F6e98A756A40dD050dC78959f45559F98d3289d",
+    parseEther("1")
+  );
   await lending.aclManager.connect(deployer).addPoolAdmin(factory.target);
-  console.log(">>>>>>>>>");
+
   await poolVoter.init(
     governance.omnichainStaking.target,
     governance.zero.target
   );
 
-  await factory.createGauge(lending.erc20.target);
+  await factory.createGauge(await lending.erc20.getAddress());
 
   const gauges = await factory.gauges(lending.erc20.target);
   await poolVoter.registerGauge(lending.erc20.target, gauges.splitterGauge);

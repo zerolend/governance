@@ -1,32 +1,22 @@
 import { expect } from "chai";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import {
-  ACLManager,
-  AaveOracle,
-  AaveProtocolDataProvider,
   GaugeIncentiveController,
   LendingPoolGaugeFactory,
-  OmnichainStaking,
-  Pool,
-  PoolAddressesProvider,
-  PoolConfigurator,
   PoolVoter,
-  StakingBonus,
-  TestnetERC20,
   VestedZeroNFT,
-  ZeroLend,
 } from "../../../typechain-types";
 import { e18, initMainnetUser } from "../../fixtures/utils";
 import { ethers } from "hardhat";
 import {
-  BaseContract,
   Contract,
   ContractTransactionResponse,
   parseEther,
   parseUnits,
 } from "ethers";
-import { getGovernanceContracts, getLendingPoolContracts, getPoolVoterContracts } from "../helper";
+import {
+  getPoolVoterContracts,
+} from "../helper";
 import { getNetworkDetails } from "../constants";
 import { setForkBlock } from "../utils";
 
@@ -34,49 +24,32 @@ const FORK = process.env.FORK === "true";
 const FORKED_NETWORK = process.env.FORKED_NETWORK ?? "";
 
 if (FORK) {
-  describe.only("PoolVoter Fork Test", () => {
+  describe("PoolVoter Fork Test", () => {
     let ant: SignerWithAddress;
     let now: number;
     let omniStaking: Contract;
     let poolVoter: PoolVoter;
     let reserve: Contract;
     let stakingBonus: Contract;
-    let vest: Contract | (VestedZeroNFT & { deploymentTransaction(): ContractTransactionResponse; });
+    let vest:
+      | Contract
+      | (VestedZeroNFT & {
+          deploymentTransaction(): ContractTransactionResponse;
+        });
     let pool: Contract;
     let aTokenGauge: GaugeIncentiveController;
     let zero: Contract;
-    let lending: {
-      erc20: any;
-      owner?: SignerWithAddress;
-      configurator?: PoolConfigurator;
-      pool?: Pool;
-      oracle?: AaveOracle & {
-        deploymentTransaction(): ContractTransactionResponse;
-      };
-      addressesProvider?: PoolAddressesProvider & {
-        deploymentTransaction(): ContractTransactionResponse;
-      };
-      aclManager?: ACLManager & {
-        deploymentTransaction(): ContractTransactionResponse;
-      };
-      protocolDataProvider?: AaveProtocolDataProvider & {
-        deploymentTransaction(): ContractTransactionResponse;
-      };
-      mockAggregator?: BaseContract & {
-        deploymentTransaction(): ContractTransactionResponse;
-      } & Omit<BaseContract, keyof BaseContract>;
-    };
     let lendingPoolGaugeFactory: LendingPoolGaugeFactory & {
       deploymentTransaction(): ContractTransactionResponse;
     };
+    let deployer: SignerWithAddress;
     let deployerForked: SignerWithAddress;
-    let any: SignerWithAddress;
 
     beforeEach(async () => {
       [deployerForked] = await ethers.getSigners();
       const networkDetails = getNetworkDetails(FORKED_NETWORK);
       await setForkBlock(networkDetails.BLOCK_NUMBER);
-      
+
       const deployment = await getPoolVoterContracts(networkDetails);
 
       ant = await initMainnetUser(networkDetails.ant, parseEther("1"));
@@ -92,9 +65,17 @@ if (FORK) {
       aTokenGauge = deployment.aTokenGauge;
       lendingPoolGaugeFactory = deployment.factory;
 
+      deployer = await initMainnetUser(
+        networkDetails.deployer,
+        parseEther("1")
+      );
+
+      await zero.connect(deployer).transfer(deployerForked.address, e18 * 20n);
+      await zero.connect(deployerForked).approve(vest.target, e18 * 20n);
+
       // deployer should be able to mint a nft for another user
       await vest.mint(
-        ant.address,
+        deployerForked.address,
         e18 * 20n, // 20 ZERO linear vesting
         0, // 0 ZERO upfront
         1000, // linear duration - 1000 seconds
@@ -105,38 +86,51 @@ if (FORK) {
       );
 
       // stake nft on behalf of the ant
+      const vestedZeroNFTSigner = await initMainnetUser(
+        await vest.getAddress(),
+        parseUnits("1")
+      );
       await vest
-        .connect(ant)
+        .connect(deployerForked)
+        .approve(vestedZeroNFTSigner.address, 3);
+
+      await vest
+        .connect(vestedZeroNFTSigner)
         ["safeTransferFrom(address,address,uint256)"](
-          ant.address,
+          deployerForked.address,
           stakingBonus.target,
-          1
+          3
         );
 
       // there should now be some voting power for the user to play with
-      expect(await omniStaking.balanceOf(ant.address)).greaterThan(e18 * 19n);
+      expect(await omniStaking.balanceOf(deployerForked.address)).greaterThan(
+        e18 * 19n
+      );
     });
 
     it("should allow users to vote properly", async function () {
       expect(await poolVoter.totalWeight()).eq(0);
-      await poolVoter.connect(ant).vote([reserve.target], [1e8]);
+      await poolVoter.connect(deployerForked).vote([reserve.target], [1e8]);
       expect(await poolVoter.totalWeight()).greaterThan(e18 * 19n);
     });
 
-    describe("handleAction test", () => {
-      it("supplying an asset with ZERO staked should give staking rewards", async function () {
-        expect(await aTokenGauge.balanceOf(ant.address)).eq(0n);
-        expect(await aTokenGauge.totalSupply()).eq(0);
+    it("supplying an asset with ZERO staked should give staking rewards", async function () {
+      expect(await aTokenGauge.balanceOf(ant.address)).eq(0n);
+      expect(await aTokenGauge.totalSupply()).eq(0);
 
-        await reserve["mint(address,uint256)"](ant.address, e18 * 1000n);
-        await reserve.connect(ant).approve(pool.target, e18 * 100n);
-        await pool
-          .connect(ant)
-          .supply(reserve.target, e18 * 100n, ant.address, 0);
+      const tokenHolder = await initMainnetUser(
+        "0x1C5b69580Fe8ddd86952fa76A89c92bAAF262737",
+        parseEther("1")
+      );
 
-        expect(await aTokenGauge.balanceOf(ant.address)).eq(e18 * 100n);
-        expect(await aTokenGauge.totalSupply()).eq(e18 * 100n);
-      });
+      await reserve.connect(tokenHolder).transfer(ant.address, e18 * 1000n);
+      await reserve.connect(ant).approve(pool.target, e18 * 100n);
+      await pool
+        .connect(ant)
+        .supply(reserve.target, e18 * 100n, ant.address, 0);
+
+      expect(await aTokenGauge.balanceOf(ant.address)).eq(e18 * 100n);
+      expect(await aTokenGauge.totalSupply()).eq(e18 * 100n);
     });
 
     describe("distribute tests", () => {
@@ -146,14 +140,23 @@ if (FORK) {
         varTokenGauge: string;
       };
       beforeEach(async () => {
-        await reserve["mint(address,uint256)"](ant.address, e18 * 1000n);
-        await reserve.connect(ant).approve(pool.target, e18 * 100n);
-        await pool
-          .connect(ant)
-          .supply(reserve.target, e18 * 100n, ant.address, 0);
 
-        await poolVoter.connect(ant).vote([reserve.target], [parseEther("1")]);
+      const tokenHolder = await initMainnetUser(
+        "0x1C5b69580Fe8ddd86952fa76A89c92bAAF262737",
+        parseEther("1")
+      );
+
+      await reserve.connect(tokenHolder).transfer(deployerForked.address, e18 * 1000n);
+      await reserve.connect(deployerForked).approve(pool.target, e18 * 100n);
+
+        await pool
+          .connect(deployerForked)
+          .supply(reserve.target, e18 * 100n, deployerForked.address, 0);
+
+        await poolVoter.connect(deployerForked).vote([reserve.target], [parseEther("1")]);
+        await zero.connect(deployer).transfer(deployerForked.address, parseEther("1"));
         await zero.approve(poolVoter.target, parseEther("1"));
+
         await poolVoter.notifyRewardAmount(parseEther("1"));
 
         gauges = await lendingPoolGaugeFactory.gauges(reserve.target);
@@ -205,7 +208,8 @@ if (FORK) {
         varTokenGauge: string;
       };
       beforeEach(async () => {
-        await poolVoter.connect(ant).vote([reserve.target], [parseEther("1")]);
+        await poolVoter.connect(deployerForked).vote([reserve.target], [parseEther("1")]);
+        await zero.connect(deployer).transfer(deployerForked.address, parseEther("1"));
         await zero.approve(poolVoter.target, parseEther("1"));
         await poolVoter.notifyRewardAmount(parseEther("1"));
 
@@ -287,17 +291,43 @@ if (FORK) {
       await poolVoter.connect(ant).vote([reserve.target], [1e8]);
 
       const poolWeightBeforeStaking = await poolVoter.totalWeight();
-      await vest.mint(ant.address, e18 * 20n, 0, 1000, 0, now + 1000, true, 0);
+
+      await zero.connect(deployer).transfer(ant.address, e18 * 20n);
+      await zero.connect(ant).approve(vest.target, e18 * 20n);
+
+      await zero.connect(deployer).transfer(deployerForked.address, e18 * 20n);
+      await zero.connect(deployerForked).approve(vest.target, e18 * 20n);
+
+      // deployer should be able to mint a nft for another user
+      await vest.mint(
+        deployerForked.address,
+        e18 * 20n, // 20 ZERO linear vesting
+        0, // 0 ZERO upfront
+        1000, // linear duration - 1000 seconds
+        0, // cliff duration - 0 seconds
+        now + 1000, // unlock date
+        true, // penalty -> false
+        0
+      );
+
+      const vestedZeroNFTSigner = await initMainnetUser(
+        await vest.getAddress(),
+        parseUnits("1")
+      );
 
       await vest
-        .connect(ant)
+        .connect(deployerForked)
+        .approve(vestedZeroNFTSigner.address, 4);
+
+      await vest
+        .connect(vestedZeroNFTSigner)
         ["safeTransferFrom(address,address,uint256)"](
-          ant.address,
+          deployerForked.address,
           stakingBonus.target,
-          2
+          4
         );
 
-      await poolVoter.poke(ant.address);
+      await poolVoter.poke(deployerForked.address);
 
       const poolWeightAfterStaking = await poolVoter.totalWeight();
       expect(poolWeightAfterStaking).to.be.closeTo(

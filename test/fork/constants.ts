@@ -146,7 +146,7 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
     },
     VestedZeroNFT: {
       name: "VestedZeroNFT",
-      address: ""
+      address: "0x804d2235c601518703eA5e21FC194e4C95Bd1835"
     },
     ZeroLend: {
       name: "ZeroLend",
