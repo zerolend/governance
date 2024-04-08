@@ -24,7 +24,7 @@ const FORK = process.env.FORK === "true";
 const FORKED_NETWORK = process.env.FORKED_NETWORK ?? "";
 
 if (FORK) {
-  describe.only("PoolVoter Fork Test", () => {
+  describe("PoolVoter Fork Test", () => {
     let ant: SignerWithAddress;
     let now: number;
     let omniStaking: Contract;
