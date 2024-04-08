@@ -45,8 +45,8 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         voter = _voter;
         asset = _asset;
         dataProvider = _data;
-        updateData(_oracle, _strategy, _duration);
         nextEpoch = uint32(block.timestamp);
+        updateData(_oracle, _strategy, _duration);
     }
 
     function updateData(
@@ -74,7 +74,7 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         uint256 amount
     ) external returns (bool) {
         require(msg.sender == voter, "!voter");
-        require(block.timestamp > nextEpoch, "!epoch");
+        require(block.timestamp >= nextEpoch, "!epoch");
         require(token == zero, "!token");
         if (amount == 0) return true;
 
