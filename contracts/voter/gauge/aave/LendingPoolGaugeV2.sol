@@ -15,7 +15,7 @@ contract LendingPoolGaugeV2 is IRewardDistributor {
 
     address public immutable z0Token;
     address public immutable z0TokenDebt;
-    IEmissionManager public immutable proxyManager;
+    IEmissionManager public immutable emissionManagerProxy;
     uint256 public duration;
     address public oracle;
     address public strategy;
@@ -25,9 +25,10 @@ contract LendingPoolGaugeV2 is IRewardDistributor {
         address _oracle,
         address _strategy,
         uint256 _duration,
-        IEmissionManager _proxyManager,
+        IEmissionManager _emissionManagerProxy,
         IPoolDataProvider _provider
     ) {
+        emissionManagerProxy = _emissionManagerProxy;
         (z0Token, z0TokenDebt, ) = _provider.getReserveTokensAddresses(_asset);
         setConfig(_duration, _oracle, _strategy);
     }
@@ -59,7 +60,7 @@ contract LendingPoolGaugeV2 is IRewardDistributor {
         uint256 emissionPerSecondDebt = emissionPerSecond * 3 / 4
 
         // config the params now
-        proxyManager.configureAssets(
+        emissionManagerProxy.configureAssets(
             [
                 RewardsDataTypes.RewardsConfigInput({
                     emissionPerSecond: emissionPerSecondSupply,
