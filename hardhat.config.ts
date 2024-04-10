@@ -97,11 +97,26 @@ const config: HardhatUserConfig = {
       url: `https://rpc.ankr.com/eth`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
     },
+    linea: {
+      url: `https://rpc.linea.build/`,
+      accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+    },
   },
   etherscan: {
     apiKey: {
+      linea: process.env.LINEASCAN_KEY || "",
       mainnet: process.env.ETHERSCAN_KEY || "",
     },
+    customChains: [
+      {
+        network: "linea",
+        chainId: 59144,
+        urls: {
+          apiURL: "https://api.lineascan.build/api",
+          browserURL: "https://lineascan.build",
+        },
+      },
+    ],
   },
 };
 

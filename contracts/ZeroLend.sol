@@ -18,20 +18,15 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 
-contract ZeroLend is AccessControlEnumerable, ERC20Permit {
+contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
     bytes32 public constant RISK_MANAGER_ROLE = keccak256("RISK_MANAGER_ROLE");
-
     mapping(address => bool) public blacklisted;
-    mapping(address => bool) public whitelisted;
-    bool public paused;
 
     constructor() ERC20("ZeroLend", "ZERO") ERC20Permit("ZeroLend") {
         _mint(msg.sender, 100_000_000_000 * 10 ** decimals());
 
         _grantRole(RISK_MANAGER_ROLE, msg.sender);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-
-        paused = true;
     }
 
     function toggleBlacklist(
@@ -41,17 +36,6 @@ contract ZeroLend is AccessControlEnumerable, ERC20Permit {
         blacklisted[who] = what;
     }
 
-    function toggleWhitelist(
-        address who,
-        bool what
-    ) public onlyRole(RISK_MANAGER_ROLE) {
-        whitelisted[who] = what;
-    }
-
-    function togglePause(bool what) public onlyRole(RISK_MANAGER_ROLE) {
-        paused = what;
-    }
-
     function _update(
         address from,
         address to,
@@ -59,10 +43,6 @@ contract ZeroLend is AccessControlEnumerable, ERC20Permit {
     ) internal virtual override {
         // reject all blacklisted addresses
         require(!blacklisted[from] && !blacklisted[to], "blacklisted");
-
-        // if the contract is paused; only whitelisted addresses can transfer
-        if (paused) require(whitelisted[to] && whitelisted[from], "paused");
-
         super._update(from, to, value);
     }
 }
