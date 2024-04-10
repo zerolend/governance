@@ -9,15 +9,16 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 
 contract AirdropRewarder is Initializable, OwnableUpgradeable {
     using SafeERC20 for ERC20Upgradeable;
-    address public safeAddress;
 
-    mapping(address => bytes32) private merkleRoots;
+    address public safeAddress;
+    bytes32 private merkleRoot;
+
     mapping(address => mapping(address => uint256)) private totalRewardsClaimed;
 
     error InvalidAddress();
     error InvalidMerkleProof(bytes32[]);
 
-    event MerkleRootSetForToken(bytes32 _merkleRoot, address _rewardToken);
+    event MerkleRootSet(bytes32 oldMerkleRoot, bytes32 newMerkleRoot);
     event SafeAddressSet(address _safeAddress);
     event RewardsClaimed(
         address _user,
@@ -26,18 +27,18 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     );
     event RewardTerminated(address _rewardAddress);
 
-    function initialize(address _safeAddress) external initializer {
+    function initialize(address _safeAddress, bytes32 _merkleRoot) external initializer {
         __Ownable_init(msg.sender);
         safeAddress = _safeAddress;
+        merkleRoot = _merkleRoot;
         emit SafeAddressSet(_safeAddress);
     }
 
     function setMerkleRoot(
-        bytes32 _merkleRoot,
-        address _rewardToken
+        bytes32 _merkleRoot
     ) external onlyOwner {
-        merkleRoots[_rewardToken] = _merkleRoot;
-        emit MerkleRootSetForToken(_merkleRoot, _rewardToken);
+        emit MerkleRootSet(_merkleRoot, merkleRoot);
+        merkleRoot = _merkleRoot;
     }
 
     function claim(
@@ -52,7 +53,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
 
         bytes32 node = keccak256(abi.encodePacked(_user, totalClaimableAmount));
         if (
-            !MerkleProof.verify(_merkleProofs, merkleRoots[rewardAddress], node)
+            !MerkleProof.verify(_merkleProofs, merkleRoot, node)
         ) revert InvalidMerkleProof(_merkleProofs);
         uint256 claimableAmount = totalClaimableAmount -
             totalRewardsClaimed[_user][rewardAddress];
