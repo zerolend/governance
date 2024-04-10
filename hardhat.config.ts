@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-dependency-compiler";
 import "hardhat-abi-exporter";
+import "@openzeppelin/hardhat-upgrades";
 
 import dotenv from "dotenv";
 dotenv.config();
