@@ -35,8 +35,7 @@ describe("Airdrop Tests", async () => {
 
     airdropRewarder = (await deployProxy(
       "AirdropRewarder",
-      "initialize(address,bytes32,address)",
-      user3.address,
+      "initialize(bytes32,address)",
       tree.getHexRoot(),
       airdropToken.target
     )) as unknown as AirdropRewarder;

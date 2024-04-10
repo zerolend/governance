@@ -10,9 +10,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 contract AirdropRewarder is Initializable, OwnableUpgradeable {
     using SafeERC20 for ERC20Upgradeable;
 
-    address public safeAddress;
     bytes32 private merkleRoot;
-
     ERC20Upgradeable public rewardToken;
 
     mapping(address => bool) public rewardsClaimed;
@@ -23,20 +21,16 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
 
     event MerkleRootSet(bytes32 oldMerkleRoot, bytes32 newMerkleRoot);
     event RewardTokenSet(address oldRewardToken, address newRewardToken);
-    event SafeAddressSet(address _safeAddress);
     event RewardsClaimed(address _user, uint256 _rewardsAmount);
-    event RewardTerminated(address _rewardAddress);
+    event RewardTerminated();
 
     function initialize(
-        address _safeAddress,
         bytes32 _merkleRoot,
         address _rewardToken
     ) external initializer {
         __Ownable_init(msg.sender);
-        safeAddress = _safeAddress;
         merkleRoot = _merkleRoot;
         rewardToken = ERC20Upgradeable(_rewardToken);
-        emit SafeAddressSet(_safeAddress);
     }
 
     function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
@@ -70,18 +64,11 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         emit RewardsClaimed(_user, _claimAmount);
     }
 
-    function setSafeAddress(address _safeAddress) external onlyOwner {
-        safeAddress = _safeAddress;
-        emit SafeAddressSet(_safeAddress);
-    }
-
-    function terminateReward(address _rewardAddress) public onlyOwner {
-        if (_rewardAddress == address(0)) revert InvalidAddress();
-
+    function adminWithdrawal() public onlyOwner {
         rewardToken.safeTransfer(
-            safeAddress,
-            ERC20Upgradeable(_rewardAddress).balanceOf(address(this))
+            _msgSender(),
+            rewardToken.balanceOf(address(this))
         );
-        emit RewardTerminated(_rewardAddress);
+        emit RewardTerminated();
     }
 }
