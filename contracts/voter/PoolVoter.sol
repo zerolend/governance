@@ -144,6 +144,41 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     /**
+     * @dev Returns the weights associated with a specific pool.
+     * @return The weights of the specified pool.
+     */
+    function getPoolWeights() external view returns (uint256[] memory) {
+        uint256 poolsLength = _pools.length;
+        uint256[] memory poolWeights = new uint256[](poolsLength);
+        for (uint256 i; i < poolsLength; ) {
+            poolWeights[i] = weights[_pools[i]];
+            unchecked {
+                ++i;
+            }
+        }
+        return poolWeights;
+    }
+
+    /**
+     * @dev Returns an array of votes corresponding to a user across all pools.
+     * @param user The address of the user for which votes are queried.
+     * @return An array containing the votes of the specified user for each pool.
+     */
+    function getUserVotes(
+        address user
+    ) external view returns (uint256[] memory) {
+        uint256 poolsLength = _pools.length;
+        uint256[] memory userVotes = new uint256[](poolsLength);
+        for (uint256 i; i < poolsLength; ) {
+            userVotes[i] = votes[_pools[i]][user];
+            unchecked {
+                ++i;
+            }
+        }
+        return userVotes;
+    }
+
+    /**
      * @notice Updates a user's voting state based on their current staking balance and previous votes.
      * @param who The address of the user whose voting state is being updated.
      * @dev This function is public and can be called by anyone.
