@@ -3299,7 +3299,7 @@ ethereumjs-util@^7.0.3, ethereumjs-util@^7.1.1, ethereumjs-util@^7.1.3, ethereum
     ethereum-cryptography "^0.1.3"
     rlp "^2.2.4"
 
-ethers@^5.7.1, ethers@^5.7.2:
+ethers@^5.0.14, ethers@^5.7.1, ethers@^5.7.2:
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.7.2.tgz#3a7deeabbb8c030d4126b24f84e525466145872e"
   integrity sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg==
@@ -5908,6 +5908,13 @@ solidity-coverage@^0.8.7:
     semver "^7.3.4"
     shelljs "^0.8.3"
     web3-utils "^1.3.6"
+
+solidity-create2-deployer@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/solidity-create2-deployer/-/solidity-create2-deployer-0.4.0.tgz#d966256e3ade848d840ed231cad3d3cd364d3b99"
+  integrity sha512-bB5d8fPt4dWsOoRodrsyfWKcjiv77IFl84+e6EckMMGYlfL2ZFqUoMz6tnqqiUFrM9abF1p6dWFOgJ/3zVc8yQ==
+  dependencies:
+    ethers "^5.0.14"
 
 source-map-support@^0.5.13:
   version "0.5.21"
