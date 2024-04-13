@@ -4,6 +4,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-dependency-compiler";
 import "hardhat-abi-exporter";
 import "@openzeppelin/hardhat-upgrades";
+import "hardhat-deploy"
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -89,6 +90,14 @@ const config: HardhatUserConfig = {
     },
     blastSepolia: {
       url: `https://sepolia.blast.io`,
+      accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+    },
+    lineaSepolia: {
+      url: `https://rpc.sepolia.linea.build`,
+      accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+    },
+    lineaFork: {
+      url: `https://rpc.vnet.tenderly.co/devnet/lineadevnet/669f4c43-b182-497d-b0b0-deed97a9ac6a`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
     },
     mainnet: {

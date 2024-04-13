@@ -322,7 +322,7 @@
   dependencies:
     "@ethersproject/bignumber" "^5.7.0"
 
-"@ethersproject/contracts@5.7.0", "@ethersproject/contracts@^5.4.1":
+"@ethersproject/contracts@5.7.0", "@ethersproject/contracts@^5.4.1", "@ethersproject/contracts@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/contracts/-/contracts-5.7.0.tgz#c305e775abd07e48aa590e1a877ed5c316f8bd1e"
   integrity sha512-5GJbzEU3X+d33CdfPhcyS+z8MzsTrBGk/sc+G+59+tPa9yFkl6HQ9D6L0QMgNTA9q8dT0XKxxkyp883XsQvbbg==
@@ -488,7 +488,7 @@
     elliptic "6.5.4"
     hash.js "1.1.7"
 
-"@ethersproject/solidity@5.7.0", "@ethersproject/solidity@^5.4.0":
+"@ethersproject/solidity@5.7.0", "@ethersproject/solidity@^5.4.0", "@ethersproject/solidity@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/solidity/-/solidity-5.7.0.tgz#5e9c911d8a2acce2a5ebb48a5e2e0af20b631cb8"
   integrity sha512-HmabMd2Dt/raavyaGukF4XxizWKhKQ24DoLtdNbBmNKUOPqwjsKQSdV9GQtj9CBEea9DlzETlVER1gYeXXBGaA==
@@ -533,7 +533,7 @@
     "@ethersproject/constants" "^5.7.0"
     "@ethersproject/logger" "^5.7.0"
 
-"@ethersproject/wallet@5.7.0", "@ethersproject/wallet@^5.4.0":
+"@ethersproject/wallet@5.7.0", "@ethersproject/wallet@^5.4.0", "@ethersproject/wallet@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/wallet/-/wallet-5.7.0.tgz#4e5d0790d96fe21d61d38fb40324e6c7ef350b2d"
   integrity sha512-MhmXlJXEJFBFVKrDLB4ZdDzxcBxQ3rLyCkhNqVu3CDYvR97E+8r01UgrI+TI99Le+aYm/in/0vp86guJuM7FCA==
@@ -3387,7 +3387,7 @@ ethereumjs-util@^7.0.3, ethereumjs-util@^7.1.1, ethereumjs-util@^7.1.3, ethereum
     ethereum-cryptography "^0.1.3"
     rlp "^2.2.4"
 
-ethers@^5.7.1, ethers@^5.7.2:
+ethers@^5.7.0, ethers@^5.7.1, ethers@^5.7.2, ethers@~5.7.0:
   version "5.7.2"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-5.7.2.tgz#3a7deeabbb8c030d4126b24f84e525466145872e"
   integrity sha512-wswUsmWo1aOK8rR7DIKiWSw9DbLWe6x98Jrn8wcTflTVvaXhAMaB5zGAXy0GYQEQp9iO1iSHWVyARQm11zUtyg==
@@ -3994,6 +3994,36 @@ hardhat-deploy@^0.10.5:
     match-all "^1.2.6"
     murmur-128 "^0.2.1"
     qs "^6.9.4"
+
+hardhat-deploy@^0.12.2:
+  version "0.12.2"
+  resolved "https://registry.yarnpkg.com/hardhat-deploy/-/hardhat-deploy-0.12.2.tgz#1067bd0af61a65287bcf2a0ba7711ca1b54be2f6"
+  integrity sha512-Xp/4Lb5lC/j3kvitaWW5IZN5Meqv5D3kTIifc3ZwBoQtFLN26/fDfRV6MWAAcRO9gH64hZVokvtcDdl/fd7w3A==
+  dependencies:
+    "@ethersproject/abi" "^5.7.0"
+    "@ethersproject/abstract-signer" "^5.7.0"
+    "@ethersproject/address" "^5.7.0"
+    "@ethersproject/bignumber" "^5.7.0"
+    "@ethersproject/bytes" "^5.7.0"
+    "@ethersproject/constants" "^5.7.0"
+    "@ethersproject/contracts" "^5.7.0"
+    "@ethersproject/providers" "^5.7.2"
+    "@ethersproject/solidity" "^5.7.0"
+    "@ethersproject/transactions" "^5.7.0"
+    "@ethersproject/wallet" "^5.7.0"
+    "@types/qs" "^6.9.7"
+    axios "^0.21.1"
+    chalk "^4.1.2"
+    chokidar "^3.5.2"
+    debug "^4.3.2"
+    enquirer "^2.3.6"
+    ethers "^5.7.0"
+    form-data "^4.0.0"
+    fs-extra "^10.0.0"
+    match-all "^1.2.6"
+    murmur-128 "^0.2.1"
+    qs "^6.9.4"
+    zksync-ethers "^5.0.0"
 
 hardhat-gas-reporter@^1.0.6:
   version "1.0.10"
@@ -6840,6 +6870,13 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+zksync-ethers@^5.0.0:
+  version "5.7.0"
+  resolved "https://registry.yarnpkg.com/zksync-ethers/-/zksync-ethers-5.7.0.tgz#edf465eb564ed60d6a1cc3de5978b8bd8481c230"
+  integrity sha512-X99c5APICTlRzyXXjfwkEjRzOPp3Jwo62+z2DVGaZbe+b9Apbizcd2UGV4NGomoAR2GXPbeiSqi1cf3Hbo3cQw==
+  dependencies:
+    ethers "~5.7.0"
 
 zksync-ethers@^6.5.0:
   version "6.5.0"
