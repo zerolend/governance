@@ -4,10 +4,10 @@ async function main() {
   const [deployer] = await hre.ethers.getSigners();
   console.log("i am", deployer.address);
 
-  const factory = await hre.ethers.getContractFactory("ZeroLend");
+  const factory = await hre.ethers.getContractFactory("ZeroLendTest");
   const contract = await factory.deploy();
 
-  console.log(contract.target, await contract.deploymentTransaction());
+  console.log(contract.target);
   await contract.waitForDeployment();
 
   if (hre.network.name != "hardhat") {
