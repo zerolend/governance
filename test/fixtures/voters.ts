@@ -1,11 +1,13 @@
 import hre from "hardhat";
 import { deployGovernance } from "./governance";
+import { ZERO_ADDRESS } from "./utils";
 
 export async function deployVoters() {
   const governance = await deployGovernance();
   const lending = governance.lending;
 
   const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
+
   const MockEligibilityCriteria = await hre.ethers.getContractFactory(
     "MockEligibilityCriteria"
   );
@@ -15,9 +17,6 @@ export async function deployVoters() {
   const MockAggregator = await hre.ethers.getContractFactory(
     "contracts/tests/MockAggregator.sol:MockAggregator"
   );
-  const GaugeIncentiveController = await hre.ethers.getContractFactory(
-    "GaugeIncentiveController"
-  );
 
   const aggregator = await MockAggregator.deploy(1e8);
   const eligibilityCriteria = await MockEligibilityCriteria.deploy();
@@ -25,8 +24,6 @@ export async function deployVoters() {
     lending.erc20.target
   );
 
-  const factory = await LendingPoolGaugeFactory.deploy();
-  const guageImpl = await GaugeIncentiveController.deploy();
   const poolVoter = await PoolVoter.deploy();
 
   // get instances
@@ -36,36 +33,26 @@ export async function deployVoters() {
     tokens.variableDebtTokenAddress
   );
 
-  // init instances
-  await factory.setAddresses(
-    guageImpl.target,
-    governance.zero.target,
-    eligibilityCriteria.target,
-    governance.lending.oracle.target,
-    governance.vestedZeroNFT.target,
-    lending.protocolDataProvider.target
+  const factory = await LendingPoolGaugeFactory.deploy(
+    lending.rewardsController.target, // address _incentivesController,
+    governance.vestedZeroNFT.target, // address _vestedZERO,
+    poolVoter.target, // address _voter,
+    governance.zero.target, // address _zero,
+    lending.protocolDataProvider.target // address _dataProvider
   );
-  await lending.aclManager.addPoolAdmin(factory.target);
+
+  // init instances
   await poolVoter.init(
     governance.omnichainStaking.target,
     governance.zero.target
   );
 
   // create gauge for the test token
-  await factory.createGauge(lending.erc20.target);
+  await factory.createGauge(lending.erc20.target, ZERO_ADDRESS);
 
   // register the gauge in the factory
-  const gauges = await factory.gauges(lending.erc20.target);
-  await poolVoter.registerGauge(lending.erc20.target, gauges.splitterGauge);
-
-  const aTokenGauge = await hre.ethers.getContractAt(
-    "GaugeIncentiveController",
-    gauges.aTokenGauge
-  );
-  const varTokenGauge = await hre.ethers.getContractAt(
-    "GaugeIncentiveController",
-    gauges.varTokenGauge
-  );
+  const gauge = await factory.gauges(lending.erc20.target);
+  await poolVoter.registerGauge(lending.erc20.target, gauge);
 
   return {
     ant: governance.ant,
@@ -75,8 +62,7 @@ export async function deployVoters() {
     varToken,
     poolVoter,
     aToken,
-    aTokenGauge,
-    varTokenGauge,
+    gauge,
     eligibilityCriteria,
     aggregator,
   };

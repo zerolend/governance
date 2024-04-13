@@ -25,6 +25,10 @@ export async function deployLendingPool() {
   const TestnetERC20 = await ethers.getContractFactory("TestnetERC20");
   const ACLManager = await ethers.getContractFactory("ACLManager");
   const AaveOracle = await ethers.getContractFactory("AaveOracle");
+  const EmissionManager = await ethers.getContractFactory("EmissionManager");
+  const RewardsController = await ethers.getContractFactory(
+    "RewardsController"
+  );
   const MockAggregator = await ethers.getContractFactory(
     "contracts/tests/MockAggregator.sol:MockAggregator"
   );
@@ -124,6 +128,13 @@ export async function deployLendingPool() {
     await addressesProvider.getPoolConfigurator()
   );
 
+  // deploy incentives
+  const emissionManager = await EmissionManager.deploy(owner.address);
+  const rewardsController = await RewardsController.deploy(
+    emissionManager.target
+  );
+  await rewardsController.initialize(ZERO_ADDRESS);
+
   const aToken = await AToken.deploy(pool.target);
   const stableDebtToken = await StableDebtToken.deploy(pool.target);
   const variableDebtToken = await VariableDebtToken.deploy(pool.target);
@@ -163,7 +174,7 @@ export async function deployLendingPool() {
       interestRateStrategyAddress: strategy.target,
       underlyingAsset: erc20.target,
       treasury: ZERO_ADDRESS,
-      incentivesController: ZERO_ADDRESS,
+      incentivesController: rewardsController.target,
       aTokenName: `ZeroLend z0 TEST`,
       aTokenSymbol: `z0TEST`,
       variableDebtTokenName: `ZeroLend Variable Debt TEST`,
@@ -183,14 +194,16 @@ export async function deployLendingPool() {
   );
 
   return {
-    owner,
-    configurator,
-    erc20,
-    pool,
-    oracle,
-    addressesProvider,
     aclManager,
-    protocolDataProvider,
+    addressesProvider,
+    configurator,
+    emissionManager,
+    erc20,
     mockAggregator,
+    oracle,
+    owner,
+    pool,
+    protocolDataProvider,
+    rewardsController,
   };
 }

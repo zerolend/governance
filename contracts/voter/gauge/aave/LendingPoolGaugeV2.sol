@@ -1,20 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.12;
+pragma solidity 0.8.12;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/Ownable.sol";
 import {IEmissionManager, ITransferStrategyBase, IEACAggregatorProxy} from "@zerolendxyz/periphery-v3/contracts/rewards/interfaces/IEmissionManager.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol";
 import {IPoolDataProvider} from "@zerolendxyz/core-v3/contracts/interfaces/IPoolDataProvider.sol";
 import {IRewardDistributor} from "../../../interfaces/IRewardDistributor.sol";
 import {RewardsDataTypes} from "@zerolendxyz/periphery-v3/contracts/rewards/libraries/RewardsDataTypes.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title Aave compatible lending pool gauge
 /// @author Deadshot Ryker <ryker@zerolend.xyz>
 /// @notice For a given asset, the gauge notifies the Aave incentive controller with the correct parameters.
 contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
-    using SafeERC20 for IERC20;
-
     address immutable asset;
     IPoolDataProvider immutable dataProvider;
     IEmissionManager public immutable emissionManagerProxy;
@@ -35,23 +32,23 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         address _asset,
         address _oracle,
         address _voter,
-        IEmissionManager _emissionManagerProxy,
-        IPoolDataProvider _data,
-        ITransferStrategyBase _strategy,
+        address _emissionManagerProxy,
+        address _data,
+        address _strategy,
         uint32 _duration
-    ) Ownable(msg.sender) {
-        emissionManagerProxy = _emissionManagerProxy;
+    ) {
+        emissionManagerProxy = IEmissionManager(_emissionManagerProxy);
         zero = _zero;
         voter = _voter;
         asset = _asset;
-        dataProvider = _data;
+        dataProvider = IPoolDataProvider(_data);
         nextEpoch = uint32(block.timestamp);
         updateData(_oracle, _strategy, _duration);
     }
 
     function updateData(
         address _oracle,
-        ITransferStrategyBase _strategy,
+        address _strategy,
         uint32 _duration
     ) public onlyOwner {
         // get data from pool provider
@@ -66,7 +63,7 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
 
         duration = _duration;
         oracle = _oracle;
-        strategy = _strategy;
+        strategy = ITransferStrategyBase(_strategy);
     }
 
     function notifyRewardAmount(
@@ -79,8 +76,9 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         if (amount == 0) return true;
 
         // send tokens to the transfer strategy
-        IERC20(token).safeTransferFrom(msg.sender, address(strategy), amount);
+        IERC20(token).transferFrom(msg.sender, address(strategy), amount);
 
+        // update epoch
         nextEpoch = uint32(block.timestamp) + duration;
 
         // calculate how much emissions per second we are giving out. Since we are looking
@@ -101,7 +99,7 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         // config the params for the emission manager
         RewardsDataTypes.RewardsConfigInput[]
             memory data = new RewardsDataTypes.RewardsConfigInput[](
-                z0TokenDebt != address(0) ? 2 : 1
+                emissionPerSecondDebt > 0 ? 2 : 1
             );
 
         data[0] = RewardsDataTypes.RewardsConfigInput({

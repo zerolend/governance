@@ -14,12 +14,9 @@ pragma solidity ^0.8.20;
 
 import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {
-    IERC165, 
-    ERC721Upgradeable,
-    ERC721EnumerableUpgradeable
-} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import {IERC165, ERC721Upgradeable, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
+import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -27,18 +24,19 @@ import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgrad
 
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
 /// @author Deadshot Ryker <ryker@zerolend.xyz>
-/// @notice NFTs can be traded on secondary marketplaces like Opensea, can be split into smaller chunks 
+/// @notice NFTs can be traded on secondary marketplaces like Opensea, can be split into smaller chunks
 /// to allow for smaller otc deals to happen in secondary markets
 contract VestedZeroNFT is
+    IERC721,
     IVestedZeroNFT,
     AccessControlEnumerableUpgradeable,
     ReentrancyGuardUpgradeable,
     PausableUpgradeable,
     ERC721EnumerableUpgradeable
 {
-	uint256 public constant QUART = 25000; //  25%
-	uint256 public constant HALF = 65000; //  65%
-	uint256 public constant WHOLE = 100000; // 100%
+    uint256 public constant QUART = 25000; //  25%
+    uint256 public constant HALF = 65000; //  65%
+    uint256 public constant WHOLE = 100000; // 100%
 
     IERC20 public zero;
     uint256 public lastTokenId;
@@ -264,13 +262,18 @@ contract VestedZeroNFT is
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function penalty(uint256 tokenId) public view returns (uint256 penaltyAmount) {
+    function penalty(
+        uint256 tokenId
+    ) public view returns (uint256 penaltyAmount) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
 
         if (lock.unlockDate >= block.timestamp) {
-			uint256 penaltyFactor = ((lock.unlockDate - block.timestamp) * HALF) / lock.linearDuration + QUART;
-			penaltyAmount = (lock.pending * penaltyFactor) / WHOLE;
-		}
+            uint256 penaltyFactor = ((lock.unlockDate - block.timestamp) *
+                HALF) /
+                lock.linearDuration +
+                QUART;
+            penaltyAmount = (lock.pending * penaltyFactor) / WHOLE;
+        }
     }
 
     /// @inheritdoc IVestedZeroNFT
@@ -293,7 +296,7 @@ contract VestedZeroNFT is
 
     /// @inheritdoc IVestedZeroNFT
     function tokenURI(
-        uint256 tokenId
+        uint256
     )
         public
         view
