@@ -5,6 +5,8 @@ async function main() {
   const contract = await Create2Factory.deploy();
   console.log("contract deployed", contract.target);
 
+  hre.ethers.keccak256;
+
   // verify contract for tesnet & mainnet
   if (process.env.NODE_ENV != "test") {
     // Verify contract programmatically

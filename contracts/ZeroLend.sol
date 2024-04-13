@@ -21,19 +21,56 @@ import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions
 contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
     bytes32 public constant RISK_MANAGER_ROLE = keccak256("RISK_MANAGER_ROLE");
     mapping(address => bool) public blacklisted;
+    mapping(address => bool) public whitelisted;
+    bool public paused;
+    bool public bootstrap;
+
+    event Blacklisted(
+        address indexed who,
+        address indexed whom,
+        bool indexed what
+    );
+    event Whitelisted(
+        address indexed who,
+        address indexed whom,
+        bool indexed what
+    );
+    event Paused(address indexed who, bool indexed what);
+    event BootstrapMode(address indexed who, bool indexed what);
 
     constructor() ERC20("ZeroLend", "ZERO") ERC20Permit("ZeroLend") {
         _mint(msg.sender, 100_000_000_000 * 10 ** decimals());
 
         _grantRole(RISK_MANAGER_ROLE, msg.sender);
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+
+        bootstrap = true;
     }
 
-    function toggleBlacklist(
+    function blacklist(
         address who,
         bool what
     ) public onlyRole(RISK_MANAGER_ROLE) {
         blacklisted[who] = what;
+        emit Blacklisted(msg.sender, who, what);
+    }
+
+    function whitelist(
+        address who,
+        bool what
+    ) public onlyRole(RISK_MANAGER_ROLE) {
+        whitelisted[who] = what;
+        emit Whitelisted(msg.sender, who, what);
+    }
+
+    function togglePause(bool what) public onlyRole(RISK_MANAGER_ROLE) {
+        paused = what;
+        emit Paused(msg.sender, what);
+    }
+
+    function toggleBoostrapMode(bool what) public onlyRole(RISK_MANAGER_ROLE) {
+        bootstrap = what;
+        emit BootstrapMode(msg.sender, what);
     }
 
     function _update(
@@ -41,8 +78,26 @@ contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
         address to,
         uint256 value
     ) internal virtual override {
+        require(!paused, "you paused");
+
+        // ensure that sending back and forth to contracts is disabled during bootstrap
+        // important so that plebs can't add LP before the TGE
+        if (bootstrap) {
+            if (_isContract(from)) require(whitelisted[from], "you pleb");
+            if (_isContract(to)) require(whitelisted[to], "you pleb");
+        }
+
         // reject all blacklisted addresses
-        require(!blacklisted[from] && !blacklisted[to], "blacklisted");
+        require(!blacklisted[from] && !blacklisted[to], "you blacklisted");
+
         super._update(from, to, value);
+    }
+
+    function _isContract(address _addr) private view returns (bool) {
+        uint32 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+        return (size > 0);
     }
 }

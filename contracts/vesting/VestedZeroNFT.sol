@@ -296,7 +296,7 @@ contract VestedZeroNFT is
 
     /// @inheritdoc IVestedZeroNFT
     function tokenURI(
-        uint256 tokenId
+        uint256
     )
         public
         view

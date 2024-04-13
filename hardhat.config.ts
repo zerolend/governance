@@ -116,6 +116,14 @@ const config: HardhatUserConfig = {
           browserURL: "https://lineascan.build",
         },
       },
+      {
+        network: "blast",
+        chainId: 59144,
+        urls: {
+          apiURL: "https://api.lineascan.build/api",
+          browserURL: "https://lineascan.build",
+        },
+      },
     ],
   },
 };
