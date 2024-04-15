@@ -6,14 +6,17 @@ import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
 
 contract AirdropRewarder is Initializable, OwnableUpgradeable {
     using SafeERC20 for ERC20Upgradeable;
 
     bytes32 private merkleRoot;
-    ERC20Upgradeable public rewardToken;
 
     mapping(address => bool) public rewardsClaimed;
+
+    ERC20Upgradeable public rewardToken;
+    IVestedZeroNFT public vestedZeroNft;
 
     error InvalidAddress();
     error RewardsAlreadyClaimed();
@@ -21,15 +24,18 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
 
     event MerkleRootSet(bytes32 oldMerkleRoot, bytes32 newMerkleRoot);
     event RewardTokenSet(address oldRewardToken, address newRewardToken);
+    event VestedZeroNftSet(address oldRewardToken, address newRewardToken);
     event RewardsClaimed(address _user, uint256 _rewardsAmount);
     event RewardTerminated();
 
     function initialize(
         bytes32 _merkleRoot,
-        address _rewardToken
+        address _rewardToken,
+        address _vestedZeroNft
     ) external initializer {
         __Ownable_init(msg.sender);
         merkleRoot = _merkleRoot;
+        vestedZeroNft = IVestedZeroNFT(_vestedZeroNft);
         rewardToken = ERC20Upgradeable(_rewardToken);
     }
 
@@ -40,8 +46,14 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
 
     function setRewardToken(address _rewardToken) external onlyOwner {
         if (_rewardToken == address(0)) revert InvalidAddress();
-        emit RewardTokenSet(_rewardToken, address(rewardToken));
+        emit RewardTokenSet(address(rewardToken), _rewardToken);
         rewardToken = ERC20Upgradeable(_rewardToken);
+    }
+    
+    function setVestedZeroNft(address _vestedZeroNft) external onlyOwner {
+        if (_vestedZeroNft== address(0)) revert InvalidAddress();
+        emit VestedZeroNftSet(address(vestedZeroNft), _vestedZeroNft);
+        vestedZeroNft = IVestedZeroNFT(_vestedZeroNft);
     }
 
     function claim(
@@ -59,7 +71,17 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         if (rewardsClaimed[_user]) revert RewardsAlreadyClaimed();
         
         rewardsClaimed[_user] = true;
-        rewardToken.safeTransfer(_user, _claimAmount);
+        rewardToken.safeTransfer(_user, _claimAmount/2);
+        vestedZeroNft.mint(
+            _user,
+            0,
+            _claimAmount/2,
+            91 days,
+            182 days,
+            90 days,
+            false,
+            IVestedZeroNFT.VestCategory.AIRDROP
+        );
         
         emit RewardsClaimed(_user, _claimAmount);
     }
