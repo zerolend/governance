@@ -26,6 +26,10 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
 
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
+    mapping(uint256 => address) public lockedBy;
+    mapping(address => uint256[]) public lockedNfts;
+
+    error InvalidUnstaker(address, address);
 
     // constructor() {
     //     _disableInitializers();
@@ -57,6 +61,8 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         );
 
         if (data.length > 0) from = abi.decode(data, (address));
+        lockedBy[tokenId] = from;
+        lockedNfts[from].push(tokenId);
 
         // if the stake is from the LP locker, then give 4 times the voting power
         if (msg.sender == address(lpLocker)) {
@@ -73,11 +79,15 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     }
 
     function unstakeLP(uint256 tokenId) external {
+        address lockedBy_ = lockedBy[tokenId];
+        if(_msgSender() != lockedBy_) revert InvalidUnstaker(_msgSender(), lockedBy_);
         _burn(msg.sender, lpPower[tokenId] * 4);
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
     function unstakeToken(uint256 tokenId) external {
+        address lockedBy_ = lockedBy[tokenId];
+        if(_msgSender() != lockedBy_) revert InvalidUnstaker(_msgSender(), lockedBy_);
         _burn(msg.sender, tokenPower[tokenId]);
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
