@@ -294,7 +294,7 @@ contract BaseLocker is
 
     /// @notice Withdraw all tokens for `_tokenId`
     /// @dev Only possible if the lock has expired
-    function withdraw(uint256 _tokenId) external nonReentrant {
+    function withdraw(uint256 _tokenId) public nonReentrant {
         require(
             _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
             "caller is not owner nor approved"
@@ -315,6 +315,27 @@ contract BaseLocker is
 
         emit Withdraw(msg.sender, _tokenId, value, block.timestamp);
         emit Supply(supplyBefore, supplyBefore - value);
+    }
+
+    function withdraw(uint256[] calldata _tokenIds) external nonReentrant {
+        uint256 nftCount = _tokenIds.length;
+        for (uint i = 0; i < nftCount;) {
+            withdraw(_tokenIds[i]);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function withdraw(address _user) external nonReentrant {
+        uint256 nftCount = balanceOf(_user);
+        for (uint i = 0; i < nftCount;) {
+            uint256 tokenId_ = tokenOfOwnerByIndex(_user, i);
+            withdraw(tokenId_);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     /// @notice Deposit `_value` tokens for `_to` and lock for `_lockDuration`
@@ -353,7 +374,7 @@ contract BaseLocker is
         if (_stakeNFT) {
             _mint(address(this), _tokenId);
             bytes memory data = abi.encode(_to);
-            safeTransferFrom(address(this), address(staking), _tokenId, data);
+            this.safeTransferFrom(address(this), address(staking), _tokenId, data);
         } else _mint(_to, _tokenId);
 
         return _tokenId;
