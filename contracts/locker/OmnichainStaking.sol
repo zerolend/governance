@@ -16,6 +16,7 @@ import {OApp} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
 import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
+import {IVestedZeroNFT} from "./helpers/IVestedZeroNFT.sol";
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
 
 // An omni-chain staking contract that allows users to stake their veNFT
@@ -23,6 +24,7 @@ import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/E
 contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     ILocker public lpLocker;
     ILocker public tokenLocker;
+    IVestedZeroNFT public vestedZeroNft;
 
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
@@ -38,7 +40,8 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     function init(
         address, // LZ endpoint
         address _tokenLocker,
-        address _lpLocker
+        address _lpLocker,
+        address _vestedZeroNft
     ) external initializer {
         // TODO add LZ
         __ERC20Votes_init();
@@ -46,6 +49,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
 
         tokenLocker = ILocker(_tokenLocker);
         lpLocker = ILocker(_lpLocker);
+        vestedZeroNft = IVestedZeroNFT(_vestedZeroNft);
     }
 
     function onERC721Received(
@@ -78,16 +82,40 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         return this.onERC721Received.selector;
     }
 
+    function getLockedNftDetails(
+        address _user
+    )
+        external
+        view
+        returns (
+            uint256[] memory tokenIds,
+            IVestedZeroNFT.LockDetails[] memory tokenDetails
+        )
+    {
+        uint256 tokenIdsLength = lockedNfts[_user].length;
+        tokenIds = lockedNfts[_user];
+
+        for (uint256 i; i < tokenIdsLength; ) {
+            tokenDetails[i] = vestedZeroNft.tokenIdToLockDetails(tokenIds[i]);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
     function unstakeLP(uint256 tokenId) external {
         address lockedBy_ = lockedBy[tokenId];
-        if(_msgSender() != lockedBy_) revert InvalidUnstaker(_msgSender(), lockedBy_);
+        if (_msgSender() != lockedBy_)
+            revert InvalidUnstaker(_msgSender(), lockedBy_);
         _burn(msg.sender, lpPower[tokenId] * 4);
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
     function unstakeToken(uint256 tokenId) external {
         address lockedBy_ = lockedBy[tokenId];
-        if(_msgSender() != lockedBy_) revert InvalidUnstaker(_msgSender(), lockedBy_);
+        if (_msgSender() != lockedBy_)
+            revert InvalidUnstaker(_msgSender(), lockedBy_);
         _burn(msg.sender, tokenPower[tokenId]);
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
