@@ -2,9 +2,9 @@ import { expect } from "chai";
 import { deployGovernance } from "./fixtures/governance";
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
-import { VestedZeroNFT } from "../typechain-types";
+import { VestedZeroNFT, ZeroLend } from "../typechain-types";
 import { e18, initMainnetUser } from "./fixtures/utils";
-import { Contract, parseEther, parseUnits } from "ethers";
+import { parseEther, parseUnits } from "ethers";
 import { ethers } from "hardhat";
 
 describe("VestedZeroNFT", () => {
@@ -12,7 +12,7 @@ describe("VestedZeroNFT", () => {
   let deployer: SignerWithAddress;
   let vest: VestedZeroNFT;
   let now: number;
-  let zero: Contract;
+  let zero: ZeroLend;
 
   beforeEach(async () => {
     const deployment = await loadFixture(deployGovernance);
@@ -20,11 +20,12 @@ describe("VestedZeroNFT", () => {
     deployer = deployment.deployer;
     vest = deployment.vestedZeroNFT;
     zero = await ethers.getContractAt(
-      "@openzeppelin/contracts/token/ERC20/ERC20.sol:ERC20",
-      await deployment.zero.getAddress()
+      "ZeroLend",
+      await deployment.zero.target
     );
 
     now = Math.floor(Date.now() / 1000);
+    await zero.whitelist(vest.target, true);
   });
 
   describe("mint() without penalties", () => {
@@ -231,7 +232,8 @@ describe("VestedZeroNFT", () => {
     });
 
     it("should claim some amount with penalty at halfway through", async function () {
-      await time.increaseTo(now + 800);
+    await zero.whitelist(await vest.stakingBonus(), true);
+    await time.increaseTo(now + 800);
       expect(await vest.claim.staticCall(1)).to.closeTo(
         12400000000000000000n,
         parseUnits("1", 16)
@@ -327,6 +329,12 @@ describe("VestedZeroNFT", () => {
   });
 
   it("Should allow staking bonus to claim unvested tokens", async function () {
+    const stakingBonusSigner = await initMainnetUser(
+      await vest.stakingBonus(),
+      parseEther("1")
+    );
+    await zero.whitelist(stakingBonusSigner.address, true);
+    
     await vest.mint(
       ant.address,
       e18 * 15n,
@@ -337,14 +345,9 @@ describe("VestedZeroNFT", () => {
       false,
       0
     );
-
-    const stakingBonusSigner = await initMainnetUser(
-      await vest.stakingBonus(),
-      parseEther("1")
-    );
-
+    
     const expectedPending = await vest.unclaimed(1);
-
+    
     await vest.connect(stakingBonusSigner).claimUnvested(1);
 
     const stakingBonusBalance = await zero.balanceOf(
