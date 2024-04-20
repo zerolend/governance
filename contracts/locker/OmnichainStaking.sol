@@ -16,7 +16,6 @@ import {OApp} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
 import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
-import {IVestedZeroNFT} from "./helpers/IVestedZeroNFT.sol";
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
 
 // An omni-chain staking contract that allows users to stake their veNFT
@@ -24,7 +23,6 @@ import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/E
 contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     ILocker public lpLocker;
     ILocker public tokenLocker;
-    IVestedZeroNFT public vestedZeroNft;
 
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
@@ -40,8 +38,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
     function init(
         address, // LZ endpoint
         address _tokenLocker,
-        address _lpLocker,
-        address _vestedZeroNft
+        address _lpLocker
     ) external initializer {
         // TODO add LZ
         __ERC20Votes_init();
@@ -49,7 +46,6 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
 
         tokenLocker = ILocker(_tokenLocker);
         lpLocker = ILocker(_lpLocker);
-        vestedZeroNft = IVestedZeroNFT(_vestedZeroNft);
     }
 
     function onERC721Received(
@@ -84,30 +80,35 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
 
     function getLockedNftDetails(
         address _user
-    )
-        external
-        view
-        returns (
-            uint256[] memory tokenIds,
-            IVestedZeroNFT.LockDetails[] memory tokenDetails
-        )
-    {
+    ) external view returns (uint256[] memory, ILocker.LockedBalance[] memory) {
         uint256 tokenIdsLength = lockedNfts[_user].length;
-        tokenIds = lockedNfts[_user];
+        uint256[] memory lockedTokenIds = lockedNfts[_user];
+
+        uint256[] memory tokenIds = new uint256[](tokenIdsLength);
+        ILocker.LockedBalance[]
+            memory tokenDetails = new ILocker.LockedBalance[](tokenIdsLength);
 
         for (uint256 i; i < tokenIdsLength; ) {
-            tokenDetails[i] = vestedZeroNft.tokenIdToLockDetails(tokenIds[i]);
+            tokenDetails[i] = tokenLocker.locked(lockedTokenIds[i]);
+            tokenIds[i] = lockedTokenIds[i];
 
             unchecked {
                 ++i;
             }
         }
+
+        return (tokenIds, tokenDetails);
     }
 
     function unstakeLP(uint256 tokenId) external {
         address lockedBy_ = lockedBy[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
+        delete lockedBy[tokenId];
+        lockedNfts[_msgSender()] = deleteAnElement(
+            lockedNfts[_msgSender()],
+            tokenId
+        );
         _burn(msg.sender, lpPower[tokenId] * 4);
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
@@ -116,6 +117,11 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         address lockedBy_ = lockedBy[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
+        delete lockedBy[tokenId];
+        lockedNfts[_msgSender()] = deleteAnElement(
+            lockedNfts[_msgSender()],
+            tokenId
+        );
         _burn(msg.sender, tokenPower[tokenId]);
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
@@ -158,5 +164,31 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         // be minted or burnt and act like SBTs
         require(false, "transferFrom disabled");
         return false;
+    }
+
+    function deleteAnElement(
+        uint256[] memory elements,
+        uint256 element
+    ) internal pure returns (uint256[] memory) {
+        uint256 length = elements.length;
+        uint256 count;
+
+        for (uint256 i = 0; i < length; i++) {
+            if (elements[i] != element) {
+                count++;
+            }
+        }
+
+        uint256[] memory updatedArray = new uint256[](count);
+        uint256 index;
+
+        for (uint256 i = 0; i < length; i++) {
+            if (elements[i] != element) {
+                updatedArray[index] = elements[i];
+                index++;
+            }
+        }
+
+        return updatedArray;
     }
 }
