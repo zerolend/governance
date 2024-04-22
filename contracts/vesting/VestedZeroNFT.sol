@@ -227,6 +227,27 @@ contract VestedZeroNFT is
         if (toClaim > 0) zero.transfer(ownerOf(id), toClaim);
     }
 
+    function claim(address _user) public returns (uint256 claimAmount) {
+        uint256 userNftCount = balanceOf(_user);
+        for (uint256 i; i < userNftCount;) {
+            uint256 tokenId = tokenOfOwnerByIndex(_user, i);
+            claimAmount += claim(tokenId);            
+            unchecked {
+                ++i;
+            }
+        }                 
+    }
+    
+    function claim(uint256[] calldata _tokenIds) public returns (uint256 claimAmount) {
+        uint256 userNftCount = _tokenIds.length;
+        for (uint256 i; i < userNftCount;) {
+            claimAmount += claim(_tokenIds[i]);      
+            unchecked {
+                ++i;
+            }
+        }                 
+    }
+
     /// How much ZERO tokens this vesting nft can claim
     /// @param _tokenId the id of the nft contract
     /// @return upfront how much tokens upfront this nft can claim
@@ -253,6 +274,36 @@ contract VestedZeroNFT is
             lock.linearDuration;
 
         return (lock.upfront, ((lock.pending * pct) / denominator));
+    }
+
+    function claimable(address _user) public view  returns (uint256 totalUpFront, uint256 totalPending) {
+        uint256 userNftCount = this.balanceOf(_user);
+
+        for (uint256 i; i < userNftCount;) {
+            uint256 tokenId = tokenOfOwnerByIndex(_user, i);
+
+            (uint256 upFront, uint256 pending) = claimable(tokenId);
+            totalUpFront+= upFront;
+            totalPending += pending;
+            
+            unchecked {
+                ++i;
+            }
+        }                 
+    }
+
+    function claimable(uint256[] calldata _tokenIds) public view  returns (uint256 totalUpFront, uint256 totalPending) {
+        uint256 nftCount = _tokenIds.length;
+
+        for (uint256 i; i < nftCount;) {
+            (uint256 upFront, uint256 pending) = claimable(_tokenIds[i]);
+            totalUpFront+= upFront;
+            totalPending += pending;
+            
+            unchecked {
+                ++i;
+            }
+        }                 
     }
 
     /// @inheritdoc IVestedZeroNFT

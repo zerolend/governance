@@ -34,6 +34,10 @@ describe("StakingBonus", () => {
 
   describe("onERC721Received() - stake nft", () => {
     beforeEach(async () => {
+      await zero.whitelist(vest.target, true);
+      await zero.whitelist(stakingBonus.target, true);
+      await zero.whitelist(locker.target, true);     
+
       expect(await vest.lastTokenId()).to.equal(0);
 
       // deployer should be able to mint a nft for another user
@@ -58,6 +62,8 @@ describe("StakingBonus", () => {
     });
 
     it("should lock and stake a nft properly for the user", async function () {
+      await zero.whitelist(zero.target, true);
+      
       // stake nft on behalf of the ant
       expect(
         await vest
@@ -78,7 +84,8 @@ describe("StakingBonus", () => {
 
     it("should only lock a nft properly for the user", async function () {
       const encoder = AbiCoder.defaultAbiCoder();
-      const data = encoder.encode(["bool", "address"], [false, ant.address]);
+      const data = encoder.encode(["bool", "address"], [false, ant.address]); 
+      
       // stake nft on behalf of the ant
       expect(
         await vest

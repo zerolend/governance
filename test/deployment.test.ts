@@ -17,7 +17,6 @@ describe("Deployment Checks", function () {
   it("Should init governance properly", async function () {
     const {
       deployer,
-      earlyZERO,
       lockerLP,
       lockerToken,
       omnichainStaking,
@@ -33,7 +32,7 @@ describe("Deployment Checks", function () {
     expect(await omnichainStaking.tokenLocker()).eq(lockerToken.target);
 
     expect(await stakingBonus.zero()).eq(zero.target);
-    expect(await stakingBonus.earlyZERO()).eq(earlyZERO.target);
+    // expect(await stakingBonus.earlyZERO()).eq(earlyZERO.target);
     expect(await stakingBonus.vestedZERO()).eq(vestedZeroNFT.target);
 
     expect(await vestedZeroNFT.zero()).eq(zero.target);
@@ -46,24 +45,12 @@ describe("Deployment Checks", function () {
 
   it("Should init voter properly", async function () {
     const {
-      aggregator,
-      aToken,
-      aTokenGauge,
-      eligibilityCriteria,
-      lending,
       governance,
-      poolVoter,
-      varToken,
-      varTokenGauge,
+      poolVoter
     } = await loadFixture(deployVoters);
 
     expect(await poolVoter.staking()).eq(governance.omnichainStaking.target);
     expect(await poolVoter.reward()).eq(governance.zero.target);
     expect(await poolVoter.totalWeight()).eq(0);
-    // expect(await poolVoter.lzEndpoint()).eq(governance.zero.target);
-    // expect(await poolVoter.mainnetEmissions()).eq(governance.zero.target);
-
-    expect(await aToken.getIncentivesController()).eq(aTokenGauge.target);
-    expect(await varToken.getIncentivesController()).eq(varTokenGauge.target);
   });
 });

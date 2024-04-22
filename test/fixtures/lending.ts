@@ -93,7 +93,7 @@ export async function deployLendingPool() {
   const poolImpl = await Pool.deploy(addressesProvider.target);
   await poolImpl.initialize(addressesProvider.target);
 
-  // deploy pool configuratior
+  // deploy pool configuration
   const poolConfiguratorImpl = await PoolConfigurator.deploy();
   await poolConfiguratorImpl.initialize(addressesProvider.target);
 
