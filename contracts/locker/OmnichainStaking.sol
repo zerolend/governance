@@ -26,6 +26,10 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
 
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
+    mapping(uint256 => address) public lockedBy;
+    mapping(address => uint256[]) public lockedNfts;
+
+    error InvalidUnstaker(address, address);
 
     // constructor() {
     //     _disableInitializers();
@@ -57,6 +61,8 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         );
 
         if (data.length > 0) from = abi.decode(data, (address));
+        lockedBy[tokenId] = from;
+        lockedNfts[from].push(tokenId);
 
         // if the stake is from the LP locker, then give 4 times the voting power
         if (msg.sender == address(lpLocker)) {
@@ -72,12 +78,50 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         return this.onERC721Received.selector;
     }
 
+    function getLockedNftDetails(
+        address _user
+    ) external view returns (uint256[] memory, ILocker.LockedBalance[] memory) {
+        uint256 tokenIdsLength = lockedNfts[_user].length;
+        uint256[] memory lockedTokenIds = lockedNfts[_user];
+
+        uint256[] memory tokenIds = new uint256[](tokenIdsLength);
+        ILocker.LockedBalance[]
+            memory tokenDetails = new ILocker.LockedBalance[](tokenIdsLength);
+
+        for (uint256 i; i < tokenIdsLength; ) {
+            tokenDetails[i] = tokenLocker.locked(lockedTokenIds[i]);
+            tokenIds[i] = lockedTokenIds[i];
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        return (tokenIds, tokenDetails);
+    }
+
     function unstakeLP(uint256 tokenId) external {
+        address lockedBy_ = lockedBy[tokenId];
+        if (_msgSender() != lockedBy_)
+            revert InvalidUnstaker(_msgSender(), lockedBy_);
+        delete lockedBy[tokenId];
+        lockedNfts[_msgSender()] = deleteAnElement(
+            lockedNfts[_msgSender()],
+            tokenId
+        );
         _burn(msg.sender, lpPower[tokenId] * 4);
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
     function unstakeToken(uint256 tokenId) external {
+        address lockedBy_ = lockedBy[tokenId];
+        if (_msgSender() != lockedBy_)
+            revert InvalidUnstaker(_msgSender(), lockedBy_);
+        delete lockedBy[tokenId];
+        lockedNfts[_msgSender()] = deleteAnElement(
+            lockedNfts[_msgSender()],
+            tokenId
+        );
         _burn(msg.sender, tokenPower[tokenId]);
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
@@ -120,5 +164,31 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         // be minted or burnt and act like SBTs
         require(false, "transferFrom disabled");
         return false;
+    }
+
+    function deleteAnElement(
+        uint256[] memory elements,
+        uint256 element
+    ) internal pure returns (uint256[] memory) {
+        uint256 length = elements.length;
+        uint256 count;
+
+        for (uint256 i = 0; i < length; i++) {
+            if (elements[i] != element) {
+                count++;
+            }
+        }
+
+        uint256[] memory updatedArray = new uint256[](count);
+        uint256 index;
+
+        for (uint256 i = 0; i < length; i++) {
+            if (elements[i] != element) {
+                updatedArray[index] = elements[i];
+                index++;
+            }
+        }
+
+        return updatedArray;
     }
 }
