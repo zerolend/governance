@@ -13,7 +13,7 @@ const FORK = process.env.FORK === "true";
 const FORKED_NETWORK = process.env.FORKED_NETWORK ?? "";
 
 if (FORK) {
-  describe("VestedZeroNFT", () => {
+  describe("VestedZeroNFT ForkTests", () => {
     let now: number;
     let ant: SignerWithAddress;
     let deployer: SignerWithAddress;
@@ -68,46 +68,46 @@ if (FORK) {
       });
 
       it("should not claim any rewards before the unlock date", async function () {
-        const res = await vest.claimable(1);
+        const res = await vest["claimable(uint256)"](1);
         expect(res.upfront).to.equal(0n);
         expect(res.pending).to.equal(0n);
 
-        await vest.claim(1);
+        await vest["claim(uint256)"](1);
         expect(await vest.claimed(1)).to.equal(0);
         expect(await vest.unclaimed(1)).to.equal(e18 * 20n);
       });
       it("should claim only the cliff at the unlock date", async function () {
         await time.increaseTo(now + 1000);
-        const res = await vest.claimable(1);
+        const res = await vest["claimable(uint256)"](1);
         expect(res.upfront).to.equal(e18 * 5n);
         expect(res.pending).to.equal(0n);
 
-        expect(await vest.claim.staticCall(1)).to.eq(e18 * 5n);
-        await vest.claim(1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.eq(e18 * 5n);
+        await vest["claim(uint256)"](1);
         expect(await vest.claimed(1)).to.equal(e18 * 5n);
         expect(await vest.unclaimed(1)).to.equal(e18 * 15n);
       });
       it("should claim only the cliff after the unlock date within the cliff duration", async function () {
         await time.increaseTo(now + 1000 + 250);
-        const res = await vest.claimable(1);
+        const res = await vest["claimable(uint256)"](1);
         expect(res.upfront).to.equal(e18 * 5n);
         expect(res.pending).to.equal(0n);
 
-        expect(await vest.claim.staticCall(1)).to.eq(e18 * 5n);
-        await vest.claim(1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.eq(e18 * 5n);
+        await vest["claim(uint256)"](1);
         expect(await vest.claimed(1)).to.equal(e18 * 5n);
         expect(await vest.unclaimed(1)).to.equal(e18 * 15n);
       });
       it("should claim the cliff and a bit of the linear vesting once cliff gets over", async function () {
         await time.increaseTo(now + 1000 + 500 + 10);
-        const res = await vest.claimable(1);
+        const res = await vest["claimable(uint256)"](1);
         expect(res.upfront).to.equal(e18 * 5n);
         expect(res.pending).to.greaterThan(0n);
         expect(res.pending).to.lessThan(e18);
 
-        expect(await vest.claim.staticCall(1)).to.greaterThan(e18 * 5n);
-        expect(await vest.claim.staticCall(1)).to.lessThan(e18 * 6n);
-        await vest.claim(1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(e18 * 5n);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(e18 * 6n);
+        await vest["claim(uint256)"](1);
         expect(await vest.claimed(1)).to.greaterThan(e18 * 5n);
         expect(await vest.claimed(1)).to.lessThan(e18 * 6n);
         expect(await vest.unclaimed(1)).to.lessThan(e18 * 15n);
@@ -115,57 +115,57 @@ if (FORK) {
       });
       it("should half the linear distribution mid way through", async function () {
         await time.increaseTo(now + 1000 + 500 + 500);
-        const res = await vest.claimable(1);
+        const res = await vest["claimable(uint256)"](1);
         expect(res.upfront).to.equal(e18 * 5n);
         expect(res.pending).to.equal((e18 * 75n) / 10n);
 
         const expected = (e18 * 125n) / 100n;
-        expect(await vest.claim.staticCall(1)).to.greaterThanOrEqual(expected);
-        await vest.claim(1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThanOrEqual(expected);
+        await vest["claim(uint256)"](1);
         expect(await vest.claimed(1)).to.greaterThanOrEqual(expected);
         expect(await vest.unclaimed(1)).to.lessThanOrEqual((e18 * 75n) / 10n);
       });
       it("should claim everything after the linear distribution date is done", async function () {
         await time.increaseTo(now + 1000 + 500 + 1000);
-        const res = await vest.claimable(1);
+        const res = await vest["claimable(uint256)"](1);
         expect(res.upfront).to.equal(e18 * 5n);
         expect(res.pending).to.equal(e18 * 15n);
 
-        expect(await vest.claim.staticCall(1)).to.eq(e18 * 20n);
-        await vest.claim(1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.eq(e18 * 20n);
+        await vest["claim(uint256)"](1);
         expect(await vest.claimed(1)).to.equal(e18 * 20n);
         expect(await vest.unclaimed(1)).to.equal(0);
       });
       it("handle multiple claims across equal intervals of time", async function () {
-        expect(await vest.claim.staticCall(1)).to.eq(0);
-        await vest.claim(1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.eq(0);
+        await vest["claim(uint256)"](1);
 
         // trigger the cliff
         await time.increaseTo(now + 1000);
-        expect(await vest.claim.staticCall(1)).to.eq(e18 * 5n);
-        await vest.claim(1);
-        expect(await vest.claim.staticCall(1)).to.eq(0);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.eq(e18 * 5n);
+        await vest["claim(uint256)"](1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.eq(0);
 
         // stay within the cliff
         await time.increaseTo(now + 1000 + 500);
-        expect(await vest.claim.staticCall(1)).to.eq(0);
-        await vest.claim(1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.eq(0);
+        await vest["claim(uint256)"](1);
 
         // stay within the cliff and claim something linear
         await time.increaseTo(now + 1000 + 500 + 500);
-        expect(await vest.claim.staticCall(1)).to.greaterThan(
+        expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
           (e18 * 74n) / 10n
         );
-        expect(await vest.claim.staticCall(1)).to.lessThan((e18 * 75n) / 10n);
-        await vest.claim(1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan((e18 * 75n) / 10n);
+        await vest["claim(uint256)"](1);
 
         await time.increaseTo(now + 1000 + 500 + 1000);
-        expect(await vest.claim.staticCall(1)).to.greaterThan(
+        expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
           (e18 * 74n) / 10n
         );
-        expect(await vest.claim.staticCall(1)).to.lessThan((e18 * 75n) / 10n);
-        await vest.claim(1);
-        expect(await vest.claim.staticCall(1)).to.eq(0);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan((e18 * 75n) / 10n);
+        await vest["claim(uint256)"](1);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.eq(0);
       });
     });
 
@@ -217,7 +217,7 @@ if (FORK) {
 
       it("should claim some amount with penalty at halfway through", async function () {
         await time.increaseTo(now + 800);
-        expect(await vest.claim.staticCall(1)).to.closeTo(
+        expect(await vest["claim(uint256)"].staticCall(1)).to.closeTo(
           12400000000000000000n,
           parseUnits("1", 16)
         );
