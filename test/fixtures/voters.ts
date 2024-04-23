@@ -3,6 +3,7 @@ import { deployGovernance } from "./governance";
 import { ZERO_ADDRESS } from "./utils";
 
 export async function deployVoters() {
+  const secondsIn6Months = 15780000;
   const governance = await deployGovernance();
   const lending = governance.lending;
 
@@ -38,7 +39,8 @@ export async function deployVoters() {
     governance.vestedZeroNFT.target, // address _vestedZERO,
     poolVoter.target, // address _voter,
     governance.zero.target, // address _zero,
-    lending.protocolDataProvider.target // address _dataProvider
+    lending.protocolDataProvider.target, // address _dataProvider
+    secondsIn6Months
   );
 
   // init instances
