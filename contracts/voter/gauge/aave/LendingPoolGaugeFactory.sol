@@ -20,6 +20,7 @@ contract LendingPoolGaugeFactory is Ownable {
     mapping(address => LendingPoolGaugeV2) public gauges;
 
     event GaugeCreated(address reserve, address gauge);
+    event DurationUpdated(uint32 oldDuration, uint32 newDuration);
     event Initialized(
         address emissionManagerProxy,
         address strategy,
@@ -35,11 +36,13 @@ contract LendingPoolGaugeFactory is Ownable {
         address _vestedZERO,
         address _voter,
         address _zero,
-        address _dataProvider
+        address _dataProvider,
+        uint32 _duration
     ) {
         voter = _voter;
         zero = _zero;
         dataProvider = _dataProvider;
+        duration = _duration;
 
         emissionManagerProxy = address(
             new EmissionManagerProxy(
@@ -67,6 +70,11 @@ contract LendingPoolGaugeFactory is Ownable {
             _zero,
             _dataProvider
         );
+    }
+
+    function setDuration(uint32 _duration) external onlyOwner{
+        emit DurationUpdated(duration, _duration);
+        duration = _duration;
     }
 
     function createGauge(address reserve, address oracle) external onlyOwner {
