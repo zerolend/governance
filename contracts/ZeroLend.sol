@@ -20,8 +20,13 @@ import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions
 
 contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
     bytes32 public constant RISK_MANAGER_ROLE = keccak256("RISK_MANAGER_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant GOVERNANCE_ROLE = keccak256("GOVERNANCE_ROLE");
+
     mapping(address => bool) public blacklisted;
     mapping(address => bool) public whitelisted;
+
+    uint256 public deployedAt;
     bool public paused;
     bool public bootstrap;
 
@@ -42,9 +47,14 @@ contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
         _mint(msg.sender, 100_000_000_000 * 10 ** decimals());
 
         _grantRole(RISK_MANAGER_ROLE, msg.sender);
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(GOVERNANCE_ROLE, msg.sender);
+
+        _setRoleAdmin(RISK_MANAGER_ROLE, GOVERNANCE_ROLE);
+        _setRoleAdmin(MINTER_ROLE, GOVERNANCE_ROLE);
+        _setRoleAdmin(GOVERNANCE_ROLE, GOVERNANCE_ROLE);
 
         bootstrap = true;
+        deployedAt = block.timestamp;
     }
 
     function blacklist(
@@ -66,6 +76,12 @@ contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
     function togglePause(bool what) public onlyRole(RISK_MANAGER_ROLE) {
         paused = what;
         emit Paused(msg.sender, what);
+    }
+
+    function mint(uint256 amt, address who) public onlyRole(MINTER_ROLE) {
+        // only allow minting 3 years after the deployment date
+        require(block.timestamp > deployedAt + 86400 * 365 * 3, "you kid");
+        _mint(who, amt);
     }
 
     function toggleBoostrapMode(bool what) public onlyRole(RISK_MANAGER_ROLE) {
