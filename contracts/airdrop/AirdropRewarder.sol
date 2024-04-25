@@ -7,6 +7,7 @@ import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProo
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
+import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
 
 contract AirdropRewarder is Initializable, OwnableUpgradeable {
     using SafeERC20 for ERC20Upgradeable;
@@ -17,6 +18,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
 
     ERC20Upgradeable public rewardToken;
     IZeroLocker public locker;
+    IVestedZeroNFT public vestedZeroNFT;
 
     error InvalidAddress();
     error InvalidLockDuration();
@@ -33,10 +35,12 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
 
     function initialize(
         address _rewardToken,
-        address _locker
+        address _locker,
+        address _vestedZeroNFT
     ) external initializer {
         __Ownable_init(msg.sender);
         locker = IZeroLocker(_locker);
+        vestedZeroNFT = IVestedZeroNFT(_vestedZeroNFT);
         rewardToken = ERC20Upgradeable(_rewardToken);
     }
 
@@ -55,7 +59,13 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         if (_locker == address(0)) revert InvalidAddress();
         emit LockerSet(address(locker), _locker);
 
-        
+        locker = IZeroLocker(_locker);
+    }
+
+    function setVestedZeroNFT(address _locker) external onlyOwner {
+        if (_locker == address(0)) revert InvalidAddress();
+        emit LockerSet(address(locker), _locker);
+
         locker = IZeroLocker(_locker);
     }
 
@@ -63,11 +73,12 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         address _user,
         uint256 _claimAmount,
         bytes32[] calldata _merkleProofs,
-        bool _stake,
+        bool _lockAndStake,
         uint256 lockUntil
     ) external {
         if (_user == address(0)) revert InvalidAddress();
-        if (lockUntil < block.timestamp + 365 days) revert InvalidLockDuration();
+        if (lockUntil < block.timestamp + 365 days)
+            revert InvalidLockDuration();
 
         bytes32 node = keccak256(abi.encodePacked(_user, _claimAmount));
 
@@ -77,15 +88,33 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         if (rewardsClaimed[_user]) revert RewardsAlreadyClaimed();
 
         rewardsClaimed[_user] = true;
-        uint256 transferAmount =  (_claimAmount * 40)/100;
+        uint256 transferAmount = (_claimAmount * 40) / 100;
         rewardToken.safeTransfer(_user, transferAmount);
         emit RewardsTransferred(_user, transferAmount);
 
-        uint256 lockAmount = _claimAmount - transferAmount;
-        rewardToken.approve(address(locker), lockAmount);
-        locker.createLockFor(lockAmount, lockUntil, msg.sender, _stake);
-        emit RewardsLocked(_user, lockAmount);
-        emit RewardsClaimed(_user, _claimAmount);
+        uint256 remainingAmount = _claimAmount - transferAmount;
+        if (_lockAndStake) {
+            rewardToken.approve(address(locker), remainingAmount);
+            locker.createLockFor(
+                remainingAmount,
+                lockUntil,
+                msg.sender,
+                _lockAndStake
+            );
+            emit RewardsLocked(_user, remainingAmount);
+            emit RewardsClaimed(_user, _claimAmount);
+        } else {
+            vestedZeroNFT.mint(
+                _user,
+                remainingAmount,
+                0,
+                91 days,
+                182 days,
+                90 days,
+                false,
+                IVestedZeroNFT.VestCategory.AIRDROP
+            );
+        }
     }
 
     function adminWithdrawal() public onlyOwner {
