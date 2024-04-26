@@ -153,4 +153,117 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
       address: "0xf140Fd0cca2360533b259c4E34f22a1F6c947EFE",
     },
   },
+  linea: {
+    BLOCK_NUMBER: 3997833,
+    ant: "",
+    deployer: "",
+    AaveOracle: {
+      name: "",
+      address: ""
+    },
+    AaveProtocolDataProvider: {
+      name: "",
+      address: ""
+    },
+    ACLManager: {
+      name: "",
+      address: ""
+    },
+    AToken: {
+      name: "",
+      address: ""
+    },
+    BorrowLogic: {
+      name: "",
+      address: ""
+    },
+    BridgeLogic: {
+      name: "",
+      address: ""
+    },
+    ConfiguratorLogic: {
+      name: "",
+      address: ""
+    },
+    DefaultReserveInterestRateStrategy: {
+      name: "",
+      address: ""
+    },
+    EarlyZERO: {
+      name: "",
+      address: ""
+    },
+    EarlyZEROVesting: {
+      name: "",
+      address: ""
+    },
+    EModeLogic: {
+      name: "",
+      address: ""
+    },
+    ERC20: {
+      name: "",
+      address: ""
+    },
+    LiquidationLogic: {
+      name: "",
+      address: ""
+    },
+    LockerLP: {
+      name: "",
+      address: ""
+    },
+    LockerToken: {
+      name: "",
+      address: ""
+    },
+    OmnichainStaking: {
+      name: "",
+      address: ""
+    },
+    Pool: {
+      name: "",
+      address: ""
+    },
+    PoolAddressesProvider: {
+      name: "",
+      address: ""
+    },
+    PoolConfigurator: {
+      name: "",
+      address: ""
+    },
+    PoolLogic: {
+      name: "",
+      address: ""
+    },
+    ReserveTreasury: {
+      name: "",
+      address: ""
+    },
+    StableDebtToken: {
+      name: "",
+      address: ""
+    },
+    StakingBonus: {
+      name: "",
+      address: ""
+    },
+    SupplyLogic: {
+      name: "",
+      address: ""
+    },
+    VariableDebtToken: {
+      name: "",
+      address: ""
+    },
+    VestedZeroNFT: {
+      name: "",
+      address: ""
+    },
+    ZeroLend: {
+      name: "",
+      address: ""
+    }
+  }
 };
