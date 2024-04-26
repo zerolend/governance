@@ -29,9 +29,6 @@ describe("Airdrop Tests", async () => {
   let zero: ZeroLend;
   let vest: VestedZeroNFT;
 
-  const now = Math.floor(Date.now() / 1000);
-
-
   beforeEach("Deploy Airdrop Contracts", async () => {
     accounts = await ethers.getSigners();
     [owner, user1, user2, user3] = accounts;
@@ -44,8 +41,6 @@ describe("Airdrop Tests", async () => {
     locker = governance.lockerToken;
     zero = governance.zero;
     vest = governance.vestedZeroNFT;
-    // airdropToken = await deploy("MockReward", owner.address);
-    // await airdropToken.waitForDeployment();
 
     await zero.whitelist(governance.lockerToken.target, true);
     await zero.whitelist(vest.target, true);
@@ -89,7 +84,6 @@ describe("Airdrop Tests", async () => {
 
   it("Can claim and lock successfully", async () => {
     const proof0 = tree.getProof(leaves[0].account, leaves[0].amount);
-    await zero.approve(locker.target, parseEther("1"));
     await zero.whitelist(locker.target, true);
     const claimTransaction = airdropRewarder.claim(
       leaves[0].account,
@@ -111,7 +105,6 @@ describe("Airdrop Tests", async () => {
 
   it("Can claim successfully", async () => {
     const proof0 = tree.getProof(leaves[0].account, leaves[0].amount);
-    await zero.approve(locker.target, parseEther("1"));
     await zero.whitelist(locker.target, true);
     const claimTransaction = airdropRewarder.claim(
       leaves[0].account,
