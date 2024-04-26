@@ -23,7 +23,7 @@ describe("Airdrop Tests", async () => {
     user2: SignerWithAddress,
     user3: SignerWithAddress;
   let tree: BalanceTree;
-  let leaves: BalanceLeaf[];
+  let leaves: BalanceLeaf[] = [];
   let accounts: SignerWithAddress[];
   let locker: LockerToken;
   let zero: ZeroLend;
@@ -55,6 +55,7 @@ describe("Airdrop Tests", async () => {
     await airdropRewarder.setMerkleRoot(tree.getHexRoot());
     await zero.whitelist(airdropRewarder.target, true);
     await zero.transfer(airdropRewarder.target, parseEther("100"));
+    await zero.whitelist(locker.target, true);
   });
 
   it("Cannot claim with wrong amount", async () => {
@@ -84,7 +85,6 @@ describe("Airdrop Tests", async () => {
 
   it("Can claim and lock successfully", async () => {
     const proof0 = tree.getProof(leaves[0].account, leaves[0].amount);
-    await zero.whitelist(locker.target, true);
     const claimTransaction = airdropRewarder.claim(
       leaves[0].account,
       parseEther("1"),
@@ -105,7 +105,6 @@ describe("Airdrop Tests", async () => {
 
   it("Can claim successfully", async () => {
     const proof0 = tree.getProof(leaves[0].account, leaves[0].amount);
-    await zero.whitelist(locker.target, true);
     const claimTransaction = airdropRewarder.claim(
       leaves[0].account,
       parseEther("1"),

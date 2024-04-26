@@ -99,7 +99,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
             locker.createLockFor(
                 remainingAmount,
                 lockUntil,
-                msg.sender,
+                _user,
                 _lockAndStake
             );
             emit RewardsLocked(_user, remainingAmount);
