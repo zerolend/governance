@@ -27,8 +27,10 @@ describe("Airdrop Tests", async () => {
   let accounts: SignerWithAddress[];
   let locker: LockerToken;
   let zero: ZeroLend;
+  let vest: VestedZeroNFT;
 
-  const now = Math.floor(Date.now() / 1000000);
+  const now = Math.floor(Date.now() / 1000);
+
 
   beforeEach("Deploy Airdrop Contracts", async () => {
     accounts = await ethers.getSigners();
@@ -41,16 +43,19 @@ describe("Airdrop Tests", async () => {
     const governance = await deployGovernance();
     locker = governance.lockerToken;
     zero = governance.zero;
+    vest = governance.vestedZeroNFT;
     // airdropToken = await deploy("MockReward", owner.address);
     // await airdropToken.waitForDeployment();
 
     await zero.whitelist(governance.lockerToken.target, true);
+    await zero.whitelist(vest.target, true);
 
     airdropRewarder = (await deployProxy(
       "AirdropRewarder",
-      "initialize(address,address)",
+      "initialize(address,address,address)",
       zero.target,
-      locker.target
+      locker.target,
+      vest.target
     )) as unknown as AirdropRewarder;
     await airdropRewarder.setMerkleRoot(tree.getHexRoot());
     await zero.whitelist(airdropRewarder.target, true);
@@ -91,7 +96,7 @@ describe("Airdrop Tests", async () => {
       parseEther("1"),
       proof0,
       true,
-      now
+      31536000
     );
     await expect(claimTransaction)
       .to.emit(airdropRewarder, "RewardsClaimed")
@@ -108,13 +113,12 @@ describe("Airdrop Tests", async () => {
     const proof0 = tree.getProof(leaves[0].account, leaves[0].amount);
     await zero.approve(locker.target, parseEther("1"));
     await zero.whitelist(locker.target, true);
-    const claimTransaction = 
-    airdropRewarder.claim(
+    const claimTransaction = airdropRewarder.claim(
       leaves[0].account,
       parseEther("1"),
       proof0,
-      false,
-      now
+      true,
+      31536000
     );
     await expect(claimTransaction)
       .to.emit(airdropRewarder, "RewardsClaimed")
@@ -129,13 +133,12 @@ describe("Airdrop Tests", async () => {
 
   it("Cannot claim again", async () => {
     const proof0 = tree.getProof(leaves[0].account, leaves[0].amount);
-    const claimTransaction = 
-    airdropRewarder.claim(
+    const claimTransaction = airdropRewarder.claim(
       leaves[0].account,
       parseEther("1"),
       proof0,
       false,
-      now
+      31536000
     );
     await expect(claimTransaction)
       .to.emit(airdropRewarder, "RewardsClaimed")
@@ -146,7 +149,7 @@ describe("Airdrop Tests", async () => {
         parseEther("1"),
         proof0,
         true,
-        now
+        31536000
       )
     ).to.be.revertedWithCustomError(airdropRewarder, "RewardsAlreadyClaimed");
   });
@@ -159,7 +162,7 @@ describe("Airdrop Tests", async () => {
         parseEther("1"),
         proof0,
         true,
-        now
+        31536000
       )
     )
       .to.emit(airdropRewarder, "RewardsClaimed")
@@ -172,7 +175,7 @@ describe("Airdrop Tests", async () => {
         parseEther("2"),
         proof1,
         true,
-        now
+        31536000
       )
     )
       .to.emit(airdropRewarder, "RewardsClaimed")
