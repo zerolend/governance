@@ -26,6 +26,7 @@ export async function deployVoters() {
   );
 
   const poolVoter = await PoolVoter.deploy();
+  console.log("PoolVoter Deployed at: ", poolVoter.target);
 
   // get instances
   const aToken = await hre.ethers.getContractAt("AToken", tokens.aTokenAddress);
