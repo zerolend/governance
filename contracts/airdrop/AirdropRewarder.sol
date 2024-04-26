@@ -6,6 +6,7 @@ import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
 
 contract AirdropRewarder is Initializable, OwnableUpgradeable {
@@ -16,26 +17,30 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     mapping(address => bool) public rewardsClaimed;
 
     ERC20Upgradeable public rewardToken;
-    IVestedZeroNFT public vestedZeroNft;
+    IZeroLocker public locker;
+    IVestedZeroNFT public vestedZeroNFT;
 
     error InvalidAddress();
+    error InvalidLockDuration();
     error RewardsAlreadyClaimed();
     error InvalidMerkleProof(bytes32[]);
 
     event MerkleRootSet(bytes32 oldMerkleRoot, bytes32 newMerkleRoot);
     event RewardTokenSet(address oldRewardToken, address newRewardToken);
-    event VestedZeroNftSet(address oldRewardToken, address newRewardToken);
+    event LockerSet(address oldLocker, address newLocker);
     event RewardsClaimed(address _user, uint256 _rewardsAmount);
+    event RewardsLocked(address _user, uint256 _lockAmount);
+    event RewardsTransferred(address _user, uint256 _transferAmount);
     event RewardTerminated();
 
     function initialize(
-        bytes32 _merkleRoot,
         address _rewardToken,
-        address _vestedZeroNft
+        address _locker,
+        address _vestedZeroNFT
     ) external initializer {
         __Ownable_init(msg.sender);
-        merkleRoot = _merkleRoot;
-        vestedZeroNft = IVestedZeroNFT(_vestedZeroNft);
+        locker = IZeroLocker(_locker);
+        vestedZeroNFT = IVestedZeroNFT(_vestedZeroNFT);
         rewardToken = ERC20Upgradeable(_rewardToken);
     }
 
@@ -49,19 +54,31 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         emit RewardTokenSet(address(rewardToken), _rewardToken);
         rewardToken = ERC20Upgradeable(_rewardToken);
     }
-    
-    function setVestedZeroNft(address _vestedZeroNft) external onlyOwner {
-        if (_vestedZeroNft== address(0)) revert InvalidAddress();
-        emit VestedZeroNftSet(address(vestedZeroNft), _vestedZeroNft);
-        vestedZeroNft = IVestedZeroNFT(_vestedZeroNft);
+
+    function setLocker(address _locker) external onlyOwner {
+        if (_locker == address(0)) revert InvalidAddress();
+        emit LockerSet(address(locker), _locker);
+
+        locker = IZeroLocker(_locker);
+    }
+
+    function setVestedZeroNFT(address _locker) external onlyOwner {
+        if (_locker == address(0)) revert InvalidAddress();
+        emit LockerSet(address(locker), _locker);
+
+        locker = IZeroLocker(_locker);
     }
 
     function claim(
         address _user,
         uint256 _claimAmount,
-        bytes32[] calldata _merkleProofs
+        bytes32[] calldata _merkleProofs,
+        bool _lockAndStake,
+        uint256 lockUntil
     ) external {
         if (_user == address(0)) revert InvalidAddress();
+        if (lockUntil < block.timestamp + 365 days)
+            revert InvalidLockDuration();
 
         bytes32 node = keccak256(abi.encodePacked(_user, _claimAmount));
 
@@ -69,21 +86,35 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
             revert InvalidMerkleProof(_merkleProofs);
 
         if (rewardsClaimed[_user]) revert RewardsAlreadyClaimed();
-        
+
         rewardsClaimed[_user] = true;
-        rewardToken.safeTransfer(_user, _claimAmount/2);
-        vestedZeroNft.mint(
-            _user,
-            0,
-            _claimAmount/2,
-            91 days,
-            182 days,
-            90 days,
-            false,
-            IVestedZeroNFT.VestCategory.AIRDROP
-        );
-        
-        emit RewardsClaimed(_user, _claimAmount);
+        uint256 transferAmount = (_claimAmount * 40) / 100;
+        rewardToken.safeTransfer(_user, transferAmount);
+        emit RewardsTransferred(_user, transferAmount);
+
+        uint256 remainingAmount = _claimAmount - transferAmount;
+        if (_lockAndStake) {
+            rewardToken.approve(address(locker), remainingAmount);
+            locker.createLockFor(
+                remainingAmount,
+                lockUntil,
+                msg.sender,
+                _lockAndStake
+            );
+            emit RewardsLocked(_user, remainingAmount);
+            emit RewardsClaimed(_user, _claimAmount);
+        } else {
+            vestedZeroNFT.mint(
+                _user,
+                remainingAmount,
+                0,
+                91 days,
+                182 days,
+                90 days,
+                false,
+                IVestedZeroNFT.VestCategory.AIRDROP
+            );
+        }
     }
 
     function adminWithdrawal() public onlyOwner {
