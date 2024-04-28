@@ -16,20 +16,34 @@ import {OApp} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
 import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
+import {IZeroLend} from "../interfaces/IZeroLend.sol";
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 // An omni-chain staking contract that allows users to stake their veNFT
 // and get some voting power. Once staked the voting power is available cross-chain.
-contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
+contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, ReentrancyGuard {
     ILocker public lpLocker;
     ILocker public tokenLocker;
+    IZeroLend public rewardsToken;
+
+    uint256 public periodFinish = 0;
+    uint256 public rewardRate = 0;
+    uint256 public rewardsDuration = 7 days;
+    uint256 public lastUpdateTime;
+    uint256 public rewardPerTokenStored;
 
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
     mapping(uint256 => address) public lockedBy;
     mapping(address => uint256[]) public lockedNfts;
 
+    mapping(address => uint256) public userRewardPerTokenPaid;
+    mapping(address => uint256) public rewards;
+
     error InvalidUnstaker(address, address);
+
+    event RewardPaid(address indexed user, uint256 reward);
 
     // constructor() {
     //     _disableInitializers();
@@ -74,7 +88,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
             tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
             _mint(from, tokenPower[tokenId]);
         } else require(false, "invalid operator");
-
+        updateRewardFor(from);
         return this.onERC721Received.selector;
     }
 
@@ -100,7 +114,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         return (tokenIds, tokenDetails);
     }
 
-    function unstakeLP(uint256 tokenId) external {
+    function unstakeLP(uint256 tokenId) updateReward(msg.sender) external {
         address lockedBy_ = lockedBy[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
@@ -113,7 +127,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
-    function unstakeToken(uint256 tokenId) external {
+    function unstakeToken(uint256 tokenId) updateReward(msg.sender) external {
         address lockedBy_ = lockedBy[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
@@ -148,11 +162,44 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         // receive the veStaked supply on the mainnet
     }
 
+    function earned(address account) public view returns (uint256) {
+        return
+            (balanceOf(account) *
+                (rewardPerToken() - userRewardPerTokenPaid[account])) /
+            1e18 +
+            rewards[account];
+    }
+
+    function lastTimeRewardApplicable() public view returns (uint256) {
+        return block.timestamp < periodFinish ? block.timestamp : periodFinish;
+    }
+
+    function rewardPerToken() public view returns (uint256) {
+        if (totalSupply() == 0) {
+            return rewardPerTokenStored;
+        }
+        return
+            rewardPerTokenStored +
+            ((lastTimeRewardApplicable() - lastUpdateTime) *
+                rewardRate *
+                1e18) /
+            totalSupply();
+    }
+
     function transfer(address, uint256) public pure override returns (bool) {
         // don't allow users to transfer voting power. voting power can only
         // be minted or burnt and act like SBTs
         require(false, "transfer disabled");
         return false;
+    }
+
+    function getReward() public nonReentrant updateReward(msg.sender) {
+        uint256 reward = rewards[msg.sender];
+        if (reward > 0) {
+            rewards[msg.sender] = 0;
+            rewardsToken.transfer(msg.sender, reward);
+            emit RewardPaid(msg.sender, reward);
+        }
     }
 
     function transferFrom(
@@ -190,5 +237,24 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable {
         }
 
         return updatedArray;
+    }
+
+    function updateRewardFor(address account) public {
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        if (account != address(0)) {
+            rewards[account] = earned(account);
+            userRewardPerTokenPaid[account] = rewardPerTokenStored;
+        }
+    }
+
+    modifier updateReward(address account) {
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        if (account != address(0)) {
+            rewards[account] = earned(account);
+            userRewardPerTokenPaid[account] = rewardPerTokenStored;
+        }
+        _;
     }
 }
