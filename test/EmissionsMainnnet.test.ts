@@ -106,7 +106,7 @@ describe("EmissionsMainnet unit tests", () => {
     );
   });
 
-  it.only("should release funds to the pool voter contract", async function () {
+  it("should release funds to the pool voter contract", async function () {
     await time.increaseTo(now + 654800);
     // deployer should be able to mint a nft for another user
     await vest.mint(
