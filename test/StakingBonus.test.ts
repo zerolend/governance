@@ -9,7 +9,7 @@ import {
   VestedZeroNFT,
   ZeroLend,
 } from "../typechain-types";
-import { AbiCoder } from "ethers";
+import { AbiCoder, parseEther } from "ethers";
 import { e18 } from "./fixtures/utils";
 
 describe("StakingBonus", () => {
@@ -84,7 +84,7 @@ describe("StakingBonus", () => {
 
     it("should only lock a nft properly for the user", async function () {
       const encoder = AbiCoder.defaultAbiCoder();
-      const data = encoder.encode(["bool", "address"], [false, ant.address]); 
+      const data = encoder.encode(["bool", "address", "uint256"], [false, ant.address, 31536000*4]); 
       
       // stake nft on behalf of the ant
       expect(
@@ -108,7 +108,7 @@ describe("StakingBonus", () => {
       await zero.transfer(stakingBonus.target, e18 * 100n);
 
       // give a 50% bonus
-      await stakingBonus.setBonusBps(50);
+      await stakingBonus.setBonusBps(5000);
 
       // stake nft on behalf of the ant
       expect(
@@ -122,8 +122,8 @@ describe("StakingBonus", () => {
       );
 
       // the staking contract should've awarded more zero for staking unvested tokens
-      // 20 zero + 50% bonus = 30 zero... ->> which means about 29.999 voting power
-      expect(await locker.balanceOfNFT(1)).greaterThan(e18 * 29n);
+      // 20 zero + 20% bonus = 24 zero... ->> which means about 23.999 voting power
+      expect(await locker.balanceOfNFT(1)).to.closeTo(parseEther("24"), parseEther("0.1"));
     });
   });
 });
