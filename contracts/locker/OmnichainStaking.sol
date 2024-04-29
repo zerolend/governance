@@ -53,6 +53,11 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
     //     _disableInitializers();
     // }
 
+    /**
+     * @dev Initializes the contract with the provided token lockers.
+     * @param _tokenLocker The address of the token locker contract.
+     * @param _lpLocker The address of the LP locker contract.
+     */
     function init(
         address, // LZ endpoint
         address _tokenLocker,
@@ -68,6 +73,13 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         rewardsToken = IZeroLend(_zeroToken);
     }
 
+    /**
+     * @dev Receives an ERC721 token from the lockers and grants voting power accordingly.
+     * @param from The address sending the ERC721 token.
+     * @param tokenId The ID of the ERC721 token.
+     * @param data Additional data.
+     * @return ERC721 onERC721Received selector.
+     */
     function onERC721Received(
         address,
         address from,
@@ -98,6 +110,13 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         return this.onERC721Received.selector;
     }
 
+    
+    /**
+     * @dev Gets the details of locked NFTs for a given user.
+     * @param _user The address of the user.
+     * @return lockedTokenIds The array of locked NFT IDs.
+     * @return tokenDetails The array of locked NFT details.
+     */
     function getLockedNftDetails(
         address _user
     ) external view returns (uint256[] memory, ILocker.LockedBalance[] memory) {
@@ -120,6 +139,10 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         return (tokenIds, tokenDetails);
     }
 
+    /**
+     * @dev Unstakes an LP NFT and transfers it back to the user.
+     * @param tokenId The ID of the LP NFT to unstake.
+     */
     function unstakeLP(uint256 tokenId) updateReward(msg.sender) external {
         address lockedBy_ = lockedBy[tokenId];
         if (_msgSender() != lockedBy_)
@@ -133,6 +156,10 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
+    /**
+     * @dev Unstakes a regular token NFT and transfers it back to the user.
+     * @param tokenId The ID of the regular token NFT to unstake.
+     */
     function unstakeToken(uint256 tokenId) updateReward(msg.sender) external {
         address lockedBy_ = lockedBy[tokenId];
         if (_msgSender() != lockedBy_)
@@ -146,6 +173,11 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
+    /**
+     * @dev Updates the voting power on a different chain.
+     * @param chainId The ID of the chain to update the voting power on.
+     * @param nftId The ID of the NFT for which voting power is being updated.
+     */
     function updatePowerOnChain(uint256 chainId, uint256 nftId) external {
         // TODO
         // ensure that the user has no votes anywhere and no delegation then send voting
@@ -153,21 +185,38 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         // using layerzero, sends the updated voting power across the different chains
     }
 
+    /**
+     * @dev Deletes the voting power on a different chain.
+     * @param chainId The ID of the chain to delete the voting power on.
+     * @param nftId The ID of the NFT for which voting power is being deleted.
+     */
     function deletePowerOnChain(uint256 chainId, uint256 nftId) external {
         // TODO
         // using layerzero, deletes the updated voting power across the different chains
     }
 
+    /**
+     * @dev Updates the veStaked supply to the mainnet via LayerZero.
+     */
     function updateSupplyToMainnetViaLZ() external {
         // TODO
         // send the veStaked supply to the mainnet
     }
 
+    
+    /**
+     * @dev Updates the veStaked supply from the mainnet via LayerZero.
+     */
     function updateSupplyFromLZ() external {
         // TODO
         // receive the veStaked supply on the mainnet
     }
 
+    /**
+     * @dev Calculates the amount of rewards earned by an account.
+     * @param account The address of the account.
+     * @return The amount of rewards earned.
+     */
     function earned(address account) public view returns (uint256) {
         return
             (balanceOf(account) *
@@ -176,10 +225,18 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
             rewards[account];
     }
 
+    /**
+     * @dev Calculates the last time rewards were applicable.
+     * @return The last time rewards were applicable.
+     */
     function lastTimeRewardApplicable() public view returns (uint256) {
         return block.timestamp < periodFinish ? block.timestamp : periodFinish;
     }
 
+    /**
+     * @dev Calculates the reward per token.
+     * @return The reward per token.
+     */
     function rewardPerToken() public view returns (uint256) {
         if (totalSupply() == 0) {
             return rewardPerTokenStored;
@@ -192,13 +249,9 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
             totalSupply();
     }
 
-    function transfer(address, uint256) public pure override returns (bool) {
-        // don't allow users to transfer voting power. voting power can only
-        // be minted or burnt and act like SBTs
-        require(false, "transfer disabled");
-        return false;
-    }
-
+    /**
+     * @dev Transfers rewards to the caller.
+     */
     function getReward() public nonReentrant updateReward(msg.sender) {
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
@@ -208,17 +261,30 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         }
     }
 
+    /**
+     * @dev Prevents transfers of voting power.
+     */
+    function transfer(address, uint256) public pure override returns (bool) {
+        revert("transfer disabled");
+    }
+
+    /**
+     * @dev Prevents transfers of voting power.
+     */
     function transferFrom(
         address,
         address,
         uint256
     ) public pure override returns (bool) {
-        // don't allow users to transfer voting power. voting power can only
-        // be minted or burnt and act like SBTs
-        require(false, "transferFrom disabled");
-        return false;
+        revert("transferFrom disabled");
     }
 
+    /**
+     * @dev Deletes an element from an array.
+     * @param elements The array to delete from.
+     * @param element The element to delete.
+     * @return The updated array.
+     */
     function deleteAnElement(
         uint256[] memory elements,
         uint256 element
@@ -245,6 +311,10 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         return updatedArray;
     }
 
+    /**
+     * @dev Updates the reward for a given account.
+     * @param account The address of the account.
+     */
     function updateRewardFor(address account) public {
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
@@ -254,6 +324,10 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         }
     }
 
+    /**
+     * @dev Modifier to update the reward for a given account.
+     * @param account The address of the account.
+     */
     modifier updateReward(address account) {
         rewardPerTokenStored = rewardPerToken();
         lastUpdateTime = lastTimeRewardApplicable();
