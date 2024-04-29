@@ -20,8 +20,12 @@ import {IZeroLend} from "../interfaces/IZeroLend.sol";
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-// An omni-chain staking contract that allows users to stake their veNFT
-// and get some voting power. Once staked the voting power is available cross-chain.
+
+/**
+ * @title OmnichainStaking
+ * @dev An omnichain staking contract that allows users to stake their veNFT
+ * and get some voting power. Once staked, the voting power is available cross-chain.
+ */
 contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, ReentrancyGuard {
     ILocker public lpLocker;
     ILocker public tokenLocker;
@@ -52,7 +56,8 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
     function init(
         address, // LZ endpoint
         address _tokenLocker,
-        address _lpLocker
+        address _lpLocker,
+        address _zeroToken
     ) external initializer {
         // TODO add LZ
         __ERC20Votes_init();
@@ -60,6 +65,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
 
         tokenLocker = ILocker(_tokenLocker);
         lpLocker = ILocker(_lpLocker);
+        rewardsToken = IZeroLend(_zeroToken);
     }
 
     function onERC721Received(
