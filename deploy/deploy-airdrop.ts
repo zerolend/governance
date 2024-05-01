@@ -17,8 +17,9 @@ dotenv.config();
 
 // load wallet private key from env file
 const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
-const TOKEN_ADDRESS = "";
-const LOCKER_ADDRESS = "";
+const TOKEN_ADDRESS = "0xb9c3241F538918699C12Daf6e578B3d0F5Ee385F";
+const LOCKER_ADDRESS = "0x031d39037ab725Ad361Cc930130b83ea05C5684F";
+const VESTED_NFT_ADDRESS = "0xb5Fe84c3804F260F5656b714B8CA58456e8f46C8";
 
 const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
   if (TOKEN_ADDRESS.length && LOCKER_ADDRESS.length) {
@@ -30,9 +31,8 @@ const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
     console.log("\nDeployed At", airdropContract.target);
 
     // Initialize Airdrop
-    await airdropContract.initialize(TOKEN_ADDRESS, LOCKER_ADDRESS);
+    await airdropContract.initialize(TOKEN_ADDRESS, LOCKER_ADDRESS, VESTED_NFT_ADDRESS);
     console.log("\nAirdrop Initialized");
-    
 
     // Set Merkle Root
 

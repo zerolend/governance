@@ -30,6 +30,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     event LockerSet(address oldLocker, address newLocker);
     event RewardsClaimed(address _user, uint256 _rewardsAmount);
     event RewardsLocked(address _user, uint256 _lockAmount);
+    event RewardsVested(address _user, uint256 _lockAmount);
     event RewardsTransferred(address _user, uint256 _transferAmount);
     event RewardTerminated();
 
@@ -77,8 +78,6 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         uint256 lockUntil
     ) external {
         if (_user == address(0)) revert InvalidAddress();
-        if (lockUntil < block.timestamp + 365 days)
-            revert InvalidLockDuration();
 
         bytes32 node = keccak256(abi.encodePacked(_user, _claimAmount));
 
@@ -94,27 +93,31 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
 
         uint256 remainingAmount = _claimAmount - transferAmount;
         if (_lockAndStake) {
+            if (lockUntil < 365 days)
+            revert InvalidLockDuration();
             rewardToken.approve(address(locker), remainingAmount);
             locker.createLockFor(
                 remainingAmount,
                 lockUntil,
-                msg.sender,
+                _user,
                 _lockAndStake
             );
             emit RewardsLocked(_user, remainingAmount);
-            emit RewardsClaimed(_user, _claimAmount);
         } else {
+            rewardToken.approve(address(vestedZeroNFT), remainingAmount);
             vestedZeroNFT.mint(
                 _user,
                 remainingAmount,
                 0,
                 91 days,
                 182 days,
-                90 days,
+                block.timestamp + 90 days,
                 false,
                 IVestedZeroNFT.VestCategory.AIRDROP
             );
+            emit RewardsVested(_user, remainingAmount);
         }
+        emit RewardsClaimed(_user, _claimAmount);
     }
 
     function adminWithdrawal() public onlyOwner {
