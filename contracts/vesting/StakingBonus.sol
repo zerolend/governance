@@ -62,18 +62,19 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         // decode data; by default stake the NFT
         bool stake = true;
         address to = from;
-        if (data.length > 1) (stake, to) = abi.decode(data, (bool, address));
+        uint256 duration = 86400 * 365 * 4;
+        if (data.length > 1) (stake, to, duration) = abi.decode(data, (bool, address, uint256));
 
         // calculate the bonus
-        uint256 bonus = calculateBonus(pending);
+        uint256 bonus = calculateBonus(pending, duration);
 
         // get the unvested tokens into this contract
         vestedZERO.claimUnvested(tokenId);
 
-        // stake for 4 years for the user
+        // Staking for either 4 years or the time provided
         locker.createLockFor(
             pending + bonus, // uint256 _value,
-            86400 * 365 * 4, // uint256 _lockDuration,
+            duration, // uint256 _lockDuration,
             to, // address _to,
             stake // bool _stakeNFT
         );
@@ -87,11 +88,23 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     }
 
     function calculateBonus(
-        uint256 amount
+        uint256 amount,
+        uint256 duration
     ) public view override returns (uint256) {
-        uint256 bonus = (amount * bonusBps) / 100;
+
+        uint256 rewardPercentage = bonusBps;
+        if (duration > 0) {
+            uint256 lockDurationInYears = duration / 31536000;
+            if (lockDurationInYears > 0) {
+                rewardPercentage = 500 * lockDurationInYears;
+            }
+        }
+
+        uint256 bonus = (amount * rewardPercentage) / 10000;
+        
         // if we don't have enough funds to pay out bonuses, then return 0
         if (zero.balanceOf(address(this)) < bonus) return 0;
-        return (amount * bonusBps) / 100;
+
+        return bonus;
     }
 }

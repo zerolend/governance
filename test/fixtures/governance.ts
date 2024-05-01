@@ -66,7 +66,8 @@ export async function deployGovernance() {
   await omnichainStaking.init(
     ZERO_ADDRESS,
     lockerToken.target,
-    lockerLP.target
+    lockerLP.target,
+    zero.target
   );
 
   // unpause zero
