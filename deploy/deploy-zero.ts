@@ -1,13 +1,19 @@
 import { ethers } from "hardhat";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-async function main() {
-  const ZeroToken = await ethers.getContractFactory("ZeroLend");
-  const token = await ZeroToken.deploy();
+async function main(hre: HardhatRuntimeEnvironment) {
 
-  console.log("contract deployed", token.target);
+  const { deployments, getNamedAccounts } = hre;
+  const { deploy } = deployments;
+  const { deployer } = await getNamedAccounts();
+
+    await deploy("ZeroLend", {
+        from: deployer,
+        contract: "ZeroLend",
+        autoMine: true,
+        log: true,
+      });
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+main.tags = ["ZeroLend"];
+export default main;
