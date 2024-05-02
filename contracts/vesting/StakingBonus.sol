@@ -82,6 +82,18 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         return this.onERC721Received.selector;
     }
 
+    function createLock(uint256 amount, uint256 duration, bool stake) external {
+        zero.transferFrom(msg.sender, address(this), amount);
+        uint256 bonus = calculateBonus(amount, duration);
+
+        locker.createLockFor(
+            amount + bonus, // uint256 _value,
+            duration, // uint256 _lockDuration,
+            msg.sender, // address _to,
+            stake // bool _stakeNFT
+        );
+    }
+
     function setBonusBps(uint256 _bps) external override onlyOwner {
         emit SetBonusBPS(bonusBps, _bps);
         bonusBps = _bps;
