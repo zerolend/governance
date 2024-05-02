@@ -373,7 +373,7 @@ contract BaseLocker is
         // stake on behalf of the user
         if (_stakeNFT) {
             _mint(address(this), _tokenId);
-            bytes memory data = abi.encode(_to);
+            bytes memory data = abi.encode(_stakeNFT, _to, _lockDuration);
             this.safeTransferFrom(address(this), address(staking), _tokenId, data);
         } else _mint(_to, _tokenId);
 
