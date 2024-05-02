@@ -90,27 +90,36 @@ const config: HardhatUserConfig = {
     goerli: {
       url: `https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161	`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+      saveDeployments:true,
     },
     blastSepolia: {
       url: `https://sepolia.blast.io`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+      saveDeployments:true,
     },
     lineaSepolia: {
       url: `https://rpc.sepolia.linea.build`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+      saveDeployments:true,
     },
     lineaFork: {
       url: `https://rpc.vnet.tenderly.co/devnet/lineadevnet/669f4c43-b182-497d-b0b0-deed97a9ac6a`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+      saveDeployments:true,
     },
     mainnet: {
       url: `https://rpc.ankr.com/eth`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+      saveDeployments:true,
     },
     linea: {
       url: `https://rpc.linea.build/`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+      saveDeployments:true,
     },
+  },
+  namedAccounts: {
+    deployer: 0
   },
   etherscan: {
     apiKey: {

@@ -7,13 +7,13 @@ async function main(hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-    await deploy("ZeroLend", {
-        from: deployer,
-        contract: "ZeroLend",
-        autoMine: true,
-        log: true,
-      });
+  await deploy("EarlyZERO", {
+    from: deployer,
+    contract: "EarlyZERO",
+    autoMine: true,
+    log: true,
+  });
 }
 
-main.tags = ["ZeroLend"];
+main.tags = ["EarlyZERO"];
 export default main;
