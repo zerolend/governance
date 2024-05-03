@@ -2,13 +2,8 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 // load env file
 import dotenv from "dotenv";
-import { ethers, getNamedAccounts } from "hardhat";
 import { ZERO_ADDRESS, supply } from "../test/fixtures/utils";
-import { parseEther } from "ethers";
 dotenv.config();
-
-// load wallet private key from env file
-const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
 
 const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
   const [deployer, ant, whale] = await hre.ethers.getSigners();

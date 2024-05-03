@@ -140,6 +140,8 @@ contract OmnichainStaking is IOmnichainStaking, StakingRewards {
         _burnPower(msg.sender, lpPower[tokenId] * 4);
         lpPower[tokenId] = 0;
 
+        // TODO reset the user's votes in PoolVoter
+
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
@@ -160,6 +162,8 @@ contract OmnichainStaking is IOmnichainStaking, StakingRewards {
 
         _burnPower(msg.sender, tokenPower[tokenId]);
         tokenPower[tokenId] = 0;
+
+        // TODO reset the user's votes in PoolVoter
 
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
