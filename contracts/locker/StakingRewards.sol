@@ -12,14 +12,9 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {OApp} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
-import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
-import {ILocker} from "../interfaces/ILocker.sol";
 import {IZeroLend} from "../interfaces/IZeroLend.sol";
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
@@ -56,6 +51,7 @@ contract StakingRewards is
     ) internal {
         __ERC20Votes_init();
         __Ownable_init(_owner);
+        __ReentrancyGuard_init();
         __ERC20_init(_name, _symbol);
 
         rewardsToken = IZeroLend(_zeroToken);

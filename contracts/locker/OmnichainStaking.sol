@@ -12,9 +12,7 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {OApp} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
 import {IZeroLend} from "../interfaces/IZeroLend.sol";
@@ -42,7 +40,6 @@ contract OmnichainStaking is IOmnichainStaking, StakingRewards {
      * @param _lpLocker The address of the LP locker contract.
      */
     function init(
-        address, // LZ endpoint
         address _tokenLocker,
         address _lpLocker,
         address _zeroToken
