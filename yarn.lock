@@ -7,13 +7,6 @@
   resolved "https://registry.yarnpkg.com/@adraffy/ens-normalize/-/ens-normalize-1.10.1.tgz#63430d04bd8c5e74f8d7d049338f1cd9d4f02069"
   integrity sha512-96Z2IP3mYmF1Xg2cDm8f1gWGf/HUVedQ3FMifV4kG/PQ4yEP51xDtRAEfhVNt5f/uzpNkZHwWQuUcu6D6K+Ekw==
 
-"@api3/contracts@^2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@api3/contracts/-/contracts-2.5.0.tgz#2958077499d134e8dbafc3cf971dd8b99a2623bc"
-  integrity sha512-tPrzkF2oA98wYT07fvJ1eu6LwJuXcUVI0Sljs4G17vXQopClkMyKcVUMcI9b6aI3ygwbqgy6XC1RONMSA3xFbA==
-  dependencies:
-    ethers "^6.11.1"
-
 "@aws-crypto/sha256-js@1.2.2":
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@aws-crypto/sha256-js/-/sha256-js-1.2.2.tgz#02acd1a1fda92896fc5a28ec7c6e164644ea32fc"
