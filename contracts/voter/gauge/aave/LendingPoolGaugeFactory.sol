@@ -72,7 +72,7 @@ contract LendingPoolGaugeFactory is Ownable {
         );
     }
 
-    function setDuration(uint32 _duration) external onlyOwner{
+    function setDuration(uint32 _duration) external onlyOwner {
         emit DurationUpdated(duration, _duration);
         duration = _duration;
     }

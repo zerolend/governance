@@ -229,23 +229,25 @@ contract VestedZeroNFT is
 
     function claim(address _user) public returns (uint256 claimAmount) {
         uint256 userNftCount = balanceOf(_user);
-        for (uint256 i; i < userNftCount;) {
+        for (uint256 i; i < userNftCount; ) {
             uint256 tokenId = tokenOfOwnerByIndex(_user, i);
-            claimAmount += claim(tokenId);            
+            claimAmount += claim(tokenId);
             unchecked {
                 ++i;
             }
-        }                 
+        }
     }
-    
-    function claim(uint256[] calldata _tokenIds) public returns (uint256 claimAmount) {
+
+    function claim(
+        uint256[] calldata _tokenIds
+    ) public returns (uint256 claimAmount) {
         uint256 userNftCount = _tokenIds.length;
-        for (uint256 i; i < userNftCount;) {
-            claimAmount += claim(_tokenIds[i]);      
+        for (uint256 i; i < userNftCount; ) {
+            claimAmount += claim(_tokenIds[i]);
             unchecked {
                 ++i;
             }
-        }                 
+        }
     }
 
     /// How much ZERO tokens this vesting nft can claim
@@ -276,34 +278,38 @@ contract VestedZeroNFT is
         return (lock.upfront, ((lock.pending * pct) / denominator));
     }
 
-    function claimable(address _user) public view  returns (uint256 totalUpFront, uint256 totalPending) {
+    function claimable(
+        address _user
+    ) public view returns (uint256 totalUpFront, uint256 totalPending) {
         uint256 userNftCount = this.balanceOf(_user);
 
-        for (uint256 i; i < userNftCount;) {
+        for (uint256 i; i < userNftCount; ) {
             uint256 tokenId = tokenOfOwnerByIndex(_user, i);
 
             (uint256 upFront, uint256 pending) = claimable(tokenId);
-            totalUpFront+= upFront;
+            totalUpFront += upFront;
             totalPending += pending;
-            
+
             unchecked {
                 ++i;
             }
-        }                 
+        }
     }
 
-    function claimable(uint256[] calldata _tokenIds) public view  returns (uint256 totalUpFront, uint256 totalPending) {
+    function claimable(
+        uint256[] calldata _tokenIds
+    ) public view returns (uint256 totalUpFront, uint256 totalPending) {
         uint256 nftCount = _tokenIds.length;
 
-        for (uint256 i; i < nftCount;) {
+        for (uint256 i; i < nftCount; ) {
             (uint256 upFront, uint256 pending) = claimable(_tokenIds[i]);
-            totalUpFront+= upFront;
+            totalUpFront += upFront;
             totalPending += pending;
-            
+
             unchecked {
                 ++i;
             }
-        }                 
+        }
     }
 
     /// @inheritdoc IVestedZeroNFT

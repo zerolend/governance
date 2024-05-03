@@ -12,12 +12,10 @@ const PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY || "";
 
 const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
   const [deployer, ant, whale] = await hre.ethers.getSigners();
-  
+
   // Deploy contracts
   const EarlyZERO = await hre.ethers.getContractFactory("EarlyZERO");
-  const EarlyZEROVesting = await hre.ethers.getContractFactory(
-    "EarlyZEROVesting"
-  );
+
   const ZeroLendToken = await hre.ethers.getContractFactory("ZeroLend");
   const VestedZeroNFT = await hre.ethers.getContractFactory("VestedZeroNFT");
   const StakingBonus = await hre.ethers.getContractFactory("StakingBonus");
@@ -30,10 +28,9 @@ const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
   const lockerToken = await LockerToken.deploy();
   const lockerLP = await LockerToken.deploy();
   const earlyZERO = await EarlyZERO.deploy();
-  const earlyZEROVesting = await EarlyZEROVesting.deploy();
   const zero = await ZeroLendToken.deploy();
   const vestedZeroNFT = await VestedZeroNFT.deploy();
-  
+
   // init contracts
   await vestedZeroNFT.init(zero.target, stakingBonus.target);
   await stakingBonus.init(
@@ -47,11 +44,7 @@ const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
     omnichainStaking.target,
     stakingBonus.target
   );
-  await earlyZEROVesting.init(
-    earlyZERO.target,
-    lockerToken.target,
-    stakingBonus.target
-  );
+
   // TODO use lp tokens
   await lockerLP.init(
     zero.target,
@@ -67,9 +60,6 @@ const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
   await zero.togglePause(false);
   // give necessary approvals
   await zero.approve(vestedZeroNFT.target, 100n * supply);
-  await earlyZERO.addwhitelist(earlyZEROVesting.target, true);
-
-
 
   const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
   const poolVoter = await PoolVoter.deploy();
@@ -82,7 +72,6 @@ const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
   console.log("lockerToken", lockerToken.target);
   console.log("lockerLP", lockerLP.target);
   console.log("earlyZERO", earlyZERO.target);
-  console.log("earlyZEROVesting", earlyZEROVesting.target);
   console.log("zero", zero.target);
   console.log("vestedZeroNFT", vestedZeroNFT.target);
   console.log("poolVoter", poolVoter.target);
