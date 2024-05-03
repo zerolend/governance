@@ -27,13 +27,13 @@ export async function deployGovernance() {
   const zero = await ZeroLendToken.deploy();
   const vestedZeroNFT = await VestedZeroNFT.deploy();
 
-  console.log("stakingBonus", stakingBonus.target);
-  console.log("omnichainStaking", omnichainStaking.target);
-  console.log("lockerToken", lockerToken.target);
-  console.log("lockerLP", lockerLP.target);
-  console.log("earlyZERO", earlyZERO.target);
-  console.log("zero", zero.target);
-  console.log("vestedZeroNFT", vestedZeroNFT.target);
+  // console.log("stakingBonus", stakingBonus.target);
+  // console.log("omnichainStaking", omnichainStaking.target);
+  // console.log("lockerToken", lockerToken.target);
+  // console.log("lockerLP", lockerLP.target);
+  // console.log("earlyZERO", earlyZERO.target);
+  // console.log("zero", zero.target);
+  // console.log("vestedZeroNFT", vestedZeroNFT.target);
 
   // init contracts
   await vestedZeroNFT.init(zero.target, stakingBonus.target);

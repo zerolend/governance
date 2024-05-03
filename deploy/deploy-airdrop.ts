@@ -20,7 +20,11 @@ const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  if (TOKEN_ADDRESS.length && LOCKER_ADDRESS.length && VESTED_NFT_ADDRESS.length) {
+  if (
+    TOKEN_ADDRESS.length &&
+    LOCKER_ADDRESS.length &&
+    VESTED_NFT_ADDRESS.length
+  ) {
     const airdropDeployment = await deploy("AirdropRewarder", {
       from: deployer,
       contract: "AirdropRewarder",
@@ -36,8 +40,11 @@ const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
       log: true,
     });
 
-    const airdropContract = await  ethers.getContractAt("AirdropRewarder", airdropDeployment.address);
-    
+    const airdropContract = await ethers.getContractAt(
+      "AirdropRewarder",
+      airdropDeployment.address
+    );
+
     // Set Merkle Root
     let leaves: BalanceLeaf[] = [];
     for (let index = 0; index < Object.keys(data).length; index++) {

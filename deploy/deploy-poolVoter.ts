@@ -8,10 +8,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  if (
-    ZERO_TOKEN_ADDRESS.length &&
-    OMNICHAIN_STAKING_ADDRESS.length
-  ) {
+  if (ZERO_TOKEN_ADDRESS.length && OMNICHAIN_STAKING_ADDRESS.length) {
     await deploy("PoolVoter", {
       from: deployer,
       contract: "PoolVoter",
@@ -20,10 +17,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
         proxyContract: "OpenZeppelinTransparentProxy",
         execute: {
           methodName: "init",
-          args: [
-            OMNICHAIN_STAKING_ADDRESS,
-            ZERO_TOKEN_ADDRESS
-          ],
+          args: [OMNICHAIN_STAKING_ADDRESS, ZERO_TOKEN_ADDRESS],
         },
       },
       autoMine: true,

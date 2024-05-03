@@ -17,7 +17,7 @@ export const WALLET_USER_INDEXES = {
 export class ActorFixture {
   wallets: Array<Wallet>;
 
-  constructor(wallets) {
+  constructor(wallets: Array<Wallet>) {
     this.wallets = wallets;
   }
   /* EOA that owns all Uniswap-related contracts */
