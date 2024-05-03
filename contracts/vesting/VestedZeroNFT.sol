@@ -34,9 +34,9 @@ contract VestedZeroNFT is
     PausableUpgradeable,
     ERC721EnumerableUpgradeable
 {
-    uint256 public constant QUART = 25000; //  25%
-    uint256 public constant HALF = 65000; //  65%
-    uint256 public constant WHOLE = 100000; // 100%
+    uint256 public QUART;
+    uint256 public HALF;
+    uint256 public WHOLE;
 
     IERC20 public zero;
     uint256 public lastTokenId;
@@ -60,6 +60,10 @@ contract VestedZeroNFT is
         denominator = 10000;
         stakingBonus = _stakingBonus;
         royaltyReceiver = msg.sender;
+
+        QUART = 25000; //  25%
+        HALF = 65000; //  65%
+        WHOLE = 100000; // 100%
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }

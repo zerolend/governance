@@ -94,13 +94,44 @@ const main = async function () {
     stakingBonus.target
   );
 
-  await omnichainStaking.init(ZERO_ADDRESS, lockerToken.target, ZERO_ADDRESS);
+  await omnichainStaking.init(
+    ZERO_ADDRESS,
+    lockerToken.target,
+    ZERO_ADDRESS,
+    86400 * 30
+  );
 
   console.log("stakingBonus", stakingBonusProxy.target);
   console.log("omnichainStaking", omnichainStakingProxy.target);
   console.log("lockerToken", lockerTokenProxy.target);
   console.log("zero", zero.target);
   console.log("vestedZeroNFT", vestedZeroNFTProxy.target);
+
+  if (hre.network.name != "hardhat") {
+    // Verify contract programmatically
+    await hre.run("verify:verify", { address: stakingBonusImpl.target });
+    await hre.run("verify:verify", { address: omnichainStakingImpl.target });
+    await hre.run("verify:verify", { address: lockerTokenImpl.target });
+    await hre.run("verify:verify", { address: vestedZeroNFTImpl.target });
+
+    // Verify contract programmatically
+    await hre.run("verify:verify", {
+      address: stakingBonus.target,
+      constructorArgs: [stakingBonusImpl.target, safe, "0x"],
+    });
+    await hre.run("verify:verify", {
+      address: omnichainStaking.target,
+      constructorArgs: [omnichainStakingImpl.target, safe, "0x"],
+    });
+    await hre.run("verify:verify", {
+      address: lockerToken.target,
+      constructorArgs: [lockerTokenImpl.target, safe, "0x"],
+    });
+    await hre.run("verify:verify", {
+      address: vestedZeroNFT.target,
+      constructorArgs: [vestedZeroNFTImpl.target, safe, "0x"],
+    });
+  }
 };
 
 main();

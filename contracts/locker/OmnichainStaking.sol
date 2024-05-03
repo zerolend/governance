@@ -42,11 +42,13 @@ contract OmnichainStaking is IOmnichainStaking, StakingRewards {
     function init(
         address _tokenLocker,
         address _lpLocker,
-        address _zeroToken
+        address _zeroToken,
+        uint256 _rewardsDuration
     ) external initializer {
         // TODO add LZ
 
         __initStakingRewards(
+            _rewardsDuration, // uint256 _rewardsDuration
             _zeroToken, // address _zeroToken,
             msg.sender, // address _owner,
             "ZERO Voting Power", // string memory _name,

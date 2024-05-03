@@ -44,6 +44,7 @@ contract StakingRewards is
     event RewardsDurationUpdated(uint256 newDuration);
 
     function __initStakingRewards(
+        uint256 _rewardsDuration,
         address _zeroToken,
         address _owner,
         string memory _name,
@@ -54,6 +55,7 @@ contract StakingRewards is
         __ReentrancyGuard_init();
         __ERC20_init(_name, _symbol);
 
+        rewardsDuration = _rewardsDuration;
         rewardsToken = IZeroLend(_zeroToken);
     }
 
