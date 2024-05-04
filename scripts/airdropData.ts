@@ -1,7 +1,7 @@
 import hre, { ethers } from "hardhat";
 import * as fs from "fs";
 import { BytesLike, parseEther } from "ethers";
-import data from "./airdropData.json";
+import data from "./earlyZero.json";
 import {
   BalanceLeaf,
   BalanceTree,
@@ -9,14 +9,15 @@ import {
 
 type ChainInfo = {
   name: string;
-  earlyZero: string;
+  claimed: string;
+  claimable: string;
 };
 
 type AddressInfo = {
   address: string;
   claimedAmount: string;
   claimableAmount: string;
-  totalPoints: string;
+  totalAmount: string;
   chain: ChainInfo[];
   proofs?: string[];
 };
@@ -36,7 +37,7 @@ async function main() {
     let item = airdropData[String(i)];
 
     const account = item.address;
-    const amount = BigInt(item.totalPoints);
+    const amount = BigInt(item.totalAmount);
     leaves.push({ account, amount });
   }
 
@@ -50,7 +51,7 @@ async function main() {
   let addressData = [];
   for (let i = 1; i < itemsLength; i++) {
     let element = airdropData[String(i)];
-    const proofs = tree.getProof(element.address, BigInt(element.totalPoints));
+    const proofs = tree.getProof(element.address, BigInt(element.totalAmount));
     parsedData.addressData.push({
       ...element,
       proofs,
@@ -58,7 +59,7 @@ async function main() {
   }
 
   const stringifiedData = JSON.stringify(parsedData, null, 2);
-  fs.writeFileSync("scripts/airdropDataWithProofs.json", stringifiedData);
+  fs.writeFileSync("scripts/earlyZeroAirdropDataWithProofs.json", stringifiedData);
 }
 
 main().catch((error) => {

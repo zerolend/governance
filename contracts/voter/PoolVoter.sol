@@ -31,6 +31,8 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     mapping(address => uint256) public supplyIndex;
     mapping(address => uint256) public claimable;
 
+    error ResetNotAllowed();
+
     /**
      * @notice Initializes the PoolVoter contract with the specified staking and reward tokens.
      * @dev This function is called only once during deployment.
@@ -46,10 +48,12 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
 
     /**
      * @notice Resets the user's voting state, clearing their previous votes and weights.
+     * @param _who the user who's voting state is reset
      * @dev Only callable by the owner of the contract.
      */
-    function reset() external {
-        _reset(msg.sender);
+    function reset(address _who) external {
+        require(msg.sender == _who || msg.sender == address(staking),"Invalid reset performed");
+        _reset(_who);
     }
 
     /**

@@ -38,6 +38,8 @@ interface IPoolVoter {
 
     function reset(uint _tokenId) external;
 
+    function reset(address _who) external;
+
     function poke(uint _tokenId) external;
 
     function vote(
