@@ -23,14 +23,17 @@ import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/E
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-
-
 /**
  * @title OmnichainStaking
  * @dev An omnichain staking contract that allows users to stake their veNFT
  * and get some voting power. Once staked, the voting power is available cross-chain.
  */
-contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, ReentrancyGuardUpgradeable, OwnableUpgradeable {
+contract OmnichainStaking is
+    IOmnichainStaking,
+    ERC20VotesUpgradeable,
+    ReentrancyGuardUpgradeable,
+    OwnableUpgradeable
+{
     ILocker public lpLocker;
     ILocker public tokenLocker;
     IPoolVoter public poolVoter;
@@ -106,11 +109,13 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
             "only lockers"
         );
 
-        if (data.length > 0) from = abi.decode(data, (address));
+        if (data.length > 0)
+            (, from, ) = abi.decode(data, (bool, address, uint256));
         lockedBy[tokenId] = from;
         lockedNfts[from].push(tokenId);
 
         updateRewardFor(from);
+
         // if the stake is from the LP locker, then give 4 times the voting power
         if (msg.sender == address(lpLocker)) {
             lpPower[tokenId] = lpLocker.balanceOfNFT(tokenId);
@@ -124,7 +129,6 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         return this.onERC721Received.selector;
     }
 
-    
     /**
      * @dev Gets the details of locked NFTs for a given user.
      * @param _user The address of the user.
@@ -157,7 +161,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
      * @dev Unstakes an LP NFT and transfers it back to the user.
      * @param tokenId The ID of the LP NFT to unstake.
      */
-    function unstakeLP(uint256 tokenId) updateReward(msg.sender) external {
+    function unstakeLP(uint256 tokenId) external updateReward(msg.sender) {
         address lockedBy_ = lockedBy[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
@@ -179,7 +183,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
      * @dev Unstakes a regular token NFT and transfers it back to the user.
      * @param tokenId The ID of the regular token NFT to unstake.
      */
-    function unstakeToken(uint256 tokenId) updateReward(msg.sender) external {
+    function unstakeToken(uint256 tokenId) external updateReward(msg.sender) {
         address lockedBy_ = lockedBy[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
@@ -193,7 +197,7 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
 
         tokenPower[tokenId] = 0;
         poolVoter.reset(msg.sender);
-        
+
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
@@ -227,7 +231,6 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         // send the veStaked supply to the mainnet
     }
 
-    
     /**
      * @dev Updates the veStaked supply from the mainnet via LayerZero.
      */
@@ -254,7 +257,9 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
      * @return The last time rewards were applicable.
      */
     function lastTimeRewardApplicable() public view returns (uint256) {
-        uint256 time = block.timestamp < periodFinish ? block.timestamp : periodFinish;
+        uint256 time = block.timestamp < periodFinish
+            ? block.timestamp
+            : periodFinish;
         return time;
     }
 
@@ -268,19 +273,21 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         }
 
         uint256 timeElapsed = lastTimeRewardApplicable() - lastUpdateTime;
-        uint256 rewardPerTokenChange = (timeElapsed * rewardRate * 1e18) / totalSupply();
+        uint256 rewardPerTokenChange = (timeElapsed * rewardRate * 1e18) /
+            totalSupply();
 
         return rewardPerTokenStored + rewardPerTokenChange;
     }
 
-
-    function notifyRewardAmount(uint256 reward) external onlyOwner updateReward(address(0)) {
+    function notifyRewardAmount(
+        uint256 reward
+    ) external onlyOwner updateReward(address(0)) {
         if (block.timestamp >= periodFinish) {
-            rewardRate = reward/rewardsDuration;
+            rewardRate = reward / rewardsDuration;
         } else {
-            uint256 remaining = periodFinish- block.timestamp;
+            uint256 remaining = periodFinish - block.timestamp;
             uint256 leftover = remaining * rewardRate;
-            rewardRate = (reward+leftover)/rewardsDuration;
+            rewardRate = (reward + leftover) / rewardsDuration;
         }
 
         // Ensure the provided reward amount is not more than the balance in the contract.
@@ -288,19 +295,27 @@ contract OmnichainStaking is IOmnichainStaking, ERC20VotesUpgradeable, Reentranc
         // very high values of rewardRate in the earned and rewardsPerToken functions;
         // Reward + leftover must be less than 2^256 / 10^18 to avoid overflow.
         uint balance = rewardsToken.balanceOf(address(this));
-        require(rewardRate <= balance/rewardsDuration, "Provided reward too high");
+        require(
+            rewardRate <= balance / rewardsDuration,
+            "Provided reward too high"
+        );
 
         lastUpdateTime = block.timestamp;
         periodFinish = block.timestamp + rewardsDuration;
         emit RewardAdded(reward);
     }
 
-    function recoverERC20(address tokenAddress, uint256 tokenAmount) external onlyOwner {
-        require(tokenAddress != address(rewardsToken), "Cannot withdraw the staking token");
+    function recoverERC20(
+        address tokenAddress,
+        uint256 tokenAmount
+    ) external onlyOwner {
+        require(
+            tokenAddress != address(rewardsToken),
+            "Cannot withdraw the staking token"
+        );
         IERC20(tokenAddress).transfer(owner(), tokenAmount);
         emit Recovered(tokenAddress, tokenAmount);
     }
-
 
     /**
      * @dev Transfers rewards to the caller.

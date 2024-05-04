@@ -121,6 +121,7 @@ const main = async function () {
   console.log("omnichainStaking", omnichainStakingProxy.target);
   console.log("lockerToken", lockerTokenProxy.target);
   console.log("zero", zero.target);
+  console.log("poolVoter", poolVoter.target);
   console.log("vestedZeroNFT", vestedZeroNFTProxy.target);
 
   if (hre.network.name != "hardhat") {
