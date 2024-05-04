@@ -21,7 +21,12 @@ import { e18 } from "./fixtures/utils";
 import { deployVoters } from "./fixtures/voters";
 import { ethers } from "hardhat";
 import { deployLendingPool } from "./fixtures/lending";
-import { BaseContract, ContractTransactionResponse, parseEther, parseUnits } from "ethers";
+import {
+  BaseContract,
+  ContractTransactionResponse,
+  parseEther,
+  parseUnits,
+} from "ethers";
 
 describe("PoolVoter", () => {
   let ant: SignerWithAddress;
@@ -268,7 +273,7 @@ describe("PoolVoter", () => {
 
   it("should update the voting state correctly after a user pokes", async function () {
     await poolVoter.connect(ant).vote([reserve.target], [1e8]);
-    
+
     const poolWeightBeforeStaking = await poolVoter.totalWeight();
     await vest.mint(ant.address, e18 * 20n, 0, 1000, 0, now + 1000, true, 0);
 
@@ -283,6 +288,9 @@ describe("PoolVoter", () => {
     await poolVoter.poke(ant.address);
 
     const poolWeightAfterStaking = await poolVoter.totalWeight();
-    expect(poolWeightAfterStaking).to.be.closeTo(2n*poolWeightBeforeStaking, parseUnits('1', 12));
+    expect(poolWeightAfterStaking).to.be.closeTo(
+      2n * poolWeightBeforeStaking,
+      parseUnits("1", 12)
+    );
   });
 });

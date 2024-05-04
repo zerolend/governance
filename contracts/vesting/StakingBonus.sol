@@ -62,8 +62,9 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         // decode data; by default stake the NFT
         bool stake = true;
         address to = from;
-        uint256 duration = 86400 * 365 * 4;
-        if (data.length > 1) (stake, to, duration) = abi.decode(data, (bool, address, uint256));
+        uint256 duration = 4 * 365 days;
+        if (data.length > 1)
+            (stake, to, duration) = abi.decode(data, (bool, address, uint256));
 
         // calculate the bonus
         uint256 bonus = calculateBonus(pending, duration);
@@ -103,7 +104,6 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         uint256 amount,
         uint256 duration
     ) public view override returns (uint256) {
-
         uint256 rewardPercentage = bonusBps;
         if (duration > 0) {
             uint256 lockDurationInYears = duration / 31536000;
@@ -113,7 +113,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         }
 
         uint256 bonus = (amount * rewardPercentage) / 10000;
-        
+
         // if we don't have enough funds to pay out bonuses, then return 0
         if (zero.balanceOf(address(this)) < bonus) return 0;
 

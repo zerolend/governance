@@ -9,10 +9,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  if (
-    TOKEN_ADDRESS.length &&
-    STAKING_BONUS_ADDRESS.length
-  ) {
+  if (TOKEN_ADDRESS.length && STAKING_BONUS_ADDRESS.length) {
     await deploy("VestedZeroNFT", {
       from: deployer,
       contract: "VestedZeroNFT",
@@ -27,7 +24,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
       autoMine: true,
       log: true,
     });
-  }else {
+  } else {
     throw new Error("Invalid address for locker/stakingBonus");
   }
 }

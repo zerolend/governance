@@ -2,8 +2,6 @@
 pragma solidity ^0.8.0;
 
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
-import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receiver.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IERC165, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
@@ -319,7 +317,7 @@ contract BaseLocker is
 
     function withdraw(uint256[] calldata _tokenIds) external nonReentrant {
         uint256 nftCount = _tokenIds.length;
-        for (uint i = 0; i < nftCount;) {
+        for (uint i = 0; i < nftCount; ) {
             withdraw(_tokenIds[i]);
             unchecked {
                 ++i;
@@ -329,7 +327,7 @@ contract BaseLocker is
 
     function withdraw(address _user) external nonReentrant {
         uint256 nftCount = balanceOf(_user);
-        for (uint i = 0; i < nftCount;) {
+        for (uint i = 0; i < nftCount; ) {
             uint256 tokenId_ = tokenOfOwnerByIndex(_user, i);
             withdraw(tokenId_);
             unchecked {
@@ -374,7 +372,12 @@ contract BaseLocker is
         if (_stakeNFT) {
             _mint(address(this), _tokenId);
             bytes memory data = abi.encode(_stakeNFT, _to, _lockDuration);
-            this.safeTransferFrom(address(this), address(staking), _tokenId, data);
+            this.safeTransferFrom(
+                address(this),
+                address(staking),
+                _tokenId,
+                data
+            );
         } else _mint(_to, _tokenId);
 
         return _tokenId;

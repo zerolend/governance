@@ -5,7 +5,12 @@ import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { setForkBlock } from "../utils";
 import { getNetworkDetails } from "../constants";
-import { Contract, ContractTransactionResponse, parseEther, parseUnits } from "ethers";
+import {
+  Contract,
+  ContractTransactionResponse,
+  parseEther,
+  parseUnits,
+} from "ethers";
 import { ethers } from "hardhat";
 import { getGovernanceContracts } from "../helper";
 
@@ -18,7 +23,11 @@ if (FORK) {
     let ant: SignerWithAddress;
     let deployer: SignerWithAddress;
     let deployerForked: SignerWithAddress;
-    let vest: Contract | (VestedZeroNFT & { deploymentTransaction(): ContractTransactionResponse; });
+    let vest:
+      | Contract
+      | (VestedZeroNFT & {
+          deploymentTransaction(): ContractTransactionResponse;
+        });
     let zero: Contract;
 
     beforeEach(async () => {
@@ -105,8 +114,12 @@ if (FORK) {
         expect(res.pending).to.greaterThan(0n);
         expect(res.pending).to.lessThan(e18);
 
-        expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(e18 * 5n);
-        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(e18 * 6n);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
+          e18 * 5n
+        );
+        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(
+          e18 * 6n
+        );
         await vest["claim(uint256)"](1);
         expect(await vest.claimed(1)).to.greaterThan(e18 * 5n);
         expect(await vest.claimed(1)).to.lessThan(e18 * 6n);
@@ -120,7 +133,9 @@ if (FORK) {
         expect(res.pending).to.equal((e18 * 75n) / 10n);
 
         const expected = (e18 * 125n) / 100n;
-        expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThanOrEqual(expected);
+        expect(
+          await vest["claim(uint256)"].staticCall(1)
+        ).to.greaterThanOrEqual(expected);
         await vest["claim(uint256)"](1);
         expect(await vest.claimed(1)).to.greaterThanOrEqual(expected);
         expect(await vest.unclaimed(1)).to.lessThanOrEqual((e18 * 75n) / 10n);
@@ -156,14 +171,18 @@ if (FORK) {
         expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
           (e18 * 74n) / 10n
         );
-        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan((e18 * 75n) / 10n);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(
+          (e18 * 75n) / 10n
+        );
         await vest["claim(uint256)"](1);
 
         await time.increaseTo(now + 1000 + 500 + 1000);
         expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
           (e18 * 74n) / 10n
         );
-        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan((e18 * 75n) / 10n);
+        expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(
+          (e18 * 75n) / 10n
+        );
         await vest["claim(uint256)"](1);
         expect(await vest["claim(uint256)"].staticCall(1)).to.eq(0);
       });
@@ -259,46 +278,46 @@ if (FORK) {
       const tokenId = 1;
       const salePrice = parseEther("1"); // Assuming sale price in Ether
       const expectedRoyaltyAmount =
-        (salePrice * (await vest.royaltyFraction())) / (await vest.denominator());
-  
+        (salePrice * (await vest.royaltyFraction())) /
+        (await vest.denominator());
+
       const [royaltyReceiver, royaltyAmount] = await vest.royaltyInfo(
         tokenId,
         salePrice
       );
-  
+
       expect(royaltyReceiver).to.equal(royaltyReceiverSigner.address); // Assuming the royalty receiver address
       expect(royaltyAmount).to.equal(expectedRoyaltyAmount);
     });
 
+    it("Should allow staking bonus to claim unvested tokens", async function () {
+      await zero.connect(deployer).transfer(deployerForked.address, e18 * 20n);
+      await zero.connect(deployerForked).approve(vest.target, e18 * 20n);
 
-  it("Should allow staking bonus to claim unvested tokens", async function () {
-    await zero.connect(deployer).transfer(deployerForked.address, e18 * 20n);
-    await zero.connect(deployerForked).approve(vest.target, e18 * 20n);
+      await vest.mint(
+        ant.address,
+        e18 * 15n,
+        e18 * 5n,
+        1000,
+        500,
+        now + 1000,
+        false,
+        0
+      );
 
-    await vest.mint(
-      ant.address,
-      e18 * 15n,
-      e18 * 5n,
-      1000,
-      500,
-      now + 1000,
-      false,
-      0
-    );
+      const stakingBonusSigner = await initMainnetUser(
+        await vest.stakingBonus(),
+        parseEther("1")
+      );
 
-    const stakingBonusSigner = await initMainnetUser(
-      await vest.stakingBonus(),
-      parseEther("1")
-    );
+      const expectedPending = await vest.unclaimed(1);
 
-    const expectedPending = await vest.unclaimed(1);
+      await vest.connect(stakingBonusSigner).claimUnvested(1);
 
-    await vest.connect(stakingBonusSigner).claimUnvested(1);
-
-    const stakingBonusBalance = await zero.balanceOf(
-      stakingBonusSigner.address
-    );
-    expect(stakingBonusBalance).to.equal(expectedPending);
-  });
+      const stakingBonusBalance = await zero.balanceOf(
+        stakingBonusSigner.address
+      );
+      expect(stakingBonusBalance).to.equal(expectedPending);
+    });
   });
 }

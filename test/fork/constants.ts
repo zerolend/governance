@@ -15,7 +15,6 @@ export interface INetworkDetails {
   ConfiguratorLogic: IContractDetails;
   DefaultReserveInterestRateStrategy: IContractDetails;
   EarlyZERO: IContractDetails;
-  EarlyZEROVesting: IContractDetails;
   EModeLogic: IContractDetails;
   ERC20: IContractDetails;
   LiquidationLogic: IContractDetails;
@@ -36,7 +35,7 @@ export interface INetworkDetails {
 }
 
 export function getNetworkDetails(networkName: string) {
-return contractAddresses[networkName];
+  return contractAddresses[networkName];
 }
 
 export const contractAddresses: { [key: string]: INetworkDetails } = {
@@ -48,9 +47,9 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
       name: "AaveOracle",
       address: "0xd676D38b4A40082d21f2396Af6f8F218305BD9ce",
     },
-    AaveProtocolDataProvider: { 
+    AaveProtocolDataProvider: {
       name: "AaveProtocolDataProvider",
-      address: "0xCf044837cd89Cc754C45F954a6A452b302a7445d"
+      address: "0xCf044837cd89Cc754C45F954a6A452b302a7445d",
     },
     ACLManager: {
       name: "ACLManager",
@@ -79,10 +78,6 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
     EarlyZERO: {
       name: "EarlyZERO",
       address: "0xeE3D5E55E191705AAB2ac67a956c31C18A96B1Ae",
-    },
-    EarlyZEROVesting: {
-      name: "EarlyZEROVesting",
-      address: "0x58b70014D1ae44d1d6b988D2E0084e900aE74d58",
     },
     EModeLogic: {
       name: "EModeLogic",
@@ -146,7 +141,7 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
     },
     VestedZeroNFT: {
       name: "VestedZeroNFT",
-      address: "0x804d2235c601518703eA5e21FC194e4C95Bd1835"
+      address: "0x804d2235c601518703eA5e21FC194e4C95Bd1835",
     },
     ZeroLend: {
       name: "ZeroLend",
@@ -159,111 +154,107 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
     deployer: "",
     AaveOracle: {
       name: "",
-      address: ""
+      address: "",
     },
     AaveProtocolDataProvider: {
       name: "",
-      address: ""
+      address: "",
     },
     ACLManager: {
       name: "",
-      address: ""
+      address: "",
     },
     AToken: {
       name: "",
-      address: ""
+      address: "",
     },
     BorrowLogic: {
       name: "",
-      address: ""
+      address: "",
     },
     BridgeLogic: {
       name: "",
-      address: ""
+      address: "",
     },
     ConfiguratorLogic: {
       name: "",
-      address: ""
+      address: "",
     },
     DefaultReserveInterestRateStrategy: {
       name: "",
-      address: ""
+      address: "",
     },
     EarlyZERO: {
       name: "",
-      address: ""
-    },
-    EarlyZEROVesting: {
-      name: "",
-      address: ""
+      address: "",
     },
     EModeLogic: {
       name: "",
-      address: ""
+      address: "",
     },
     ERC20: {
       name: "",
-      address: ""
+      address: "",
     },
     LiquidationLogic: {
       name: "",
-      address: ""
+      address: "",
     },
     LockerLP: {
       name: "",
-      address: ""
+      address: "",
     },
     LockerToken: {
       name: "",
-      address: ""
+      address: "",
     },
     OmnichainStaking: {
       name: "",
-      address: ""
+      address: "",
     },
     Pool: {
       name: "",
-      address: ""
+      address: "",
     },
     PoolAddressesProvider: {
       name: "",
-      address: ""
+      address: "",
     },
     PoolConfigurator: {
       name: "",
-      address: ""
+      address: "",
     },
     PoolLogic: {
       name: "",
-      address: ""
+      address: "",
     },
     ReserveTreasury: {
       name: "",
-      address: ""
+      address: "",
     },
     StableDebtToken: {
       name: "",
-      address: ""
+      address: "",
     },
     StakingBonus: {
       name: "",
-      address: ""
+      address: "",
     },
     SupplyLogic: {
       name: "",
-      address: ""
+      address: "",
     },
     VariableDebtToken: {
       name: "",
-      address: ""
+      address: "",
     },
     VestedZeroNFT: {
       name: "",
-      address: ""
+      address: "",
     },
     ZeroLend: {
       name: "",
-      address: ""
-    }
-  }
+      address: "",
+    },
+  },
 };

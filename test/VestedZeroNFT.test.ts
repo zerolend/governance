@@ -19,10 +19,7 @@ describe("VestedZeroNFT", () => {
     ant = deployment.ant;
     deployer = deployment.deployer;
     vest = deployment.vestedZeroNFT;
-    zero = await ethers.getContractAt(
-      "ZeroLend",
-      await deployment.zero.target
-    );
+    zero = await ethers.getContractAt("ZeroLend", await deployment.zero.target);
 
     now = Math.floor(Date.now() / 1000);
     await zero.whitelist(vest.target, true);
@@ -91,7 +88,9 @@ describe("VestedZeroNFT", () => {
       expect(res.pending).to.greaterThan(0n);
       expect(res.pending).to.lessThan(e18);
 
-      expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(e18 * 5n);
+      expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
+        e18 * 5n
+      );
       expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(e18 * 6n);
       await vest["claim(uint256)"](1);
       expect(await vest.claimed(1)).to.greaterThan(e18 * 5n);
@@ -106,7 +105,9 @@ describe("VestedZeroNFT", () => {
       expect(res.pending).to.equal((e18 * 75n) / 10n);
 
       const expt = (e18 * 125n) / 100n;
-      expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThanOrEqual(expt);
+      expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThanOrEqual(
+        expt
+      );
       await vest["claim(uint256)"](1);
       expect(await vest.claimed(1)).to.greaterThanOrEqual(expt);
       expect(await vest.unclaimed(1)).to.lessThanOrEqual((e18 * 75n) / 10n);
@@ -139,13 +140,21 @@ describe("VestedZeroNFT", () => {
 
       // stay within the cliff and claim something linear
       await time.increaseTo(now + 1000 + 500 + 500);
-      expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan((e18 * 74n) / 10n);
-      expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan((e18 * 75n) / 10n);
+      expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
+        (e18 * 74n) / 10n
+      );
+      expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(
+        (e18 * 75n) / 10n
+      );
       await vest["claim(uint256)"](1);
 
       await time.increaseTo(now + 1000 + 500 + 1000);
-      expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan((e18 * 74n) / 10n);
-      expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan((e18 * 75n) / 10n);
+      expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
+        (e18 * 74n) / 10n
+      );
+      expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(
+        (e18 * 75n) / 10n
+      );
       await vest["claim(uint256)"](1);
       expect(await vest["claim(uint256)"].staticCall(1)).to.eq(0);
     });
@@ -232,8 +241,8 @@ describe("VestedZeroNFT", () => {
     });
 
     it("should claim some amount with penalty at halfway through", async function () {
-    await zero.whitelist(await vest.stakingBonus(), true);
-    await time.increaseTo(now + 800);
+      await zero.whitelist(await vest.stakingBonus(), true);
+      await time.increaseTo(now + 800);
       expect(await vest["claim(uint256)"].staticCall(1)).to.closeTo(
         12400000000000000000n,
         parseUnits("1", 16)
@@ -334,7 +343,7 @@ describe("VestedZeroNFT", () => {
       parseEther("1")
     );
     await zero.whitelist(stakingBonusSigner.address, true);
-    
+
     await vest.mint(
       ant.address,
       e18 * 15n,
@@ -345,9 +354,9 @@ describe("VestedZeroNFT", () => {
       false,
       0
     );
-    
+
     const expectedPending = await vest.unclaimed(1);
-    
+
     await vest.connect(stakingBonusSigner).claimUnvested(1);
 
     const stakingBonusBalance = await zero.balanceOf(

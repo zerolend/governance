@@ -4,7 +4,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-dependency-compiler";
 import "hardhat-abi-exporter";
 import "@openzeppelin/hardhat-upgrades";
-import "hardhat-deploy"
+import "hardhat-deploy";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -65,8 +65,9 @@ const config: HardhatUserConfig = {
       "@zerolendxyz/periphery-v3/contracts/mocks/testnet-helpers/TestnetERC20.sol",
       "@zerolendxyz/periphery-v3/contracts/rewards/RewardsController.sol",
       "@zerolendxyz/periphery-v3/contracts/rewards/EmissionManager.sol",
-
       "@zerolendxyz/periphery-v3/contracts/rewards/transfer-strategies/TransferStrategyBase.sol",
+
+      "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol",
     ],
   },
   solidity: {
@@ -90,36 +91,36 @@ const config: HardhatUserConfig = {
     goerli: {
       url: `https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161	`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
-      saveDeployments:true,
+      saveDeployments: true,
     },
     blastSepolia: {
       url: `https://sepolia.blast.io`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
-      saveDeployments:true,
+      saveDeployments: true,
     },
     lineaSepolia: {
       url: `https://rpc.sepolia.linea.build`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
-      saveDeployments:true,
+      saveDeployments: true,
     },
     lineaFork: {
       url: `https://rpc.vnet.tenderly.co/devnet/lineadevnet/669f4c43-b182-497d-b0b0-deed97a9ac6a`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
-      saveDeployments:true,
+      saveDeployments: true,
     },
     mainnet: {
       url: `https://rpc.ankr.com/eth`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
-      saveDeployments:true,
+      saveDeployments: true,
     },
     linea: {
       url: `https://rpc.linea.build/`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
-      saveDeployments:true,
+      saveDeployments: true,
     },
   },
   namedAccounts: {
-    deployer: 0
+    deployer: 0,
   },
   etherscan: {
     apiKey: {
@@ -137,7 +138,7 @@ const config: HardhatUserConfig = {
       },
       {
         network: "blast",
-        chainId: 59144,
+        chainId: 81457,
         urls: {
           apiURL: "https://api.lineascan.build/api",
           browserURL: "https://lineascan.build",

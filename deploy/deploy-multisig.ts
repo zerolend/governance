@@ -77,7 +77,7 @@ const deployMultisig = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     console.log(`Contract not verified, deployed locally.`);
   }
-}
+};
 
 deployMultisig.tags = ["MultiSig"];
 export default deployMultisig;

@@ -25,7 +25,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
           args: [
             ZERO_TOKEN_ADDRESS,
             OMNICHAIN_STAKING_ADDRESS,
-            STAKING_ADDRESS
+            STAKING_ADDRESS,
           ],
         },
       },

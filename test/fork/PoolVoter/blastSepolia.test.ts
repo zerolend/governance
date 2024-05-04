@@ -14,9 +14,7 @@ import {
   parseEther,
   parseUnits,
 } from "ethers";
-import {
-  getPoolVoterContracts,
-} from "../helper";
+import { getPoolVoterContracts } from "../helper";
 import { getNetworkDetails } from "../constants";
 import { setForkBlock } from "../utils";
 
@@ -140,21 +138,26 @@ if (FORK) {
         varTokenGauge: string;
       };
       beforeEach(async () => {
+        const tokenHolder = await initMainnetUser(
+          "0x1C5b69580Fe8ddd86952fa76A89c92bAAF262737",
+          parseEther("1")
+        );
 
-      const tokenHolder = await initMainnetUser(
-        "0x1C5b69580Fe8ddd86952fa76A89c92bAAF262737",
-        parseEther("1")
-      );
-
-      await reserve.connect(tokenHolder).transfer(deployerForked.address, e18 * 1000n);
-      await reserve.connect(deployerForked).approve(pool.target, e18 * 100n);
+        await reserve
+          .connect(tokenHolder)
+          .transfer(deployerForked.address, e18 * 1000n);
+        await reserve.connect(deployerForked).approve(pool.target, e18 * 100n);
 
         await pool
           .connect(deployerForked)
           .supply(reserve.target, e18 * 100n, deployerForked.address, 0);
 
-        await poolVoter.connect(deployerForked).vote([reserve.target], [parseEther("1")]);
-        await zero.connect(deployer).transfer(deployerForked.address, parseEther("1"));
+        await poolVoter
+          .connect(deployerForked)
+          .vote([reserve.target], [parseEther("1")]);
+        await zero
+          .connect(deployer)
+          .transfer(deployerForked.address, parseEther("1"));
         await zero.approve(poolVoter.target, parseEther("1"));
 
         await poolVoter.notifyRewardAmount(parseEther("1"));
@@ -208,8 +211,12 @@ if (FORK) {
         varTokenGauge: string;
       };
       beforeEach(async () => {
-        await poolVoter.connect(deployerForked).vote([reserve.target], [parseEther("1")]);
-        await zero.connect(deployer).transfer(deployerForked.address, parseEther("1"));
+        await poolVoter
+          .connect(deployerForked)
+          .vote([reserve.target], [parseEther("1")]);
+        await zero
+          .connect(deployer)
+          .transfer(deployerForked.address, parseEther("1"));
         await zero.approve(poolVoter.target, parseEther("1"));
         await poolVoter.notifyRewardAmount(parseEther("1"));
 

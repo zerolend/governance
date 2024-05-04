@@ -6,7 +6,6 @@ import { parseEther } from "ethers";
 export async function getGovernanceContracts(networkDetails: INetworkDetails) {
   const {
     EarlyZERO,
-    EarlyZEROVesting,
     ZeroLend,
     StakingBonus,
     OmnichainStaking,
@@ -19,10 +18,7 @@ export async function getGovernanceContracts(networkDetails: INetworkDetails) {
     EarlyZERO.name,
     EarlyZERO.address
   );
-  const earlyZEROVesting = await ethers.getContractAt(
-    EarlyZEROVesting.name,
-    EarlyZEROVesting.address
-  );
+
   const zero = await ethers.getContractAt(ZeroLend.name, ZeroLend.address);
   const stakingBonus = await ethers.getContractAt(
     StakingBonus.name,
@@ -55,7 +51,6 @@ export async function getGovernanceContracts(networkDetails: INetworkDetails) {
 
   return {
     earlyZERO,
-    earlyZEROVesting,
     lockerToken,
     lockerLP,
     omnichainStaking,
