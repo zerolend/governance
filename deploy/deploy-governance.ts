@@ -49,7 +49,8 @@ const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
   await omnichainStaking.init(
     ZERO_ADDRESS,
     lockerToken.target,
-    lockerLP.target
+    lockerLP.target,
+    zero.target
   );
   // unpause zero
   await zero.togglePause(false);

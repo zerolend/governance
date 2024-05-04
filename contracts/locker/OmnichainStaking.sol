@@ -82,7 +82,7 @@ contract OmnichainStaking is IOmnichainStaking, StakingRewards {
             "only lockers"
         );
 
-        if (data.length > 0) from = abi.decode(data, (address));
+        if (data.length > 0) (,from,) = abi.decode(data, (bool, address, uint256));
         lockedBy[tokenId] = from;
         lockedNfts[from].push(tokenId);
 

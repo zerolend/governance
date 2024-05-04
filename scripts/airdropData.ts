@@ -26,9 +26,8 @@ type MerkleProofType = {
   addressData: AddressInfo[];
 };
 
-let airdropData = data as unknown as  { [key: string]: AddressInfo };
-// let itemsLength = Object.keys(data).length;
-let itemsLength = 5;
+let airdropData = data as { [key: string]: AddressInfo };
+let itemsLength = Object.keys(data).length;
 async function main() {
   let parsedData: MerkleProofType;
   let leaves: BalanceLeaf[] = [];
@@ -59,7 +58,7 @@ async function main() {
   }
 
   const stringifiedData = JSON.stringify(parsedData, null, 2);
-  fs.writeFileSync("data.json", stringifiedData);
+  fs.writeFileSync("scripts/earlyZeroAirdropDataWithProofs.json", stringifiedData);
 }
 
 main().catch((error) => {
