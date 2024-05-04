@@ -15,6 +15,7 @@ pragma solidity ^0.8.20;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
+import {IPoolVoter} from "../interfaces/IPoolVoter.sol";
 import {IZeroLend} from "../interfaces/IZeroLend.sol";
 import {StakingRewards} from "./StakingRewards.sol";
 
@@ -26,6 +27,7 @@ import {StakingRewards} from "./StakingRewards.sol";
 contract OmnichainStaking is IOmnichainStaking, StakingRewards {
     ILocker public lpLocker;
     ILocker public tokenLocker;
+    IPoolVoter public poolVoter;
 
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
@@ -43,6 +45,7 @@ contract OmnichainStaking is IOmnichainStaking, StakingRewards {
         address _tokenLocker,
         address _lpLocker,
         address _zeroToken,
+        address _poolVoter,
         uint256 _rewardsDuration
     ) external initializer {
         // TODO add LZ
@@ -57,6 +60,7 @@ contract OmnichainStaking is IOmnichainStaking, StakingRewards {
 
         tokenLocker = ILocker(_tokenLocker);
         lpLocker = ILocker(_lpLocker);
+        poolVoter = IPoolVoter(_poolVoter);
     }
 
     /**
@@ -142,8 +146,7 @@ contract OmnichainStaking is IOmnichainStaking, StakingRewards {
         _burnPower(msg.sender, lpPower[tokenId] * 4);
         lpPower[tokenId] = 0;
 
-        // TODO reset the user's votes in PoolVoter
-
+        poolVoter.reset(msg.sender);
         lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
