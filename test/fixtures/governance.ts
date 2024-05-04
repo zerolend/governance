@@ -4,6 +4,7 @@ import { ZERO_ADDRESS, supply } from "./utils";
 
 export async function deployGovernance() {
   const lendingPool = await deployLendingPool();
+  const secondsIn6Months = 15780000;
 
   // Contracts are deployed using the first signer/account by default
   const [deployer, ant, whale] = await hre.ethers.getSigners();
@@ -55,7 +56,7 @@ export async function deployGovernance() {
     omnichainStaking.target,
     stakingBonus.target
   );
-  await omnichainStaking.init(lockerToken.target, lockerLP.target, zero.target);
+  await omnichainStaking.init(lockerToken.target, lockerLP.target, zero.target, secondsIn6Months);
 
   // unpause zero
   await zero.togglePause(false);
