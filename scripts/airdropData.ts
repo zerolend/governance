@@ -9,7 +9,8 @@ import {
 
 type ChainInfo = {
   name: string;
-  earlyZero: string;
+  claimed: string;
+  claimable: string;
 };
 
 type AddressInfo = {
