@@ -20,11 +20,13 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     IZeroLocker public locker;
     IVestedZeroNFT public vestedZeroNFT;
     uint256 public unlockDate;
+    uint256 public endDate;
 
     error InvalidAddress();
     error InvalidLockDuration();
     error RewardsAlreadyClaimed();
     error ClaimNotReady();
+    error ClaimDurationOver();
     error InvalidMerkleProof(bytes32[]);
 
     event MerkleRootSet(bytes32 oldMerkleRoot, bytes32 newMerkleRoot);
@@ -40,10 +42,12 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         address _rewardToken,
         address _locker,
         address _vestedZeroNFT,
-        uint256 _unlockDate
+        uint256 _unlockDate,
+        uint256 _endDate
     ) external initializer {
         __Ownable_init(msg.sender);
         unlockDate = _unlockDate;
+        endDate = _endDate;
         locker = IZeroLocker(_locker);
         vestedZeroNFT = IVestedZeroNFT(_vestedZeroNFT);
         rewardToken = ERC20Upgradeable(_rewardToken);
@@ -82,6 +86,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     ) external {
         if (_user == address(0)) revert InvalidAddress();
         if (block.timestamp < unlockDate) revert ClaimNotReady();
+        if (block.timestamp > endDate) revert ClaimDurationOver();
 
         bytes32 node = keccak256(abi.encodePacked(_user, _claimAmount));
 

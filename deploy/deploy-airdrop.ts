@@ -14,6 +14,8 @@ dotenv.config();
 const TOKEN_ADDRESS = "";
 const LOCKER_ADDRESS = "";
 const VESTED_NFT_ADDRESS = "";
+const UNLOCK_DATE = 0;
+const END_DATE = 0;
 
 const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
@@ -23,7 +25,9 @@ const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
   if (
     TOKEN_ADDRESS.length &&
     LOCKER_ADDRESS.length &&
-    VESTED_NFT_ADDRESS.length
+    VESTED_NFT_ADDRESS.length &&
+    UNLOCK_DATE &&
+    END_DATE
   ) {
     const airdropDeployment = await deploy("AirdropRewarder", {
       from: deployer,
