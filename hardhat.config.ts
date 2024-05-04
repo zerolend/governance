@@ -93,10 +93,6 @@ const config: HardhatUserConfig = {
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
       saveDeployments: true,
     },
-    blast: {
-      url: `https://rpc.blast.io`,
-      accounts: [process.env.WALLET_PRIVATE_KEY || ""],
-    },
     blastSepolia: {
       url: `https://sepolia.blast.io`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
@@ -104,6 +100,11 @@ const config: HardhatUserConfig = {
     },
     lineaSepolia: {
       url: `https://rpc.sepolia.linea.build`,
+      accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+      saveDeployments: true,
+    },
+    lineaFork: {
+      url: `https://rpc.vnet.tenderly.co/devnet/lineadevnet/669f4c43-b182-497d-b0b0-deed97a9ac6a`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
       saveDeployments: true,
     },
@@ -125,6 +126,9 @@ const config: HardhatUserConfig = {
       url: `https://pacific-rpc.manta.network/http`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
     },
+  },
+  namedAccounts: {
+    deployer: 0,
   },
   namedAccounts: {
     deployer: 0,
