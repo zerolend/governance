@@ -1,5 +1,13 @@
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
-import { EmissionsMainnet, LockerToken, PoolVoter, StakingBonus, TestnetERC20, VestedZeroNFT, ZeroLend } from "../typechain-types";
+import {
+  EmissionsMainnet,
+  LockerToken,
+  PoolVoter,
+  StakingBonus,
+  TestnetERC20,
+  VestedZeroNFT,
+  ZeroLend,
+} from "../typechain-types";
 import { deployVoters } from "./fixtures/voters";
 import { ethers } from "hardhat";
 import { expect } from "chai";
@@ -27,7 +35,7 @@ describe("EmissionsMainnet unit tests", () => {
     vest = poolVoterContracts.governance.vestedZeroNFT;
     stakingBonus = poolVoterContracts.governance.stakingBonus;
     lockerToken = poolVoterContracts.governance.lockerToken;
-    erc20 = poolVoterContracts.lending.erc20
+    erc20 = poolVoterContracts.lending.erc20;
 
     // Whitelisting voter contracts
     await zeroToken.whitelist(vest.target, true);
@@ -47,10 +55,7 @@ describe("EmissionsMainnet unit tests", () => {
     emissionsContract = await emissionsMainnetFactory.deploy();
 
     // Init emissions contract
-    await emissionsContract.initialize(
-      zeroToken.target,
-      poolVoter.target
-    );
+    await emissionsContract.initialize(zeroToken.target, poolVoter.target);
 
     // Setting Values
     const initialAllocation = 20000000000;
@@ -119,7 +124,7 @@ describe("EmissionsMainnet unit tests", () => {
       true, // penalty -> false
       0
     );
-    
+
     // stake nft on behalf of the ant
     await vest
       .connect(ant)

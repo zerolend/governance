@@ -62,8 +62,9 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         // decode data; by default stake the NFT
         bool stake = true;
         address to = from;
-        uint256 duration = 86400 * 365 * 4;
-        if (data.length > 1) (stake, to, duration) = abi.decode(data, (bool, address, uint256));
+        uint256 duration = 4 * 365 days;
+        if (data.length > 1)
+            (stake, to, duration) = abi.decode(data, (bool, address, uint256));
 
         // calculate the bonus
         uint256 bonus = calculateBonus(pending, duration);
@@ -82,6 +83,18 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         return this.onERC721Received.selector;
     }
 
+    function createLock(uint256 amount, uint256 duration, bool stake) external {
+        zero.transferFrom(msg.sender, address(this), amount);
+        uint256 bonus = calculateBonus(amount, duration);
+
+        locker.createLockFor(
+            amount + bonus, // uint256 _value,
+            duration, // uint256 _lockDuration,
+            msg.sender, // address _to,
+            stake // bool _stakeNFT
+        );
+    }
+
     function setBonusBps(uint256 _bps) external override onlyOwner {
         emit SetBonusBPS(bonusBps, _bps);
         bonusBps = _bps;
@@ -91,7 +104,6 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         uint256 amount,
         uint256 duration
     ) public view override returns (uint256) {
-
         uint256 rewardPercentage = bonusBps;
         if (duration > 0) {
             uint256 lockDurationInYears = duration / 31536000;
@@ -101,7 +113,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         }
 
         uint256 bonus = (amount * rewardPercentage) / 10000;
-        
+
         // if we don't have enough funds to pay out bonuses, then return 0
         if (zero.balanceOf(address(this)) < bonus) return 0;
 

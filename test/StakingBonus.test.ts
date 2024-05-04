@@ -36,7 +36,7 @@ describe("StakingBonus", () => {
     beforeEach(async () => {
       await zero.whitelist(vest.target, true);
       await zero.whitelist(stakingBonus.target, true);
-      await zero.whitelist(locker.target, true);     
+      await zero.whitelist(locker.target, true);
 
       expect(await vest.lastTokenId()).to.equal(0);
 
@@ -63,7 +63,7 @@ describe("StakingBonus", () => {
 
     it("should lock and stake a nft properly for the user", async function () {
       await zero.whitelist(zero.target, true);
-      
+
       // stake nft on behalf of the ant
       expect(
         await vest
@@ -84,8 +84,11 @@ describe("StakingBonus", () => {
 
     it("should only lock a nft properly for the user", async function () {
       const encoder = AbiCoder.defaultAbiCoder();
-      const data = encoder.encode(["bool", "address", "uint256"], [false, ant.address, 31536000*4]); 
-      
+      const data = encoder.encode(
+        ["bool", "address", "uint256"],
+        [false, ant.address, 31536000 * 4]
+      );
+
       // stake nft on behalf of the ant
       expect(
         await vest
@@ -123,7 +126,10 @@ describe("StakingBonus", () => {
 
       // the staking contract should've awarded more zero for staking unvested tokens
       // 20 zero + 20% bonus = 24 zero... ->> which means about 23.999 voting power
-      expect(await locker.balanceOfNFT(1)).to.closeTo(parseEther("24"), parseEther("0.1"));
+      expect(await locker.balanceOfNFT(1)).to.closeTo(
+        parseEther("24"),
+        parseEther("0.1")
+      );
     });
   });
 });
