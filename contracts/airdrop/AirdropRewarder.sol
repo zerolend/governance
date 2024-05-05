@@ -119,7 +119,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
                 0,
                 91 days,
                 182 days,
-                block.timestamp + 90 days,
+                0,
                 false,
                 IVestedZeroNFT.VestCategory.AIRDROP
             );
