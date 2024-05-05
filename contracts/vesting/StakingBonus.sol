@@ -84,8 +84,8 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     }
 
     function createLock(uint256 amount, uint256 duration, bool stake) external {
-        zero.transferFrom(msg.sender, address(this), amount);
         uint256 bonus = calculateBonus(amount, duration);
+        zero.transferFrom(msg.sender, address(this), amount);
 
         locker.createLockFor(
             amount + bonus, // uint256 _value,
