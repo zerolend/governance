@@ -48,7 +48,7 @@ contract TransferStrategyZERO is Ownable, ITransferStrategyBase {
 
         INCENTIVES_CONTROLLER = _incentivesController;
 
-        duration = 86400 * 30 * 6; // 6 months vesting
+        duration = 86400 * 30 * 3; // 3 months vesting
     }
 
     /// @inheritdoc ITransferStrategyBase
@@ -65,8 +65,8 @@ contract TransferStrategyZERO is Ownable, ITransferStrategyBase {
         require(reward == address(zero), "invalid reward");
         vestedZERO.mint(
             to, // address _who,
-            0, // uint256 _pending,
-            amount, // uint256 _upfront,
+            amount, // uint256 _pending,
+            0, // uint256 _upfront,
             duration, // uint256 _linearDuration,
             0, // uint256 _cliffDuration,
             block.timestamp, // uint256 _unlockDate,

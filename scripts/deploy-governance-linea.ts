@@ -108,9 +108,9 @@ const main = async function () {
 
   await omnichainStaking.init(
     ZERO_ADDRESS,
-    ZERO_ADDRESS,
     lockerToken.target,
     ZERO_ADDRESS,
+    zero.target,
     poolVoter.target,
     86400 * 30
   );

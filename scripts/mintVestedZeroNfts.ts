@@ -1,7 +1,9 @@
 import hre from "hardhat";
 import * as fs from "fs";
+import { parseEther } from "ethers";
 
-const VESTED_ZERO_NFT_ADDRESS = "";
+const VESTED_ZERO_NFT_ADDRESS = "0xBDd0F194C29e337411f98589548E03F7b38D044b";
+const ZERO_ADDRESS = "0x78354f8dccb269a615a7e0a24f9b0718fdc3c7a7";
 
 async function main() {
   if (!VESTED_ZERO_NFT_ADDRESS.length) {
@@ -15,74 +17,93 @@ async function main() {
     VESTED_ZERO_NFT_ADDRESS
   );
 
+  const zero = await hre.ethers.getContractAt("ZeroLend", ZERO_ADDRESS);
+  await zero.approve(vest, parseEther("100000000"));
+
   // Initialize an empty array to store the parsed data
   const parsedData: any[] = [];
 
   // Read the CSV file
-  fs.readFile("scripts/vestList.csv", "utf8", (err: any, data: string) => {
-    if (err) {
-      console.error("Error reading file:", err);
-      return;
+  console.log("reading file");
+  fs.readFile(
+    "scripts/vestList.csv",
+    "utf8",
+    async (err: any, data: string) => {
+      if (err) {
+        console.error("Error reading file:", err);
+        return;
+      }
+
+      // Split the CSV data into rows
+      const rows = data.trim().split("\n");
+
+      // Iterate over the rows starting from index 1 (skipping the header)
+      for (let i = 1; i < rows.length; i++) {
+        const [
+          totalTokens,
+          walletAddress,
+          ,
+          cliffDays,
+          vestingDays,
+          upfrontTokens,
+        ] = rows[i].split(",");
+
+        const rowData = {
+          who: walletAddress,
+          pending: parseEther(
+            (parseInt(totalTokens) - parseInt(upfrontTokens)).toString()
+          ),
+          upfront: parseEther(upfrontTokens),
+          linearDuration: parseInt(vestingDays) * 86400,
+          cliffDuration: parseInt(cliffDays) * 86400,
+          unlockDate: Math.floor(Date.now() / 1000),
+          hasPenalty: false,
+          category: 0,
+        };
+
+        parsedData.push(rowData);
+      }
+
+      console.log("working on", parsedData.length);
+      for (let i = 0; i < parsedData.length; i++) {
+        const {
+          who,
+          pending,
+          upfront,
+          linearDuration,
+          cliffDuration,
+          unlockDate,
+          hasPenalty,
+          category,
+        } = parsedData[i];
+
+        console.log(
+          who,
+          pending,
+          upfront,
+          linearDuration,
+          cliffDuration,
+          unlockDate,
+          hasPenalty,
+          category
+        );
+
+        const tx = await vest.mint(
+          who,
+          pending,
+          upfront,
+          linearDuration,
+          cliffDuration,
+          0, // Math.floor(Date.now() / 1000) + 60, // unlockDate,
+          hasPenalty,
+          category
+        );
+        // console.log("Vest minted for: ", tx);
+        console.log("Vest minted for: ", tx.hash);
+        await tx.wait();
+      }
     }
-
-    // Split the CSV data into rows
-    const rows = data.trim().split("\n");
-
-    // Extract the header row to get the column names
-    const headers = rows[0].split(",");
-
-    // Iterate over the rows starting from index 1 (skipping the header)
-    for (let i = 1; i < rows.length; i++) {
-      let [
-        totalTokens,
-        walletAddress,
-        upFrontPercentage,
-        cliffDays,
-        vestingDays,
-        upfrontTokens,
-        supplyUpfrontPercentage,
-        supplyTotalPercentage,
-      ] = rows[i].split(",");
-
-      let rowData = {
-        who: walletAddress,
-        pending: parseInt(totalTokens) - parseInt(upfrontTokens),
-        upfront: parseInt(upfrontTokens),
-        linearDuration: parseInt(vestingDays) * 86400,
-        cliffDuration: parseInt(cliffDays) * 86400,
-        unlockDate: 0,
-        hasPenalty: false,
-        category: 0,
-      };
-
-      parsedData.push(rowData);
-    }
-  });
-
-  for (let i = 0; i < parsedData.length; i++) {
-    const {
-      who,
-      pending,
-      upfront,
-      linearDuration,
-      cliffDuration,
-      unlockDate,
-      hasPenalty,
-      category,
-    } = parsedData[i];
-
-    await vest.mint(
-      who,
-      pending,
-      upfront,
-      linearDuration,
-      cliffDuration,
-      unlockDate,
-      hasPenalty,
-      category
-    );
-    console.log("Vest minted for: ", who);
-  }
+  );
 }
 
 main().catch((error) => {
