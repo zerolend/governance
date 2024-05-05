@@ -327,9 +327,10 @@ contract VestedZeroNFT is
         uint256 tokenId
     ) public view returns (uint256 penaltyAmount) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
+        uint256 penaltyDuration =  lock.unlockDate + lock.linearDuration + lock.cliffDuration;
 
-        if (lock.unlockDate >= block.timestamp) {
-            uint256 penaltyFactor = ((lock.unlockDate - block.timestamp) *
+        if (penaltyDuration >= block.timestamp) {
+            uint256 penaltyFactor = ((penaltyDuration - block.timestamp) *
                 HALF) /
                 lock.linearDuration +
                 QUART;
