@@ -17,6 +17,7 @@ const main = async function () {
   const TransparentUpgradeableProxy = await hre.ethers.getContractFactory(
     "TransparentUpgradeableProxy"
   );
+  const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
   const OmnichainStaking = await hre.ethers.getContractFactory(
     "OmnichainStaking"
   );
@@ -30,11 +31,13 @@ const main = async function () {
   const stakingBonusImpl = await StakingBonus.deploy();
   const omnichainStakingImpl = await OmnichainStaking.deploy();
   const lockerTokenImpl = await LockerToken.deploy();
+  const poolVoterImpl = await PoolVoter.deploy();
   const vestedZeroNFTImpl = await VestedZeroNFT.deploy();
 
   console.log("stakingBonusImpl", stakingBonusImpl.target);
   console.log("omnichainStakingImpl", omnichainStakingImpl.target);
   console.log("lockerTokenImpl", lockerTokenImpl.target);
+  console.log("poolVoterImpl", poolVoterImpl.target);
   console.log("vestedZeroNFTImpl", vestedZeroNFTImpl.target);
 
   await vestedZeroNFTImpl.waitForDeployment();
@@ -42,6 +45,11 @@ const main = async function () {
   // proxies
   const stakingBonusProxy = await TransparentUpgradeableProxy.deploy(
     stakingBonusImpl.target,
+    safe,
+    "0x"
+  );
+  const poolVoterProxy = await TransparentUpgradeableProxy.deploy(
+    poolVoterImpl.target,
     safe,
     "0x"
   );
@@ -73,6 +81,10 @@ const main = async function () {
     "LockerToken",
     lockerTokenProxy.target
   );
+  const poolVoter = await hre.ethers.getContractAt(
+    "PoolVoter",
+    poolVoterProxy.target
+  );
   const vestedZeroNFT = await hre.ethers.getContractAt(
     "VestedZeroNFT",
     vestedZeroNFTProxy.target
@@ -98,13 +110,18 @@ const main = async function () {
     ZERO_ADDRESS,
     lockerToken.target,
     ZERO_ADDRESS,
+    zero.target,
+    poolVoter.target,
     86400 * 30
   );
+
+  await poolVoter.init(omnichainStaking.target, zero.target);
 
   console.log("stakingBonus", stakingBonusProxy.target);
   console.log("omnichainStaking", omnichainStakingProxy.target);
   console.log("lockerToken", lockerTokenProxy.target);
   console.log("zero", zero.target);
+  console.log("poolVoter", poolVoter.target);
   console.log("vestedZeroNFT", vestedZeroNFTProxy.target);
 
   if (hre.network.name != "hardhat") {
@@ -112,12 +129,17 @@ const main = async function () {
     await hre.run("verify:verify", { address: stakingBonusImpl.target });
     await hre.run("verify:verify", { address: omnichainStakingImpl.target });
     await hre.run("verify:verify", { address: lockerTokenImpl.target });
+    await hre.run("verify:verify", { address: poolVoterImpl.target });
     await hre.run("verify:verify", { address: vestedZeroNFTImpl.target });
 
     // Verify contract programmatically
     await hre.run("verify:verify", {
       address: stakingBonus.target,
       constructorArgs: [stakingBonusImpl.target, safe, "0x"],
+    });
+    await hre.run("verify:verify", {
+      address: poolVoter.target,
+      constructorArgs: [poolVoterImpl.target, safe, "0x"],
     });
     await hre.run("verify:verify", {
       address: omnichainStaking.target,
