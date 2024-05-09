@@ -73,6 +73,12 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
+        version: "0.8.10",
+        settings: {
+          optimizer: { enabled: true, runs: 100_000 },
+        },
+      },
+      {
         version: "0.8.12",
         settings: {
           optimizer: { enabled: true, runs: 100_000 },
@@ -133,6 +139,7 @@ const config: HardhatUserConfig = {
     apiKey: {
       linea: process.env.LINEASCAN_KEY || "",
       mainnet: process.env.ETHERSCAN_KEY || "",
+      blastSepolia: process.env.BLAST_SEPOLIA_KEY || "",
     },
     customChains: [
       {
@@ -151,6 +158,14 @@ const config: HardhatUserConfig = {
           browserURL: "https://lineascan.build",
         },
       },
+        {
+          network: "blastSepolia",
+          chainId: 168587773,
+          urls: {
+            apiURL: "https://api-sepolia.blastscan.io/api",
+            browserURL: "https://sepolia.blastscan.io/"
+          }
+        }
     ],
   },
 };

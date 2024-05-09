@@ -55,12 +55,12 @@ contract VestedZeroUiHelper is Initializable {
         omnichainStaking = OmnichainStaking(_omnichainStaking);
     }
 
-    function getVestedNFTData() external view returns (VestDetails[] memory) {
-        uint256 nftsOwned = vestedZero.balanceOf(msg.sender);
+    function getVestedNFTData(address _userAddress) external view returns (VestDetails[] memory) {
+        uint256 nftsOwned = vestedZero.balanceOf(_userAddress);
         VestDetails[] memory lockDetails = new VestDetails[](nftsOwned);
         for (uint i; i < nftsOwned; ) {
             VestDetails memory lock;
-            uint256 tokenId = vestedZero.tokenOfOwnerByIndex(msg.sender, i);
+            uint256 tokenId = vestedZero.tokenOfOwnerByIndex(_userAddress, i);
             (
                 lock.cliffDuration,
                 lock.unlockDate,
@@ -104,11 +104,11 @@ contract VestedZeroUiHelper is Initializable {
         return lockDetails;
     }
 
-    function getLockDetails() external view returns (LockedBalanceWithApr[] memory){
+    function getLockDetails(address _userAddress) external view returns (LockedBalanceWithApr[] memory){
         (
             uint256[] memory tokenIds,
             ILocker.LockedBalance[] memory lockedBalances
-        ) = omnichainStaking.getLockedNftDetails(msg.sender);
+        ) = omnichainStaking.getLockedNftDetails(_userAddress);
         uint256 rewardRate = omnichainStaking.rewardRate();
         uint256 totalSupply = omnichainStaking.totalSupply();
 

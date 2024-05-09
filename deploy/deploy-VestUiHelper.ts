@@ -28,8 +28,10 @@ const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
       autoMine: true,
       log: true,
     });
-    const contract = await ethers.getContractAt("VestedZeroUiHelper", vestui.address);
-    await contract.initialize(VESTED_NFT_ADDRESS, OMNICHAIN_STAKING);
+    
+    await hre.run("verify:verify", {
+      address: vestui.address,
+    });
   } else {
     throw new Error("Invalid address for vest");
   }
