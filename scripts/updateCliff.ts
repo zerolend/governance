@@ -1,8 +1,8 @@
 import { ethers } from "hardhat";
 
 const VESTED_ZERO_NFT_ADDRESS = "";
-const LINEAR_DURATION = 0;
-const CLIFF_DURATION = 0;
+const LINEAR_DURATION = 86400*90;
+const CLIFF_DURATION = 86400*90;
 
 async function main() {
   if (VESTED_ZERO_NFT_ADDRESS.length && LINEAR_DURATION && CLIFF_DURATION) {
