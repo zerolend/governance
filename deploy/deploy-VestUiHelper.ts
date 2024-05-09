@@ -5,8 +5,8 @@ import dotenv from "dotenv";
 import { ethers } from "hardhat";
 dotenv.config();
 
-const VESTED_NFT_ADDRESS = "0x394FA2886a3a18b08FDf2C5be2B7977f99d28Feb";
-const OMNICHAIN_STAKING = "0x69865827D1e6aEA50aBD545db2B7Bd34c3b95af7";
+const VESTED_NFT_ADDRESS = "";
+const OMNICHAIN_STAKING = "";
 
 const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
