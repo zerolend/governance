@@ -15,10 +15,11 @@ pragma solidity ^0.8.20;
 import {VestedZeroNFT} from "../vesting/VestedZeroNFT.sol";
 import {OmnichainStaking} from "../locker/OmnichainStaking.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
-contract VestedZeroUiHelper is Initializable {
+contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
     VestedZeroNFT vestedZero;
     OmnichainStaking omnichainStaking;
 
@@ -51,6 +52,7 @@ contract VestedZeroUiHelper is Initializable {
         address _vestedZeroNFT,
         address _omnichainStaking
     ) external initializer {
+        __Ownable_init(msg.sender);
         vestedZero = VestedZeroNFT(_vestedZeroNFT);
         omnichainStaking = OmnichainStaking(_omnichainStaking);
     }
@@ -137,5 +139,13 @@ contract VestedZeroUiHelper is Initializable {
         }
 
         return lockDetails;
+    }
+
+    function setOmnichain(address _omnichainStaking) external onlyOwner {
+        omnichainStaking = OmnichainStaking(_omnichainStaking);
+    }
+
+    function setVestedZeroNFT(address _vestedZeroNft) external onlyOwner {
+        vestedZero = VestedZeroNFT(_vestedZeroNft);
     }
 }
