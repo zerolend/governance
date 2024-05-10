@@ -41,6 +41,7 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
     }
 
     struct LockedBalanceWithApr {
+        uint256 id;
         uint256 amount;
         uint256 end;
         uint256 start;
@@ -128,6 +129,7 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
             uint256 apr = (poolRewardAnnual * 1000)/totalSupply;
             uint256 aprScaled = apr * scale/1000;
 
+            lock.id = tokenIds[i];
             lock.amount = lockedBalance.amount;
             lock.start = lockedBalance.start;
             lock.end = lockedBalance.end;
