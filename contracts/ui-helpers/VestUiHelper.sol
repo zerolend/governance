@@ -111,25 +111,28 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
             uint256[] memory tokenIds,
             ILocker.LockedBalance[] memory lockedBalances
         ) = omnichainStaking.getLockedNftDetails(_userAddress);
+
         uint256 rewardRate = omnichainStaking.rewardRate();
         uint256 totalSupply = omnichainStaking.totalSupply();
 
         uint256 totalTokenIds = tokenIds.length;
-
         LockedBalanceWithApr[] memory lockDetails = new LockedBalanceWithApr[](totalTokenIds);
 
         for (uint i; i < totalTokenIds; ) {
             LockedBalanceWithApr memory lock;
             ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
-            uint256 poolPercentage = (lockedBalances[i].amount * 1000000) / totalSupply;
+            
+            uint256 vePower = getLockPower(lockedBalance);
+            uint256 scale = (vePower != 0 && lockedBalance.amount != 0) ? vePower*1e18/lockedBalance.amount : 1e18;
             uint256 poolRewardAnnual = rewardRate * 31536000;
-            uint256 rewardsEarned = (poolPercentage * poolRewardAnnual) / 1000000;
+            uint256 apr = (poolRewardAnnual * 1000)/totalSupply;
+            uint256 aprScaled = apr * scale/1000;
 
             lock.amount = lockedBalance.amount;
             lock.start = lockedBalance.start;
             lock.end = lockedBalance.end;
             lock.power = lockedBalance.power;
-            lock.apr = ((rewardsEarned * 1000)/lockedBalances[i].amount)/1000;
+            lock.apr = aprScaled;
 
             lockDetails[i] = lock;
             
@@ -139,6 +142,14 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
         }
 
         return lockDetails;
+    }
+
+    function getLockPower(ILocker.LockedBalance memory lock) internal pure returns (uint256) {
+        uint256 duration = lock.end - lock.start;
+        uint256 durationInYears = (lock.end - lock.start)/365 days;
+        uint256 amountWithBonus = lock.amount + (lock.amount * durationInYears * 5)/100;
+
+        return (duration*amountWithBonus)/(4*365 days);
     }
 
     function setOmnichain(address _omnichainStaking) external onlyOwner {

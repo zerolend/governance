@@ -9,12 +9,13 @@ import {
   VestedZeroUiHelper,
   ZeroLend,
 } from "../typechain-types";
-import { e18, initMainnetUser } from "./fixtures/utils";
-import { ContractTransactionResponse, parseEther } from "ethers";
+import { e18 } from "./fixtures/utils";
+import { ContractTransactionResponse, parseEther, parseUnits } from "ethers";
 import { ethers } from "hardhat";
 
 describe("UI Helper tests", () => {
   let ant: SignerWithAddress;
+  let deployer: SignerWithAddress;
   let vest: VestedZeroNFT;
   let vestUiHelper: VestedZeroUiHelper & { deploymentTransaction(): ContractTransactionResponse; };
   let zero: ZeroLend;
@@ -24,6 +25,7 @@ describe("UI Helper tests", () => {
   beforeEach(async () => {
     const deployment = await loadFixture(deployGovernance);
     ant = deployment.ant;
+    deployer = deployment.deployer;
     stakingBonus = deployment.stakingBonus;
     vest = deployment.vestedZeroNFT;
     omnichainStaking = deployment.omnichainStaking;
@@ -57,32 +59,13 @@ describe("UI Helper tests", () => {
         0
       );
     }
-    expect((await vestUiHelper.connect(ant).getVestedNFTData()).length).to.equal(10);
+    expect((await vestUiHelper.getVestedNFTData(ant.address)).length).to.equal(10);
   });
 
-  it("Should return the lock details with APR", async () => {
-    for (let i = 0; i < 5; i++) {
-      await vest.mint(
-        ant.address,
-        e18 * 15n, // 15 ZERO linear vesting
-        e18 * 5n, // 5 ZERO upfront
-        1000 * (i+1), // linear duration - 1000 seconds
-        500, // cliff duration - 500 seconds
-        0, // unlock date
-        false, // penalty -> false
-        0
-      );
-
-      await vest
-      .connect(ant)
-      ["safeTransferFrom(address,address,uint256)"](
-        ant.address,
-        stakingBonus.target,
-        i+1
-      );
-    }
-    
-    const transactionData = await vestUiHelper.connect(ant).getLockDetails();
-    expect(transactionData.length).to.eq(5);
+  it("Should return the lock details with APR for 1 year", async () => {
+    await zero.connect(deployer).approve(stakingBonus.target, parseEther('100'));
+    await stakingBonus.connect(deployer).createLock(parseEther('100'), 365n * 86400n, true);    
+    const transactionData = await vestUiHelper.getLockDetails(deployer.address);
+    expect(transactionData[0].apr).to.closeTo(19864130517503805n, parseUnits('1', 12) );
   });
 });

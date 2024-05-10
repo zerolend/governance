@@ -2,7 +2,6 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 // load env file
 import dotenv from "dotenv";
-import { ethers } from "hardhat";
 dotenv.config();
 
 const VESTED_NFT_ADDRESS = "";
