@@ -38,6 +38,7 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
         uint256 claimable;
         uint256 unClaimed;
         uint256 penalty;
+        bool isFrozen;
     }
 
     struct LockedBalanceWithApr {
@@ -96,6 +97,7 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
             lock.penalty = vestedZero.penalty(tokenId);
             lock.claimable = upfrontClaimable + pendingClaimable;
             lock.unClaimed = vestedZero.unclaimed(tokenId);
+            lock.isFrozen = vestedZero.frozen(tokenId);
 
             lockDetails[i] = lock;
 
