@@ -4,7 +4,7 @@ async function main() {
   const [deployer] = await hre.ethers.getSigners();
   console.log("i am", deployer.address);
 
-  const factory = await hre.ethers.getContractFactory("ZeroLendTest");
+  const factory = await hre.ethers.getContractFactory("ZeroLend");
   const contract = await factory.deploy();
 
   console.log(contract.target);

@@ -29,9 +29,9 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
     IZeroLocker public locker;
     uint256 public bonusBps;
 
-    // constructor() {
-    //     _disableInitializers();
-    // }
+    constructor() {
+        _disableInitializers();
+    }
 
     function init(
         address _zero,
@@ -46,6 +46,14 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         bonusBps = _bonusBps;
 
         zero.approve(_locker, type(uint256).max);
+    }
+
+    function setLocker(address _locker) external onlyOwner {
+        locker = IZeroLocker(_locker);
+    }
+
+    function setVestedZero(address _vestedZERO) external onlyOwner {
+        vestedZERO = IVestedZeroNFT(_vestedZERO);
     }
 
     function onERC721Received(
@@ -83,16 +91,20 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         return this.onERC721Received.selector;
     }
 
-    function createLock(uint256 amount, uint256 duration, bool stake) external {
-        uint256 bonus = calculateBonus(amount, duration);
-        zero.transferFrom(msg.sender, address(this), amount);
+    function createLock(
+        uint256 amount,
+        uint256 duration,
+        bool stake
+    ) external override {
+        _createLockFor(msg.sender, amount, duration, stake);
+    }
 
-        locker.createLockFor(
-            amount + bonus, // uint256 _value,
-            duration, // uint256 _lockDuration,
-            msg.sender, // address _to,
-            stake // bool _stakeNFT
-        );
+    function createLockFor(
+        address who,
+        uint256 amount,
+        uint256 duration
+    ) external override {
+        _createLockFor(who, amount, duration, true);
     }
 
     function setBonusBps(uint256 _bps) external override onlyOwner {
@@ -104,10 +116,11 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         uint256 amount,
         uint256 duration
     ) public view override returns (uint256) {
-        uint256 rewardPercentage = bonusBps;
+        uint256 rewardPercentage = 0;
+
         if (duration > 0) {
             uint256 lockDurationInYears = duration / 31536000;
-            if (lockDurationInYears > 0) {
+            if (lockDurationInYears >= 0) {
                 rewardPercentage = 500 * lockDurationInYears;
             }
         }
@@ -118,5 +131,22 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         if (zero.balanceOf(address(this)) < bonus) return 0;
 
         return bonus;
+    }
+
+    function _createLockFor(
+        address who,
+        uint256 amount,
+        uint256 duration,
+        bool stake
+    ) internal {
+        uint256 bonus = calculateBonus(amount, duration);
+        zero.transferFrom(msg.sender, address(this), amount);
+
+        locker.createLockFor(
+            amount + bonus, // uint256 _value,
+            duration, // uint256 _lockDuration,
+            who, // address _to,
+            stake // bool _stakeNFT
+        );
     }
 }

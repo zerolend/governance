@@ -1,11 +1,5 @@
 import hre from "hardhat";
 import { ZERO_ADDRESS } from "../test/fixtures/utils";
-import {
-  LockerToken,
-  OmnichainStaking,
-  StakingBonus,
-  VestedZeroNFT,
-} from "../typechain-types";
 
 const main = async function () {
   const [deployer] = await hre.ethers.getSigners();
@@ -21,6 +15,9 @@ const main = async function () {
   const OmnichainStaking = await hre.ethers.getContractFactory(
     "OmnichainStaking"
   );
+  const airdropContractFC = await hre.ethers.getContractFactory(
+    "AirdropRewarder"
+  );
   const LockerToken = await hre.ethers.getContractFactory("LockerToken");
   const zero = await hre.ethers.getContractAt(
     "ZeroLend",
@@ -28,6 +25,7 @@ const main = async function () {
   );
 
   // implementations
+  const airdropContractImpl = await airdropContractFC.deploy();
   const stakingBonusImpl = await StakingBonus.deploy();
   const omnichainStakingImpl = await OmnichainStaking.deploy();
   const lockerTokenImpl = await LockerToken.deploy();
@@ -35,6 +33,7 @@ const main = async function () {
   const vestedZeroNFTImpl = await VestedZeroNFT.deploy();
 
   console.log("stakingBonusImpl", stakingBonusImpl.target);
+  console.log("airdropContractImpl", airdropContractImpl.target);
   console.log("omnichainStakingImpl", omnichainStakingImpl.target);
   console.log("lockerTokenImpl", lockerTokenImpl.target);
   console.log("poolVoterImpl", poolVoterImpl.target);
@@ -45,6 +44,11 @@ const main = async function () {
   // proxies
   const stakingBonusProxy = await TransparentUpgradeableProxy.deploy(
     stakingBonusImpl.target,
+    safe,
+    "0x"
+  );
+  const airdropContractProxy = await TransparentUpgradeableProxy.deploy(
+    airdropContractImpl.target,
     safe,
     "0x"
   );
@@ -89,6 +93,10 @@ const main = async function () {
     "VestedZeroNFT",
     vestedZeroNFTProxy.target
   );
+  const airdropContract = await hre.ethers.getContractAt(
+    "AirdropRewarder",
+    airdropContractProxy.target
+  );
 
   await vestedZeroNFTProxy.waitForDeployment();
 
@@ -105,7 +113,6 @@ const main = async function () {
     omnichainStaking.target,
     stakingBonus.target
   );
-
   await omnichainStaking.init(
     ZERO_ADDRESS,
     lockerToken.target,
@@ -115,6 +122,19 @@ const main = async function () {
     86400 * 30
   );
 
+  const endDate = Math.floor(Date.now() / 1000) + 86400 * 30; // 30 days
+  const startDate = Math.floor(
+    new Date("06 May 2024 07:30:00 UTC").getTime() / 1000
+  ); // 10 mins
+  // const startDate = Math.floor(Date.now() / 1000) + 60 * 10; // 10 mins
+
+  await airdropContract.initialize(
+    zero.target,
+    lockerToken.target,
+    vestedZeroNFT.target,
+    startDate,
+    endDate
+  );
   await poolVoter.init(omnichainStaking.target, zero.target);
 
   console.log("stakingBonus", stakingBonusProxy.target);
@@ -123,35 +143,41 @@ const main = async function () {
   console.log("zero", zero.target);
   console.log("poolVoter", poolVoter.target);
   console.log("vestedZeroNFT", vestedZeroNFTProxy.target);
+  console.log("airdropContract", airdropContractProxy.target);
 
   if (hre.network.name != "hardhat") {
     // Verify contract programmatically
     await hre.run("verify:verify", { address: stakingBonusImpl.target });
     await hre.run("verify:verify", { address: omnichainStakingImpl.target });
+    await hre.run("verify:verify", { address: airdropContractImpl.target });
     await hre.run("verify:verify", { address: lockerTokenImpl.target });
     await hre.run("verify:verify", { address: poolVoterImpl.target });
     await hre.run("verify:verify", { address: vestedZeroNFTImpl.target });
 
     // Verify contract programmatically
     await hre.run("verify:verify", {
+      address: airdropContractProxy.target,
+      constructorArguments: [airdropContractImpl.target, safe, "0x"],
+    });
+    await hre.run("verify:verify", {
       address: stakingBonus.target,
-      constructorArgs: [stakingBonusImpl.target, safe, "0x"],
+      constructorArguments: [stakingBonusImpl.target, safe, "0x"],
     });
     await hre.run("verify:verify", {
       address: poolVoter.target,
-      constructorArgs: [poolVoterImpl.target, safe, "0x"],
+      constructorArguments: [poolVoterImpl.target, safe, "0x"],
     });
     await hre.run("verify:verify", {
       address: omnichainStaking.target,
-      constructorArgs: [omnichainStakingImpl.target, safe, "0x"],
+      constructorArguments: [omnichainStakingImpl.target, safe, "0x"],
     });
     await hre.run("verify:verify", {
       address: lockerToken.target,
-      constructorArgs: [lockerTokenImpl.target, safe, "0x"],
+      constructorArguments: [lockerTokenImpl.target, safe, "0x"],
     });
     await hre.run("verify:verify", {
       address: vestedZeroNFT.target,
-      constructorArgs: [vestedZeroNFTImpl.target, safe, "0x"],
+      constructorArguments: [vestedZeroNFTImpl.target, safe, "0x"],
     });
   }
 };

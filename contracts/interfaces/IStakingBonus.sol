@@ -8,7 +8,18 @@ import {IERC721Receiver} from "@openzeppelin/contracts/interfaces/IERC721Receive
 interface IStakingBonus is IERC721Receiver {
     function setBonusBps(uint256 amount) external;
 
-    function calculateBonus(uint256 amount, uint256 duration) external returns (uint256);
+    function calculateBonus(
+        uint256 amount,
+        uint256 duration
+    ) external returns (uint256);
+
+    function createLockFor(
+        address who,
+        uint256 amount,
+        uint256 duration
+    ) external;
+
+    function createLock(uint256 amount, uint256 duration, bool stake) external;
 
     function bonusBps() external returns (uint256);
 

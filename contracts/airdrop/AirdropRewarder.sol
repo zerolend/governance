@@ -6,7 +6,7 @@ import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
+import {IStakingBonus} from "../interfaces/IStakingBonus.sol";
 import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
 
 contract AirdropRewarder is Initializable, OwnableUpgradeable {
@@ -17,7 +17,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     mapping(address => bool) public rewardsClaimed;
 
     ERC20Upgradeable public rewardToken;
-    IZeroLocker public locker;
+    IStakingBonus public locker;
     IVestedZeroNFT public vestedZeroNFT;
     uint256 public unlockDate;
     uint256 public endDate;
@@ -38,6 +38,10 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     event RewardsTransferred(address _user, uint256 _transferAmount);
     event RewardTerminated();
 
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(
         address _rewardToken,
         address _locker,
@@ -48,7 +52,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         __Ownable_init(msg.sender);
         unlockDate = _unlockDate;
         endDate = _endDate;
-        locker = IZeroLocker(_locker);
+        locker = IStakingBonus(_locker);
         vestedZeroNFT = IVestedZeroNFT(_vestedZeroNFT);
         rewardToken = ERC20Upgradeable(_rewardToken);
     }
@@ -67,14 +71,13 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     function setLocker(address _locker) external onlyOwner {
         if (_locker == address(0)) revert InvalidAddress();
         emit LockerSet(address(locker), _locker);
-
-        locker = IZeroLocker(_locker);
+        locker = IStakingBonus(_locker);
     }
 
-    function setVestedZeroNFT(address _locker) external onlyOwner {
-        if (_locker == address(0)) revert InvalidAddress();
-        emit LockerSet(address(locker), _locker);
-        locker = IZeroLocker(_locker);
+    function setVestedZeroNFT(address _vestedZeroNFT) external onlyOwner {
+        if (_vestedZeroNFT == address(0)) revert InvalidAddress();
+        emit LockerSet(address(locker), _vestedZeroNFT);
+        vestedZeroNFT = IVestedZeroNFT(_vestedZeroNFT);
     }
 
     function claim(
@@ -104,12 +107,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         if (_lockAndStake) {
             if (lockUntil < 365 days) revert InvalidLockDuration();
             rewardToken.approve(address(locker), remainingAmount);
-            locker.createLockFor(
-                remainingAmount,
-                lockUntil,
-                _user,
-                _lockAndStake
-            );
+            locker.createLockFor(_user, remainingAmount, lockUntil);
             emit RewardsLocked(_user, remainingAmount);
         } else {
             rewardToken.approve(address(vestedZeroNFT), remainingAmount);
@@ -118,7 +116,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
                 remainingAmount,
                 0,
                 91 days,
-                182 days,
+                90 days,
                 0,
                 false,
                 IVestedZeroNFT.VestCategory.AIRDROP
