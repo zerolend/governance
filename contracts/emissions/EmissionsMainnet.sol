@@ -12,12 +12,13 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
+import {IERC20} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {IZeroLend} from "../interfaces/IZeroLend.sol";
 import {IPoolVoter} from "../interfaces/IPoolVoter.sol";
+import {IZeroLend} from "../interfaces/IZeroLend.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract EmissionsMainnet is
     Initializable,
@@ -37,7 +38,6 @@ contract EmissionsMainnet is
 
     event TotalSupplySet(uint256 oldTokenSupply, uint256 newTokenSupply);
     event WeeklyDividersSet(uint256[] releasePercentagesPerWeek);
-
     error ReleaseIntervalNotMet(uint256 timePassed);
 
     function initialize(
@@ -85,5 +85,12 @@ contract EmissionsMainnet is
             ((((totalSupply * 1000 * 28) / 100) / 12) /
                 weeklyDividers[weekNumber]) /
             4;
+    }
+
+    function emergencyWithdrawal(address token) external onlyOwner {
+        IERC20(token).transfer(
+            msg.sender,
+            IERC20(token).balanceOf(address(this))
+        );
     }
 }

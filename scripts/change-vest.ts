@@ -1,6 +1,4 @@
 import hre from "hardhat";
-import * as fs from "fs";
-import { parseEther } from "ethers";
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
