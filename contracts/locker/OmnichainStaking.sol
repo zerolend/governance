@@ -97,12 +97,12 @@ contract OmnichainStaking is
      * @param data Additional data.
      * @return ERC721 onERC721Received selector.
      */
-    function onERC721Received(
+    function _onERC721ReceivedInternal(
         address,
         address from,
         uint256 tokenId,
         bytes calldata data
-    ) external returns (bytes4) {
+    ) internal returns (bytes4) {
         require(
             msg.sender == address(lpLocker) ||
                 msg.sender == address(tokenLocker),
@@ -126,6 +126,7 @@ contract OmnichainStaking is
             tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
             _mint(from, tokenPower[tokenId]);
         } else require(false, "invalid operator");
+
         return this.onERC721Received.selector;
     }
 
@@ -155,6 +156,15 @@ contract OmnichainStaking is
         }
 
         return (tokenIds, tokenDetails);
+    }
+
+    function onERC721Received(
+        address to,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4) {
+        return _onERC721ReceivedInternal(to, from, tokenId, data);
     }
 
     /**
@@ -199,6 +209,32 @@ contract OmnichainStaking is
         poolVoter.reset(msg.sender);
 
         tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
+    }
+
+    /**
+     * @dev Updates the lock duration for a specific NFT.
+     * @param nftId The ID of the NFT for which to update the lock duration.
+     * @param newLockDuration The new lock duration in seconds.
+     */
+    function updateLockDuration(
+        uint256 nftId,
+        uint256 newLockDuration
+    ) external onlyOwner {
+        tokenLocker.transferFrom(address(this), msg.sender, nftId);
+        tokenLocker.updateLockDuration(nftId, newLockDuration);
+    }
+
+    /**
+     * @dev Updates the lock amount for a specific NFT.
+     * @param nftId The ID of the NFT for which to update the lock amount.
+     * @param newLockAmount The new lock amount in tokens.
+     */
+    function updateLockAmount(
+        uint256 nftId,
+        uint256 newLockAmount
+    ) external onlyOwner {
+        tokenLocker.transferFrom(address(this), msg.sender, nftId);
+        tokenLocker.updateLockAmount(nftId, newLockAmount);
     }
 
     /**

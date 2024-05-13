@@ -50,6 +50,13 @@ contract BaseLocker is
     IERC20 public underlying;
     IOmnichainStaking public staking;
 
+    event LockAmountUpdated(uint256 tokenId, uint256 newAmount, uint256 power);
+    event LockDurationUpdated(
+        uint256 tokenId,
+        uint256 newLockDuration,
+        uint256 unlockTime
+    );
+
     function __BaseLocker_init(
         string memory _name,
         string memory _symbol,
@@ -323,6 +330,70 @@ contract BaseLocker is
                 ++i;
             }
         }
+    }
+
+    function updateLockAmount(
+        uint256 _tokenId,
+        uint256 _newLockAmount
+    ) external {
+        require(
+            _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
+            "caller is not owner nor approved"
+        );
+
+        LockedBalance storage _locked = locked[_tokenId];
+        require(_locked.amount > 0, "No existing lock found");
+        require(_locked.end > block.timestamp, "Lock expired");
+
+        _locked.power = _calculatePower(
+            LockedBalance(
+                _locked.amount,
+                _locked.start,
+                _locked.end,
+                _newLockAmount
+            )
+        );
+
+        bytes memory data = abi.encode(true, address(msg.sender), _locked.end-_locked.start);
+        this.safeTransferFrom(
+                address(this),
+                address(staking),
+                _tokenId,
+                data
+            );
+
+        emit LockAmountUpdated(_tokenId, _newLockAmount, _locked.power);
+    }
+
+    function updateLockDuration(
+        uint256 _tokenId,
+        uint256 _newLockDuration
+    ) external {
+        require(
+            _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
+            "caller is not owner nor approved"
+        );
+
+        LockedBalance memory _locked = locked[_tokenId];
+        require(_locked.end > block.timestamp, "Lock expired");
+
+        uint256 unlockTime = ((_locked.start + _newLockDuration) / WEEK) * WEEK; // Locktime is rounded down to weeks
+        require(
+            unlockTime <= _locked.start + MAXTIME,
+            "Voting lock can be 4 years max"
+        );
+
+        locked[_tokenId].end = unlockTime;
+
+        bytes memory data = abi.encode(true, address(msg.sender), _locked.end-_locked.start);
+        this.safeTransferFrom(
+                address(this),
+                address(staking),
+                _tokenId,
+                data
+            );
+
+        emit LockDurationUpdated(_tokenId, _newLockDuration, unlockTime);
     }
 
     function withdraw(address _user) external nonReentrant {
