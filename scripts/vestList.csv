@@ -1,2 +1,2 @@
-TotalTokens,Address,UpfrontPercentage,cliffDays,vestingDays,upfrontTokens,supplyUpfrontPercentage,supplyTotalPercentage
-1000,0x0F6e98A756A40dD050dC78959f45559F98d3289d,10,180,330,100,0.04,0.17
+Address,Total,Upfront %,Cliff days,Vesting days,Upfront tokens
+0xB9528d18F1337E4EEB176c30Cc919FB90994f203,16000000,25.00%,180,330,4000000
