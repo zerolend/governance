@@ -47,11 +47,15 @@ contract OmnichainStaking is
 
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
-    mapping(uint256 => address) public lockedBy;
-    mapping(address => uint256[]) public lockedNfts;
+
+    mapping(uint256 => address) public tokenLockerNftLockedBy;
+    mapping(address => uint256[]) public tokenLockerNfts;
 
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
+
+    mapping(uint256 => address) public lpLockerNftLockedBy;
+    mapping(address => uint256[]) lpLockerNfts;
 
     error InvalidUnstaker(address, address);
 
@@ -112,20 +116,26 @@ contract OmnichainStaking is
         if (data.length > 0)
             (, from, ) = abi.decode(data, (bool, address, uint256));
 
-        lockedNfts[from] = deleteAnElement(lockedNfts[from], tokenId);
-
-        lockedBy[tokenId] = from;
-        lockedNfts[from].push(tokenId);
 
         updateRewardFor(from);
 
         // if the stake is from the LP locker, then give 4 times the voting power
         if (msg.sender == address(lpLocker)) {
+            lpLockerNfts[from] = deleteAnElement(lpLockerNfts[from], tokenId);
+
+            tokenLockerNftLockedBy[tokenId] = from;
+            lpLockerNfts[from].push(tokenId);
+
             lpPower[tokenId] = lpLocker.balanceOfNFT(tokenId);
             _mint(from, lpPower[tokenId] * 4);
         }
         // if the stake is from a regular token locker, then give 1 times the voting power
         else if (msg.sender == address(tokenLocker)) {
+            tokenLockerNfts[from] = deleteAnElement(tokenLockerNfts[from], tokenId);
+
+            tokenLockerNftLockedBy[tokenId] = from;
+            tokenLockerNfts[from].push(tokenId);
+
             tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
             _mint(from, tokenPower[tokenId]);
         } else require(false, "invalid operator");
@@ -142,8 +152,8 @@ contract OmnichainStaking is
     function getLockedNftDetails(
         address _user
     ) external view returns (uint256[] memory, ILocker.LockedBalance[] memory) {
-        uint256 tokenIdsLength = lockedNfts[_user].length;
-        uint256[] memory lockedTokenIds = lockedNfts[_user];
+        uint256 tokenIdsLength = tokenLockerNfts[_user].length;
+        uint256[] memory lockedTokenIds = tokenLockerNfts[_user];
 
         uint256[] memory tokenIds = new uint256[](tokenIdsLength);
         ILocker.LockedBalance[]
@@ -175,12 +185,12 @@ contract OmnichainStaking is
      * @param tokenId The ID of the LP NFT to unstake.
      */
     function unstakeLP(uint256 tokenId) external updateReward(msg.sender) {
-        address lockedBy_ = lockedBy[tokenId];
+        address lockedBy_ = lpLockerNftLockedBy[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
-        delete lockedBy[tokenId];
-        lockedNfts[_msgSender()] = deleteAnElement(
-            lockedNfts[_msgSender()],
+        delete lpLockerNftLockedBy[tokenId];
+        lpLockerNfts[_msgSender()] = deleteAnElement(
+            lpLockerNfts[_msgSender()],
             tokenId
         );
 
@@ -197,12 +207,13 @@ contract OmnichainStaking is
      * @param tokenId The ID of the regular token NFT to unstake.
      */
     function unstakeToken(uint256 tokenId) external updateReward(msg.sender) {
-        address lockedBy_ = lockedBy[tokenId];
+        address lockedBy_ = tokenLockerNftLockedBy[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
-        delete lockedBy[tokenId];
-        lockedNfts[_msgSender()] = deleteAnElement(
-            lockedNfts[_msgSender()],
+        delete tokenLockerNftLockedBy[tokenId];
+
+        tokenLockerNfts[_msgSender()] = deleteAnElement(
+            tokenLockerNfts[_msgSender()],
             tokenId
         );
 
@@ -223,9 +234,9 @@ contract OmnichainStaking is
         uint256 nftId,
         uint256 newLockDuration
     ) external {
-        require(msg.sender == lockedBy[nftId], "Invalid nft locker");
+        require(msg.sender == tokenLockerNftLockedBy[nftId], "Invalid nft locker");
         tokenLocker.transferFrom(address(this), address(tokenLocker), nftId);
-        tokenLocker.updateLockDuration(nftId, lockedBy[nftId], newLockDuration);
+        tokenLocker.updateLockDuration(nftId, tokenLockerNftLockedBy[nftId], newLockDuration);
     }
 
     /**
@@ -234,9 +245,9 @@ contract OmnichainStaking is
      * @param newLockAmount The new lock amount in tokens.
      */
     function increaseLockAmount(uint256 nftId, uint256 newLockAmount) external {
-        require(msg.sender == lockedBy[nftId], "Invalid nft locker");
+        require(msg.sender == tokenLockerNftLockedBy[nftId], "Invalid nft locker");
         tokenLocker.transferFrom(address(this), address(tokenLocker), nftId);
-        tokenLocker.updateLockAmount(nftId, lockedBy[nftId], newLockAmount);
+        tokenLocker.updateLockAmount(nftId, tokenLockerNftLockedBy[nftId], newLockAmount);
     }
 
     /**
