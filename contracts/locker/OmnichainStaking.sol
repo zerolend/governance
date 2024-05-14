@@ -111,6 +111,9 @@ contract OmnichainStaking is
 
         if (data.length > 0)
             (, from, ) = abi.decode(data, (bool, address, uint256));
+
+        lockedNfts[from] = deleteAnElement(lockedNfts[from], tokenId);
+
         lockedBy[tokenId] = from;
         lockedNfts[from].push(tokenId);
 
@@ -219,9 +222,10 @@ contract OmnichainStaking is
     function updateLockDuration(
         uint256 nftId,
         uint256 newLockDuration
-    ) external onlyOwner {
-        tokenLocker.transferFrom(address(this), msg.sender, nftId);
-        tokenLocker.updateLockDuration(nftId, newLockDuration);
+    ) external {
+        require(msg.sender == lockedBy[nftId], "Invalid nft locker");
+        tokenLocker.transferFrom(address(this), address(tokenLocker), nftId);
+        tokenLocker.updateLockDuration(nftId, lockedBy[nftId], newLockDuration);
     }
 
     /**
@@ -229,12 +233,10 @@ contract OmnichainStaking is
      * @param nftId The ID of the NFT for which to update the lock amount.
      * @param newLockAmount The new lock amount in tokens.
      */
-    function updateLockAmount(
-        uint256 nftId,
-        uint256 newLockAmount
-    ) external onlyOwner {
-        tokenLocker.transferFrom(address(this), msg.sender, nftId);
-        tokenLocker.updateLockAmount(nftId, newLockAmount);
+    function increaseLockAmount(uint256 nftId, uint256 newLockAmount) external {
+        require(msg.sender == lockedBy[nftId], "Invalid nft locker");
+        tokenLocker.transferFrom(address(this), address(tokenLocker), nftId);
+        tokenLocker.updateLockAmount(nftId, lockedBy[nftId], newLockAmount);
     }
 
     /**

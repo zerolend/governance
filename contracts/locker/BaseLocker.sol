@@ -116,8 +116,8 @@ contract BaseLocker is
 
     function _calculatePower(
         LockedBalance memory lock
-    ) internal view returns (uint256) {
-        return ((lock.end - lock.start) * lock.amount) / MAXTIME;
+    ) internal view returns (uint256 power) {
+         power = ((lock.end - lock.start)*lock.amount)/MAXTIME;
     }
 
     /// @notice Deposit and lock tokens for a user
@@ -334,10 +334,11 @@ contract BaseLocker is
 
     function updateLockAmount(
         uint256 _tokenId,
-        uint256 _newLockAmount
+        address nftOwner,
+        uint256 _addedAmount
     ) external {
         require(
-            _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
+            _isAuthorized(ownerOf(_tokenId), address(this), _tokenId),
             "caller is not owner nor approved"
         );
 
@@ -345,16 +346,11 @@ contract BaseLocker is
         require(_locked.amount > 0, "No existing lock found");
         require(_locked.end > block.timestamp, "Lock expired");
 
-        _locked.power = _calculatePower(
-            LockedBalance(
-                _locked.amount,
-                _locked.start,
-                _locked.end,
-                _newLockAmount
-            )
-        );
+        underlying.transferFrom(nftOwner, address(this), _addedAmount);
+        _locked.amount += _addedAmount; 
+        _locked.power = _calculatePower(_locked);
 
-        bytes memory data = abi.encode(true, address(msg.sender), _locked.end-_locked.start);
+        bytes memory data = abi.encode(true, nftOwner, _locked.end-_locked.start);
         this.safeTransferFrom(
                 address(this),
                 address(staking),
@@ -362,15 +358,16 @@ contract BaseLocker is
                 data
             );
 
-        emit LockAmountUpdated(_tokenId, _newLockAmount, _locked.power);
+        emit LockAmountUpdated(_tokenId, _locked.amount, _locked.power);
     }
 
     function updateLockDuration(
         uint256 _tokenId,
+        address nftOwner,
         uint256 _newLockDuration
     ) external {
         require(
-            _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
+            _isAuthorized(ownerOf(_tokenId), address(this), _tokenId),
             "caller is not owner nor approved"
         );
 
@@ -385,7 +382,7 @@ contract BaseLocker is
 
         locked[_tokenId].end = unlockTime;
 
-        bytes memory data = abi.encode(true, address(msg.sender), _locked.end-_locked.start);
+        bytes memory data = abi.encode(true, nftOwner, _locked.end-_locked.start);
         this.safeTransferFrom(
                 address(this),
                 address(staking),

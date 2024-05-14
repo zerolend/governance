@@ -18,9 +18,19 @@ interface ILocker is IERC721Enumerable {
         uint256 _t
     ) external view returns (uint256);
 
-    function locked(uint256 _tokenId) external view returns (LockedBalance memory);
+    function locked(
+        uint256 _tokenId
+    ) external view returns (LockedBalance memory);
 
-    function updateLockDuration(uint256 nftId,uint256 newLockDuration) external;
+    function updateLockDuration(
+        uint256 nftId,
+        address nftOwner,
+        uint256 newLockDuration
+    ) external;
 
-    function updateLockAmount(uint256 nftId,uint256 newAmount) external;
+    function updateLockAmount(
+        uint256 nftId,
+        address nftOwner,
+        uint256 newAmount
+    ) external;
 }
