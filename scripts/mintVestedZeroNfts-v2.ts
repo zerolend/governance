@@ -2,7 +2,7 @@ import hre from "hardhat";
 import * as fs from "fs";
 import { parseEther } from "ethers";
 
-const VESTED_ZERO_NFT_ADDRESS = "0x9FA72ea96591e486FF065E7C8A89282dEDfA6C12";
+const VESTED_ZERO_NFT_ADDRESS = "0xBDd0F194C29e337411f98589548E03F7b38D044b";
 const ZERO_ADDRESS = "0x78354f8dccb269a615a7e0a24f9b0718fdc3c7a7";
 
 async function main() {
@@ -17,8 +17,8 @@ async function main() {
     VESTED_ZERO_NFT_ADDRESS
   );
 
-  // const zero = await hre.ethers.getContractAt("ZeroLend", ZERO_ADDRESS);
-  // await zero.approve(vest, parseEther("1000000000000000000"));
+  const zero = await hre.ethers.getContractAt("ZeroLend", ZERO_ADDRESS);
+  await zero.approve(vest, parseEther("100000000"));
 
   // Initialize an empty array to store the parsed data
   const parsedData: any[] = [];
@@ -40,27 +40,23 @@ async function main() {
       // Iterate over the rows starting from index 1 (skipping the header)
       for (let i = 1; i < rows.length; i++) {
         const [
-          address, // Address,
-          total, // Total,
-          upfront_perc, // Upfront %,
-          cliff_days, // Cliff days,
-          vesting_days, // Vesting days,
-          upfront_tokens, // Upfront tokens
+          totalTokens,
+          walletAddress,
+          ,
+          cliffDays,
+          vestingDays,
+          upfrontTokens,
         ] = rows[i].split(",");
 
-        // const startDate = Math.floor(
-        //   new Date("06 May 2024 07:30:00 UTC").getTime() / 1000
-        // );
-
         const rowData = {
-          who: address,
+          who: walletAddress,
           pending: parseEther(
-            (parseInt(total) - parseInt(upfront_tokens)).toString()
+            (parseInt(totalTokens) - parseInt(upfrontTokens)).toString()
           ),
-          upfront: parseEther(upfront_tokens),
-          linearDuration: parseInt(vesting_days) * 86400,
-          cliffDuration: parseInt(cliff_days) * 86400,
-          unlockDate: 0,
+          upfront: parseEther(upfrontTokens),
+          linearDuration: parseInt(vestingDays) * 86400,
+          cliffDuration: parseInt(cliffDays) * 86400,
+          unlockDate: Math.floor(Date.now() / 1000),
           hasPenalty: false,
           category: 0,
         };
@@ -82,7 +78,6 @@ async function main() {
         } = parsedData[i];
 
         console.log(
-          i,
           who,
           pending,
           upfront,
@@ -99,13 +94,13 @@ async function main() {
           upfront,
           linearDuration,
           cliffDuration,
-          unlockDate,
+          0, // Math.floor(Date.now() / 1000) + 60, // unlockDate,
           hasPenalty,
           category
         );
         // console.log("Vest minted for: ", tx);
         console.log("Vest minted for: ", tx.hash);
-        await tx.wait(1);
+        await tx.wait();
       }
     }
   );

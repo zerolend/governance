@@ -48,7 +48,7 @@ contract TransferStrategyZERO is Ownable, ITransferStrategyBase {
 
         INCENTIVES_CONTROLLER = _incentivesController;
 
-        duration = 86400 * 30 * 3; // 3 months vesting
+        duration = 86400 * 30 * 1; // 1 month linear
     }
 
     /// @inheritdoc ITransferStrategyBase

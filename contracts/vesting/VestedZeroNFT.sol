@@ -48,6 +48,10 @@ contract VestedZeroNFT is
     mapping(uint256 => LockDetails) public tokenIdToLockDetails;
     mapping(uint256 => bool) public frozen;
 
+    constructor() {
+        _disableInitializers();
+    }
+
     function init(address _zero, address _stakingBonus) external initializer {
         __ERC721_init("ZeroLend Vest", "ZEROv");
         __ERC721Enumerable_init();
@@ -66,6 +70,12 @@ contract VestedZeroNFT is
         WHOLE = 100000; // 100%
 
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    }
+
+    function setStakingBonus(
+        address _addr
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        stakingBonus = _addr;
     }
 
     /// @inheritdoc IVestedZeroNFT
@@ -322,12 +332,18 @@ contract VestedZeroNFT is
         return lock.upfrontClaimed + lock.pendingClaimed;
     }
 
+    function recallNFT(uint256 id) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        // todo
+    }
+
     /// @inheritdoc IVestedZeroNFT
     function penalty(
         uint256 tokenId
     ) public view returns (uint256 penaltyAmount) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
-        uint256 penaltyDuration =  lock.unlockDate + lock.linearDuration + lock.cliffDuration;
+        uint256 penaltyDuration = lock.unlockDate +
+            lock.linearDuration +
+            lock.cliffDuration;
 
         if (penaltyDuration >= block.timestamp) {
             uint256 penaltyFactor = ((penaltyDuration - block.timestamp) *
@@ -396,5 +412,14 @@ contract VestedZeroNFT is
         require(!frozen[tokenId], "frozen");
         _requireNotPaused();
         return super._update(to, tokenId, auth);
+    }
+
+    function emergencyWithdrawal(
+        address token
+    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        IERC20(token).transfer(
+            msg.sender,
+            IERC20(token).balanceOf(address(this))
+        );
     }
 }

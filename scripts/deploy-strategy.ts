@@ -6,8 +6,8 @@ const main = async function () {
   );
 
   const args = [
-    "0xaBA2AC76747571B8449F8a935D2cE90e2F2A32E3", // address _incentivesController,
-    "0xBDd0F194C29e337411f98589548E03F7b38D044b", // address _vestedZERO,
+    "0x28F6899fF643261Ca9766ddc251b359A2d00b945", // address _incentivesController,
+    "0x9FA72ea96591e486FF065E7C8A89282dEDfA6C12", // address _vestedZERO,
     "0x78354f8dccb269a615a7e0a24f9b0718fdc3c7a7", // address _zero
   ];
 
@@ -25,7 +25,7 @@ const main = async function () {
   if (hre.network.name != "hardhat") {
     await hre.run("verify:verify", {
       address: transferStrategyZERO.target,
-      constructorArgs: args,
+      constructorArguments: args,
     });
   }
 };

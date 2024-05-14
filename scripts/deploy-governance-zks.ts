@@ -1,42 +1,36 @@
 import hre from "hardhat";
 import { ZERO_ADDRESS } from "../test/fixtures/utils";
 
+const safe = "0xa01AfbE9D874241F3697CB83FAe59977F0Aa2741";
+const token = "0x861Af65B499ac38FC767547FeD9C44BBa8515a4f";
+const incentivesController = "0x94Dc19a5bd17E84d90E63ff3fBA9c3B76E5E4012";
+
 const main = async function () {
   const [deployer] = await hre.ethers.getSigners();
 
-  const safe = "0x14aAD4668de2115e30A5FeeE42CFa436899CCD8A";
-
   const VestedZeroNFT = await hre.ethers.getContractFactory("VestedZeroNFT");
   const StakingBonus = await hre.ethers.getContractFactory("StakingBonus");
+  const TransferStrategyZERO = await hre.ethers.getContractFactory(
+    "TransferStrategyZERO"
+  );
   const TransparentUpgradeableProxy = await hre.ethers.getContractFactory(
     "TransparentUpgradeableProxy"
   );
-  const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
   const OmnichainStaking = await hre.ethers.getContractFactory(
     "OmnichainStaking"
   );
-  const airdropContractFC = await hre.ethers.getContractFactory(
-    "AirdropRewarder"
-  );
   const LockerToken = await hre.ethers.getContractFactory("LockerToken");
-  const zero = await hre.ethers.getContractAt(
-    "ZeroLend",
-    "0x78354f8dccb269a615a7e0a24f9b0718fdc3c7a7"
-  );
+  const zero = await hre.ethers.getContractAt("ZeroLend", token);
 
   // implementations
-  const airdropContractImpl = await airdropContractFC.deploy();
   const stakingBonusImpl = await StakingBonus.deploy();
   const omnichainStakingImpl = await OmnichainStaking.deploy();
   const lockerTokenImpl = await LockerToken.deploy();
-  const poolVoterImpl = await PoolVoter.deploy();
   const vestedZeroNFTImpl = await VestedZeroNFT.deploy();
 
   console.log("stakingBonusImpl", stakingBonusImpl.target);
-  console.log("airdropContractImpl", airdropContractImpl.target);
   console.log("omnichainStakingImpl", omnichainStakingImpl.target);
   console.log("lockerTokenImpl", lockerTokenImpl.target);
-  console.log("poolVoterImpl", poolVoterImpl.target);
   console.log("vestedZeroNFTImpl", vestedZeroNFTImpl.target);
 
   await vestedZeroNFTImpl.waitForDeployment();
@@ -47,16 +41,7 @@ const main = async function () {
     safe,
     "0x"
   );
-  const airdropContractProxy = await TransparentUpgradeableProxy.deploy(
-    airdropContractImpl.target,
-    safe,
-    "0x"
-  );
-  const poolVoterProxy = await TransparentUpgradeableProxy.deploy(
-    poolVoterImpl.target,
-    safe,
-    "0x"
-  );
+
   const omnichainStakingProxy = await TransparentUpgradeableProxy.deploy(
     omnichainStakingImpl.target,
     safe,
@@ -73,6 +58,13 @@ const main = async function () {
     "0x"
   );
 
+  // implementations
+  const transferStrategyZERO = await TransferStrategyZERO.deploy(
+    incentivesController,
+    vestedZeroNFTProxy.target,
+    token
+  );
+
   const stakingBonus = await hre.ethers.getContractAt(
     "StakingBonus",
     stakingBonusProxy.target
@@ -85,17 +77,9 @@ const main = async function () {
     "LockerToken",
     lockerTokenProxy.target
   );
-  const poolVoter = await hre.ethers.getContractAt(
-    "PoolVoter",
-    poolVoterProxy.target
-  );
   const vestedZeroNFT = await hre.ethers.getContractAt(
     "VestedZeroNFT",
     vestedZeroNFTProxy.target
-  );
-  const airdropContract = await hre.ethers.getContractAt(
-    "AirdropRewarder",
-    airdropContractProxy.target
   );
 
   await vestedZeroNFTProxy.waitForDeployment();
@@ -118,54 +102,48 @@ const main = async function () {
     lockerToken.target,
     ZERO_ADDRESS,
     zero.target,
-    poolVoter.target,
+    ZERO_ADDRESS,
     86400 * 30
   );
-
-  const endDate = Math.floor(Date.now() / 1000) + 86400 * 30; // 30 days
-  const startDate = Math.floor(
-    new Date("06 May 2024 07:30:00 UTC").getTime() / 1000
-  ); // 10 mins
-  // const startDate = Math.floor(Date.now() / 1000) + 60 * 10; // 10 mins
-
-  await airdropContract.initialize(
-    zero.target,
-    lockerToken.target,
-    vestedZeroNFT.target,
-    startDate,
-    endDate
-  );
-  await poolVoter.init(omnichainStaking.target, zero.target);
 
   console.log("stakingBonus", stakingBonusProxy.target);
   console.log("omnichainStaking", omnichainStakingProxy.target);
   console.log("lockerToken", lockerTokenProxy.target);
   console.log("zero", zero.target);
-  console.log("poolVoter", poolVoter.target);
+  console.log("transferStrategyZERO", transferStrategyZERO.target);
   console.log("vestedZeroNFT", vestedZeroNFTProxy.target);
-  console.log("airdropContract", airdropContractProxy.target);
+  console.log("---done---");
+
+  // transfer ownership
+  console.log("transfering ownership");
+  await stakingBonus.transferOwnership(safe);
+  await omnichainStaking.transferOwnership(safe);
+  await transferStrategyZERO.transferOwnership(safe);
+  await vestedZeroNFT.grantRole(await vestedZeroNFT.DEFAULT_ADMIN_ROLE(), safe);
+  await vestedZeroNFT.renounceRole(
+    await vestedZeroNFT.DEFAULT_ADMIN_ROLE(),
+    deployer.address
+  );
 
   if (hre.network.name != "hardhat") {
     // Verify contract programmatically
     await hre.run("verify:verify", { address: stakingBonusImpl.target });
     await hre.run("verify:verify", { address: omnichainStakingImpl.target });
-    await hre.run("verify:verify", { address: airdropContractImpl.target });
     await hre.run("verify:verify", { address: lockerTokenImpl.target });
-    await hre.run("verify:verify", { address: poolVoterImpl.target });
     await hre.run("verify:verify", { address: vestedZeroNFTImpl.target });
 
     // Verify contract programmatically
     await hre.run("verify:verify", {
-      address: airdropContractProxy.target,
-      constructorArguments: [airdropContractImpl.target, safe, "0x"],
+      address: transferStrategyZERO.target,
+      constructorArguments: [
+        incentivesController,
+        vestedZeroNFTProxy.target,
+        token,
+      ],
     });
     await hre.run("verify:verify", {
       address: stakingBonus.target,
       constructorArguments: [stakingBonusImpl.target, safe, "0x"],
-    });
-    await hre.run("verify:verify", {
-      address: poolVoter.target,
-      constructorArguments: [poolVoterImpl.target, safe, "0x"],
     });
     await hre.run("verify:verify", {
       address: omnichainStaking.target,

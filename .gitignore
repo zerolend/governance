@@ -114,4 +114,5 @@ dist
 
 typechain-types/
 generated-abi
-deployments/blastSepolia/solcInputs/e240a8e7fe1ffc7dd96b50a060104576.json
+scripts/*.json
+scripts/data/*.json
