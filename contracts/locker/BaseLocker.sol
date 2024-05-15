@@ -6,6 +6,7 @@ import {IERC165, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgr
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
   @title Voting Escrow
@@ -32,6 +33,7 @@ import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 contract BaseLocker is
     ReentrancyGuardUpgradeable,
     ERC721EnumerableUpgradeable,
+    OwnableUpgradeable,
     IZeroLocker
 {
     uint256 internal WEEK;
@@ -50,6 +52,11 @@ contract BaseLocker is
     IERC20 public underlying;
     IOmnichainStaking public staking;
 
+    event TokenAddressSet(address indexed oldToken, address indexed newToken);
+    event StakingAddressSet(address indexed oldStaking, address indexed newStaking);
+    event StakingBonusAddressSet(address indexed oldStakingBonus, address indexed newStakingBonus);
+    event MaxTimeSet(uint256 oldMaxTime, uint256 newMaxTime);
+
     function __BaseLocker_init(
         string memory _name,
         string memory _symbol,
@@ -59,6 +66,7 @@ contract BaseLocker is
         uint256 _maxTime
     ) internal {
         __ERC721_init(_name, _symbol);
+        __Ownable_init(msg.sender);
         __ReentrancyGuard_init();
 
         version = "1.0.0";
@@ -73,6 +81,47 @@ contract BaseLocker is
 
         _setApprovalForAll(address(this), _stakingBonus, true);
         _setApprovalForAll(address(this), _staking, true);
+    }
+
+    /**
+     * @notice Sets the underlying token address
+     * @param _token The new token address
+     */
+    function setTokenAddress(address _token) external onlyOwner {
+        address oldToken = address(underlying);
+        underlying = IERC20(_token);
+        emit TokenAddressSet(oldToken, _token);
+    }
+
+    /**
+     * @notice Sets the staking contract address
+     * @param _staking The new staking contract address
+     */
+    function setStakingAddress(address _staking) external onlyOwner{
+        address oldStaking = address(staking);
+        staking = IOmnichainStaking(_staking);
+        emit StakingAddressSet(oldStaking, _staking);
+    }
+
+    /**
+     * @notice Sets the staking bonus contract address
+     * @param _stakingBonus The new staking bonus contract address
+     */
+    function setStakingBonusAddress(address _stakingBonus) external onlyOwner {
+        address oldStakingBonus = address(0); // Update this with the actual old staking bonus address if needed
+        _setApprovalForAll(address(this), oldStakingBonus, false);
+        _setApprovalForAll(address(this), _stakingBonus, true);
+        emit StakingBonusAddressSet(oldStakingBonus, _stakingBonus);
+    }
+
+    /**
+     * @notice Sets the maximum lock time
+     * @param _maxTime The new maximum lock time in seconds
+     */
+    function setMaxTime(uint256 _maxTime) external onlyOwner {
+        uint256 oldMaxTime = MAXTIME;
+        MAXTIME = _maxTime;
+        emit MaxTimeSet(oldMaxTime, _maxTime);
     }
 
     /// @dev Interface identification is specified in ERC-165.
