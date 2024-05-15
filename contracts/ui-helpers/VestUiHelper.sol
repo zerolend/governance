@@ -59,7 +59,9 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
         omnichainStaking = OmnichainStaking(_omnichainStaking);
     }
 
-    function getVestedNFTData(address _userAddress) external view returns (VestDetails[] memory) {
+    function getVestedNFTData(
+        address _userAddress
+    ) external view returns (VestDetails[] memory) {
         uint256 nftsOwned = vestedZero.balanceOf(_userAddress);
         VestDetails[] memory lockDetails = new VestDetails[](nftsOwned);
         for (uint i; i < nftsOwned; ) {
@@ -95,7 +97,10 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
 
             lock.id = tokenId;
             lock.penalty = vestedZero.penalty(tokenId);
-            lock.claimable = upfrontClaimable + pendingClaimable;
+            lock.claimable =
+                upfrontClaimable +
+                pendingClaimable -
+                (lock.upfrontClaimed + lock.pendingClaimed);
             lock.unClaimed = vestedZero.unclaimed(tokenId);
             lock.isFrozen = vestedZero.frozen(tokenId);
 
@@ -109,7 +114,9 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
         return lockDetails;
     }
 
-    function getLockDetails(address _userAddress) external view returns (LockedBalanceWithApr[] memory){
+    function getLockDetails(
+        address _userAddress
+    ) external view returns (LockedBalanceWithApr[] memory) {
         (
             uint256[] memory tokenIds,
             ILocker.LockedBalance[] memory lockedBalances
@@ -119,17 +126,21 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
         uint256 totalSupply = omnichainStaking.totalSupply();
 
         uint256 totalTokenIds = tokenIds.length;
-        LockedBalanceWithApr[] memory lockDetails = new LockedBalanceWithApr[](totalTokenIds);
+        LockedBalanceWithApr[] memory lockDetails = new LockedBalanceWithApr[](
+            totalTokenIds
+        );
 
         for (uint i; i < totalTokenIds; ) {
             LockedBalanceWithApr memory lock;
             ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
-            
+
             uint256 vePower = getLockPower(lockedBalance);
-            uint256 scale = (vePower != 0 && lockedBalance.amount != 0) ? vePower*1e18/lockedBalance.amount : 1e18;
+            uint256 scale = (vePower != 0 && lockedBalance.amount != 0)
+                ? (vePower * 1e18) / lockedBalance.amount
+                : 1e18;
             uint256 poolRewardAnnual = rewardRate * 31536000;
-            uint256 apr = (poolRewardAnnual * 1000)/totalSupply;
-            uint256 aprScaled = apr * scale/1000;
+            uint256 apr = (poolRewardAnnual * 1000) / totalSupply;
+            uint256 aprScaled = (apr * scale) / 1000;
 
             lock.id = tokenIds[i];
             lock.amount = lockedBalance.amount;
@@ -139,7 +150,7 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
             lock.apr = aprScaled;
 
             lockDetails[i] = lock;
-            
+
             unchecked {
                 ++i;
             }
@@ -148,12 +159,16 @@ contract VestedZeroUiHelper is Initializable, OwnableUpgradeable {
         return lockDetails;
     }
 
-    function getLockPower(ILocker.LockedBalance memory lock) internal pure returns (uint256) {
+    function getLockPower(
+        ILocker.LockedBalance memory lock
+    ) internal pure returns (uint256) {
         uint256 duration = lock.end - lock.start;
-        uint256 durationInYears = (lock.end - lock.start)/365 days;
-        uint256 amountWithBonus = lock.amount + (lock.amount * durationInYears * 5)/100;
+        uint256 durationInYears = (lock.end - lock.start) / 365 days;
+        uint256 amountWithBonus = lock.amount +
+            (lock.amount * durationInYears * 5) /
+            100;
 
-        return (duration*amountWithBonus)/(4*365 days);
+        return (duration * amountWithBonus) / (4 * 365 days);
     }
 
     function setOmnichain(address _omnichainStaking) external onlyOwner {
