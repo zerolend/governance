@@ -46,19 +46,21 @@ const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
     omnichainStaking.target,
     stakingBonus.target
   );
-  await omnichainStaking.init(
-    ZERO_ADDRESS,
-    lockerToken.target,
-    lockerLP.target,
-    zero.target
-  );
   // unpause zero
   await zero.togglePause(false);
   // give necessary approvals
   await zero.approve(vestedZeroNFT.target, 100n * supply);
-
+  
   const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
   const poolVoter = await PoolVoter.deploy();
+  await omnichainStaking.init(
+    ZERO_ADDRESS,
+    lockerToken.target,
+    lockerLP.target,
+    zero.target,
+    poolVoter.target,
+    51536000/2
+  );
   await poolVoter.init(omnichainStaking.target, zero.target);
 
   //Deploying Gauges
