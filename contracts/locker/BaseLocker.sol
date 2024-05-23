@@ -120,16 +120,6 @@ contract BaseLocker is
         _setApprovalForAll(address(this), _stakingBonus, true);
     }
 
-    /**
-     * @notice Sets the maximum lock time
-     * @param _maxTime The new maximum lock time in seconds
-     */
-    function setMaxTime(uint256 _maxTime) external onlyOwner {
-        uint256 oldMaxTime = MAXTIME;
-        MAXTIME = _maxTime;
-        emit MaxTimeSet(oldMaxTime, _maxTime);
-    }
-
     /// @dev Interface identification is specified in ERC-165.
     /// @param _interfaceID Id of the interface
     function supportsInterface(
