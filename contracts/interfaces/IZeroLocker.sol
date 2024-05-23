@@ -57,4 +57,14 @@ interface IZeroLocker is IERC721 {
     );
 
     event Supply(uint256 prevSupply, uint256 supply);
+
+    event TokenAddressSet(address indexed oldToken, address indexed newToken);
+    event StakingAddressSet(
+        address indexed oldStaking,
+        address indexed newStaking
+    );
+    event StakingBonusAddressSet(
+        address indexed oldStakingBonus,
+        address indexed newStakingBonus
+    );
 }

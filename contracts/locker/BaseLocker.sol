@@ -54,11 +54,6 @@ contract BaseLocker is
 
     address stakingBonus;
 
-    event TokenAddressSet(address indexed oldToken, address indexed newToken);
-    event StakingAddressSet(address indexed oldStaking, address indexed newStaking);
-    event StakingBonusAddressSet(address indexed oldStakingBonus, address indexed newStakingBonus);
-    event MaxTimeSet(uint256 oldMaxTime, uint256 newMaxTime);
-
     function __BaseLocker_init(
         string memory _name,
         string memory _symbol,
@@ -78,7 +73,6 @@ contract BaseLocker is
         WEEK = 1 weeks;
         MAXTIME = _maxTime;
         MULTIPLIER = 1 ether;
-
 
         stakingBonus = _stakingBonus;
         staking = IOmnichainStaking(_staking);
@@ -102,7 +96,7 @@ contract BaseLocker is
      * @notice Sets the staking contract address
      * @param _staking The new staking contract address
      */
-    function setStakingAddress(address _staking) external onlyOwner{
+    function setStakingAddress(address _staking) external onlyOwner {
         address oldStaking = address(staking);
         staking = IOmnichainStaking(_staking);
         emit StakingAddressSet(oldStaking, _staking);
