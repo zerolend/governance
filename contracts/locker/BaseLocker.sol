@@ -63,10 +63,11 @@ contract BaseLocker is
         address _token,
         address _staking,
         address _stakingBonus,
-        uint256 _maxTime
+        uint256 _maxTime,
+        address _owner
     ) internal {
         __ERC721_init(_name, _symbol);
-        __Ownable_init(msg.sender);
+        __Ownable_init(_owner);
         __ReentrancyGuard_init();
 
         version = "1.0.0";
