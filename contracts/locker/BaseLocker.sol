@@ -52,6 +52,8 @@ contract BaseLocker is
     IERC20 public underlying;
     IOmnichainStaking public staking;
 
+    address stakingBonus;
+
     event TokenAddressSet(address indexed oldToken, address indexed newToken);
     event StakingAddressSet(address indexed oldStaking, address indexed newStaking);
     event StakingBonusAddressSet(address indexed oldStakingBonus, address indexed newStakingBonus);
@@ -77,10 +79,12 @@ contract BaseLocker is
         MAXTIME = _maxTime;
         MULTIPLIER = 1 ether;
 
+
+        stakingBonus = _stakingBonus;
         staking = IOmnichainStaking(_staking);
         underlying = IERC20(_token);
 
-        _setApprovalForAll(address(this), _stakingBonus, true);
+        _setApprovalForAll(address(this), stakingBonus, true);
         _setApprovalForAll(address(this), _staking, true);
     }
 
@@ -109,10 +113,11 @@ contract BaseLocker is
      * @param _stakingBonus The new staking bonus contract address
      */
     function setStakingBonusAddress(address _stakingBonus) external onlyOwner {
-        address oldStakingBonus = address(0); // Update this with the actual old staking bonus address if needed
-        _setApprovalForAll(address(this), oldStakingBonus, false);
+        _setApprovalForAll(address(this), stakingBonus, false);
+
+        emit StakingBonusAddressSet(stakingBonus, _stakingBonus);
+        stakingBonus = _stakingBonus;
         _setApprovalForAll(address(this), _stakingBonus, true);
-        emit StakingBonusAddressSet(oldStakingBonus, _stakingBonus);
     }
 
     /**
