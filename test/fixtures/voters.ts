@@ -6,8 +6,7 @@ export async function deployVoters() {
   const secondsIn6Months = 15780000;
   const governance = await deployGovernance();
   const lending = governance.lending;
-
-  const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
+  const poolVoter = governance.poolVoter;
 
   const MockEligibilityCriteria = await hre.ethers.getContractFactory(
     "MockEligibilityCriteria"
@@ -25,8 +24,6 @@ export async function deployVoters() {
     lending.erc20.target
   );
 
-  const poolVoter = await PoolVoter.deploy();
-  console.log("PoolVoter Deployed at: ", poolVoter.target);
 
   // get instances
   const aToken = await hre.ethers.getContractAt("AToken", tokens.aTokenAddress);
@@ -42,12 +39,6 @@ export async function deployVoters() {
     governance.zero.target, // address _zero,
     lending.protocolDataProvider.target, // address _dataProvider
     secondsIn6Months
-  );
-
-  // init instances
-  await poolVoter.init(
-    governance.omnichainStaking.target,
-    governance.zero.target
   );
 
   // create gauge for the test token

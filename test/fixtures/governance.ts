@@ -19,6 +19,7 @@ export async function deployGovernance() {
     "OmnichainStaking"
   );
   const LockerToken = await hre.ethers.getContractFactory("LockerToken");
+  const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
 
   const stakingBonus = await StakingBonus.deploy();
   const omnichainStaking = await OmnichainStaking.deploy();
@@ -27,14 +28,15 @@ export async function deployGovernance() {
   const earlyZERO = await EarlyZERO.deploy();
   const zero = await ZeroLendToken.deploy();
   const vestedZeroNFT = await VestedZeroNFT.deploy();
+  const poolVoter = await PoolVoter.deploy();
 
-  // console.log("stakingBonus", stakingBonus.target);
-  // console.log("omnichainStaking", omnichainStaking.target);
-  // console.log("lockerToken", lockerToken.target);
-  // console.log("lockerLP", lockerLP.target);
-  // console.log("earlyZERO", earlyZERO.target);
-  // console.log("zero", zero.target);
-  // console.log("vestedZeroNFT", vestedZeroNFT.target);
+  console.log("stakingBonus", stakingBonus.target);
+  console.log("omnichainStaking", omnichainStaking.target);
+  console.log("lockerToken", lockerToken.target);
+  console.log("lockerLP", lockerLP.target);
+  console.log("earlyZERO", earlyZERO.target);
+  console.log("zero", zero.target);
+  console.log("vestedZeroNFT", vestedZeroNFT.target);
 
   // init contracts
   await vestedZeroNFT.init(zero.target, stakingBonus.target);
@@ -56,7 +58,18 @@ export async function deployGovernance() {
     omnichainStaking.target,
     stakingBonus.target
   );
-  await omnichainStaking.init(lockerToken.target, lockerLP.target, zero.target, secondsIn6Months);
+  await omnichainStaking.init(
+    ZERO_ADDRESS,
+    lockerToken.target,
+    lockerLP.target,
+    zero.target,
+    poolVoter.target,
+    secondsIn6Months
+  );
+  await poolVoter.init(
+    omnichainStaking.target,
+    zero.target
+  );
 
   // unpause zero
   await zero.togglePause(false);
@@ -76,5 +89,6 @@ export async function deployGovernance() {
     vestedZeroNFT,
     whale,
     zero,
+    poolVoter
   };
 }
