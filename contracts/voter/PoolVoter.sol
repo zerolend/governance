@@ -31,6 +31,11 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     mapping(address => uint256) public supplyIndex;
     mapping(address => uint256) public claimable;
 
+    event StakingTokenUpdated(address indexed oldStaking, address indexed newStaking);
+    event RewardTokenUpdated(address indexed oldReward, address indexed newReward);
+    event LzEndpointUpdated(address indexed oldLzEndpoint, address indexed newLzEndpoint);
+    event MainnetEmissionsUpdated(address indexed oldMainnetEmissions, address indexed newMainnetEmissions);
+
     error ResetNotAllowed();
 
     /**
@@ -47,12 +52,52 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     /**
+     * @notice Sets the staking token address
+     * @param _staking The new staking token address
+     */
+    function setStakingToken(address _staking) external onlyOwner {
+        address oldStaking = address(staking);
+        staking = IERC20(_staking);
+        emit StakingTokenUpdated(oldStaking, _staking);
+    }
+
+    /**
+     * @notice Sets the reward token address
+     * @param _reward The new reward token address
+     */
+    function setRewardToken(address _reward) external onlyOwner {
+        address oldReward = address(reward);
+        reward = IERC20(_reward);
+        emit RewardTokenUpdated(oldReward, _reward);
+    }
+
+    /**
+     * @notice Sets the LayerZero endpoint address
+     * @param _lzEndpoint The new LayerZero endpoint address
+     */
+    function setLzEndpoint(address _lzEndpoint) external onlyOwner {
+        address oldLzEndpoint = lzEndpoint;
+        lzEndpoint = _lzEndpoint;
+        emit LzEndpointUpdated(oldLzEndpoint, _lzEndpoint);
+    }
+
+    /**
+     * @notice Sets the mainnet emissions address
+     * @param _mainnetEmissions The new mainnet emissions address
+     */
+    function setMainnetEmissions(address _mainnetEmissions) external onlyOwner {
+        address oldMainnetEmissions = mainnetEmissions;
+        mainnetEmissions = _mainnetEmissions;
+        emit MainnetEmissionsUpdated(oldMainnetEmissions, _mainnetEmissions);
+    }
+
+    /**
      * @notice Resets the user's voting state, clearing their previous votes and weights.
      * @param _who the user who's voting state is reset
      * @dev Only callable by the owner of the contract.
      */
     function reset(address _who) external {
-        require(msg.sender == _who || msg.sender == address(staking),"Invalid reset performed");
+        require(msg.sender == _who || msg.sender == address(staking), "Invalid reset performed");
         _reset(_who);
     }
 

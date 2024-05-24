@@ -58,8 +58,19 @@ contract OmnichainStaking is
     mapping(uint256 => address) public lockedByLp;
     mapping(address => uint256[]) public lockedLpIdNfts;
 
+
+    event RewardPaid(address indexed user, uint256 reward);
+    event RewardAdded(uint256 reward);
+    event Recovered(address token, uint256 amount);
+    event RewardsDurationUpdated(uint256 newDuration);
+    event TokenLockerUpdated(address previousLocker, address _tokenLocker);
+    event LpLockerUpdated(address previousLocker, address _lpLocker);
+    event RewardsTokenUpdated(address previousToken, address _zeroToken);
+    event PoolVoterUpdated(address previousVoter,address _poolVoter);
+
     ILPOracle public lpOracle;
     IPythAggregatorV3 public zeroAggregator;
+
 
     // constructor() {
     //     _disableInitializers();
@@ -503,6 +514,50 @@ contract OmnichainStaking is
         }
     }
 
+    /**
+     * @dev Sets the address of the token locker contract.
+     * @param _tokenLocker The address of the token locker contract.
+     */
+    function setTokenLocker(address _tokenLocker) external onlyOwner {
+        address previousLocker = address(tokenLocker);
+        tokenLocker = ILocker(_tokenLocker);
+        emit TokenLockerUpdated(previousLocker, _tokenLocker);
+    }
+
+    /**
+     * @dev Sets the address of the LP locker contract.
+     * @param _lpLocker The address of the LP locker contract.
+     */
+    function setLpLocker(address _lpLocker) external onlyOwner {
+        address previousLocker = address(lpLocker);
+        lpLocker = ILocker(_lpLocker);
+        emit LpLockerUpdated(previousLocker, _lpLocker);
+    }
+
+    /**
+     * @dev Sets the address of the ZeroLend rewards token contract.
+     * @param _zeroToken The address of the ZeroLend rewards token contract.
+     */
+    function setRewardsToken(address _zeroToken) external onlyOwner {
+        address previousToken = address(rewardsToken);
+        rewardsToken = IZeroLend(_zeroToken);
+        emit RewardsTokenUpdated(previousToken, _zeroToken);
+    }
+
+    /**
+     * @dev Sets the address of the pool voter contract.
+     * @param _poolVoter The address of the pool voter contract.
+     */
+    function setPoolVoter(address _poolVoter) external onlyOwner {
+        address previousVoter = address(poolVoter);
+        poolVoter = IPoolVoter(_poolVoter);
+        emit PoolVoterUpdated(previousVoter, _poolVoter);
+    }
+
+    /**
+     * @dev Sets the duration of the rewards.
+     * @param _rewardsDuration The duration of the rewards.
+     */
     function setRewardsDuration(uint256 _rewardsDuration) external onlyOwner {
         require(
             block.timestamp > periodFinish,
