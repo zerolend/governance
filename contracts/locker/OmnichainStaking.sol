@@ -39,25 +39,32 @@ contract OmnichainStaking is
     ILocker public lpLocker;
     ILocker public tokenLocker;
     IPoolVoter public poolVoter;
-    IZeroLend public rewardsToken;
 
+    // staking reward variables
+    IZeroLend public rewardsToken;
     uint256 public periodFinish;
     uint256 public rewardRate;
     uint256 public rewardsDuration;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
+    // used to keep track of voting powers for each nft id
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
+
+    // used to keep track of ownership of token lockers
     mapping(uint256 => address) public lockedByToken;
     mapping(address => uint256[]) public lockedTokenIdNfts;
 
+    // used to keep track of rewards
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
+    // used to keep track of ownership of lp lockers
     mapping(uint256 => address) public lockedByLp;
     mapping(address => uint256[]) public lockedLpIdNfts;
 
+    // oracles to help keep track of prices of LP tokens
     ILPOracle public lpOracle;
     IPythAggregatorV3 public zeroAggregator;
 
