@@ -19,6 +19,8 @@ import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
 import {IPoolVoter} from "../interfaces/IPoolVoter.sol";
 import {IZeroLend} from "../interfaces/IZeroLend.sol";
+import {ILPOracle} from "../interfaces/ILPOracle.sol";
+import {IPythAggregatorV3} from "../interfaces/IPythAggregatorV3.sol";
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -53,12 +55,17 @@ contract OmnichainStaking is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
+    ILPOracle public lpOracle;
+    IPythAggregatorV3 public zeroAggregator;
+
     error InvalidUnstaker(address, address);
 
     event RewardPaid(address indexed user, uint256 reward);
     event RewardAdded(uint256 reward);
     event Recovered(address token, uint256 amount);
     event RewardsDurationUpdated(uint256 newDuration);
+    event LpOracleSet(address indexed oldLpOracle, address indexed newLpOracle);
+    event ZeroAggregatorSet(address indexed oldZeroAggregator, address indexed newZeroAggregator);
 
     // constructor() {
     //     _disableInitializers();
@@ -75,7 +82,9 @@ contract OmnichainStaking is
         address _lpLocker,
         address _zeroToken,
         address _poolVoter,
-        uint256 _rewardsDuration
+        uint256 _rewardsDuration,
+        address _lpOracle,
+        address _zeroPythAggregator
     ) external initializer {
         // TODO add LZ
         __ERC20Votes_init();
@@ -88,6 +97,8 @@ contract OmnichainStaking is
         poolVoter = IPoolVoter(_poolVoter);
         rewardsToken = IZeroLend(_zeroToken);
         rewardsDuration = _rewardsDuration;
+        lpOracle = ILPOracle(_lpOracle);
+        zeroAggregator = IPythAggregatorV3(_zeroPythAggregator);
     }
 
     /**
@@ -116,10 +127,16 @@ contract OmnichainStaking is
 
         updateRewardFor(from);
 
-        // if the stake is from the LP locker, then give 4 times the voting power
+        // if the stake is from the LP locker, then give voting power based on the price of lpToken
         if (msg.sender == address(lpLocker)) {
             lpPower[tokenId] = lpLocker.balanceOfNFT(tokenId);
-            _mint(from, lpPower[tokenId] * 4);
+            uint256 lpPrice = lpOracle.getPrice();
+            int256 zeroPrice  = zeroAggregator.latestAnswer();
+
+            require(zeroPrice > 0, "Invalid Zero Price");
+
+            uint256 zeroAmount = (lpPrice * lpPower[tokenId]) / uint256(zeroPrice);
+            _mint(from, zeroAmount);
         }
         // if the stake is from a regular token locker, then give 1 times the voting power
         else if (msg.sender == address(tokenLocker)) {
@@ -401,6 +418,27 @@ contract OmnichainStaking is
         emit RewardsDurationUpdated(rewardsDuration);
     }
 
+    /**
+     * @dev Sets the LP Oracle contract address.
+     * @param _lpOracle The address of the new LP Oracle contract.
+     */
+    function setLpOracle(address _lpOracle) external onlyOwner {
+        require(_lpOracle != address(0), "Invalid address");
+        address oldLpOracle = address(lpOracle);
+        lpOracle = ILPOracle(_lpOracle);
+        emit LpOracleSet(oldLpOracle, _lpOracle);
+    }
+
+    /**
+     * @dev Sets the Zero Pyth Aggregator contract address.
+     * @param _zeroAggregator The address of the new Zero Pyth Aggregator contract.
+     */
+    function setZeroAggregator(address _zeroAggregator) external onlyOwner {
+        require(_zeroAggregator != address(0), "Invalid address");
+        address oldZeroAggregator = address(zeroAggregator);
+        zeroAggregator = IPythAggregatorV3(_zeroAggregator);
+        emit ZeroAggregatorSet(oldZeroAggregator, _zeroAggregator);
+    }
     /**
      * @dev Modifier to update the reward for a given account.
      * @param account The address of the account.
