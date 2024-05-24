@@ -58,6 +58,8 @@ export async function deployGovernance() {
     omnichainStaking.target,
     stakingBonus.target
   );
+
+  await poolVoter.init(omnichainStaking.target, zero.target);
   await omnichainStaking.init(
     ZERO_ADDRESS,
     lockerToken.target,
@@ -65,10 +67,6 @@ export async function deployGovernance() {
     zero.target,
     poolVoter.target,
     secondsIn6Months
-  );
-  await poolVoter.init(
-    omnichainStaking.target,
-    zero.target
   );
 
   // unpause zero
@@ -89,6 +87,6 @@ export async function deployGovernance() {
     vestedZeroNFT,
     whale,
     zero,
-    poolVoter
+    poolVoter,
   };
 }

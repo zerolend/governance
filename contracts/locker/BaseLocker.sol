@@ -50,6 +50,13 @@ contract BaseLocker is
     IERC20 public underlying;
     IOmnichainStaking public staking;
 
+    event LockAmountUpdated(uint256 tokenId, uint256 newAmount, uint256 power);
+    event LockDurationUpdated(
+        uint256 tokenId,
+        uint256 newLockDuration,
+        uint256 unlockTime
+    );
+
     function __BaseLocker_init(
         string memory _name,
         string memory _symbol,
@@ -109,8 +116,8 @@ contract BaseLocker is
 
     function _calculatePower(
         LockedBalance memory lock
-    ) internal view returns (uint256) {
-        return ((lock.end - lock.start) * lock.amount) / MAXTIME;
+    ) internal view returns (uint256 power) {
+        power = ((lock.end - lock.start) * lock.amount) / MAXTIME;
     }
 
     /// @notice Deposit and lock tokens for a user
