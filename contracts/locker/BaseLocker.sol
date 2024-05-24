@@ -50,13 +50,6 @@ contract BaseLocker is
     IERC20 public underlying;
     IOmnichainStaking public staking;
 
-    event LockAmountUpdated(uint256 tokenId, uint256 newAmount, uint256 power);
-    event LockDurationUpdated(
-        uint256 tokenId,
-        uint256 newLockDuration,
-        uint256 unlockTime
-    );
-
     function __BaseLocker_init(
         string memory _name,
         string memory _symbol,

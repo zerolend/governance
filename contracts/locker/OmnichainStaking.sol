@@ -93,6 +93,10 @@ contract OmnichainStaking is
         rewardsDuration = _rewardsDuration;
         lpOracle = ILPOracle(_lpOracle);
         zeroAggregator = IPythAggregatorV3(_zeroPythAggregator);
+
+        // give approvals for increase lock functions
+        tokenLocker.underlying().approve(_tokenLocker, type(uint256).max);
+        lpLocker.underlying().approve(_lpLocker, type(uint256).max);
     }
 
     /**
@@ -125,12 +129,9 @@ contract OmnichainStaking is
             lockedByLp[tokenId] = from;
             lockedLpIdNfts[from].push(tokenId);
 
-            // calculate voting power based on how much the LP token is worth in ZERO terms
-            uint256 amount = getLpTokenPower(lpLocker.balanceOfNFT(tokenId));
-
             // mint voting power
-            lpPower[tokenId] = amount;
-            _mint(from, amount);
+            lpPower[tokenId] = getLpTokenPower(lpLocker.balanceOfNFT(tokenId));
+            _mint(from, lpPower[tokenId]);
         }
         // if the stake is from a regular token locker, then give 1 times the voting power
         else if (msg.sender == address(tokenLocker)) {
@@ -188,6 +189,7 @@ contract OmnichainStaking is
      * @param tokenId The ID of the LP NFT to unstake.
      */
     function unstakeLP(uint256 tokenId) external updateReward(msg.sender) {
+        require(lockedByLp[tokenId] != address(0), "!tokenId");
         address lockedBy_ = lockedByLp[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
@@ -198,8 +200,8 @@ contract OmnichainStaking is
             tokenId
         );
 
+        // reset and burn voting power
         _burn(msg.sender, lpPower[tokenId]);
-
         lpPower[tokenId] = 0;
         poolVoter.reset(msg.sender);
 
@@ -211,6 +213,7 @@ contract OmnichainStaking is
      * @param tokenId The ID of the regular token NFT to unstake.
      */
     function unstakeToken(uint256 tokenId) external updateReward(msg.sender) {
+        require(lockedByToken[tokenId] != address(0), "!tokenId");
         address lockedBy_ = lockedByToken[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
@@ -221,8 +224,8 @@ contract OmnichainStaking is
             tokenId
         );
 
+        // reset and burn voting power
         _burn(msg.sender, tokenPower[tokenId]);
-
         tokenPower[tokenId] = 0;
         poolVoter.reset(msg.sender);
 
@@ -240,8 +243,10 @@ contract OmnichainStaking is
         uint256 nftId,
         uint256 newLockDuration
     ) external {
+        require(newLockDuration > 0, "!newLockAmount");
+
         if (kind == 0) {
-            require(msg.sender == lockedByToken[nftId], "Invalid nft locker");
+            require(msg.sender == lockedByToken[nftId], "!nftId");
             tokenLocker.increaseUnlockTime(nftId, newLockDuration);
 
             // update voting power
@@ -249,7 +254,7 @@ contract OmnichainStaking is
             tokenPower[nftId] = tokenLocker.balanceOfNFT(nftId);
             _mint(msg.sender, tokenPower[nftId]);
         } else {
-            require(msg.sender == lockedByLp[nftId], "Invalid nft locker");
+            require(msg.sender == lockedByLp[nftId], "!nftId");
             lpLocker.increaseUnlockTime(nftId, newLockDuration);
 
             // update voting power
@@ -273,8 +278,10 @@ contract OmnichainStaking is
         uint256 nftId,
         uint256 newLockAmount
     ) external {
+        require(newLockAmount > 0, "!newLockAmount");
+
         if (kind == 0) {
-            require(msg.sender == lockedByToken[nftId], "Invalid nft locker");
+            require(msg.sender == lockedByToken[nftId], "!nftId");
             tokenLocker.underlying().transferFrom(
                 msg.sender,
                 address(this),
@@ -287,7 +294,7 @@ contract OmnichainStaking is
             tokenPower[nftId] = tokenLocker.balanceOfNFT(nftId);
             _mint(msg.sender, tokenPower[nftId]);
         } else {
-            require(msg.sender == lockedByLp[nftId], "Invalid nft locker");
+            require(msg.sender == lockedByLp[nftId], "!nftId");
             lpLocker.underlying().transferFrom(
                 msg.sender,
                 address(this),
@@ -527,13 +534,18 @@ contract OmnichainStaking is
         emit ZeroAggregatorSet(oldZeroAggregator, _zeroAggregator);
     }
 
+    /**
+     * Helper function that determines the voting power of an LP token given the units
+     * @param amount The amount of the LP token in wei
+     * @return power The voting power of the LP tokens
+     */
     function getLpTokenPower(
         uint256 amount
     ) public view returns (uint256 power) {
         // calculate voting power based on how much the LP token is worth in ZERO terms
         uint256 lpPrice = lpOracle.getPrice();
         int256 zeroPrice = zeroAggregator.latestAnswer();
-        require(zeroPrice > 0, "Invalid Zero Price");
+        require(zeroPrice > 0 && lpPrice > 0, "!price");
 
         power = ((lpPrice * amount) / uint256(zeroPrice)) * 4;
     }
