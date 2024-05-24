@@ -148,8 +148,8 @@ contract BaseLocker is
 
     function _calculatePower(
         LockedBalance memory lock
-    ) internal view returns (uint256) {
-        return ((lock.end - lock.start) * lock.amount) / MAXTIME;
+    ) internal view returns (uint256 power) {
+        power = ((lock.end - lock.start) * lock.amount) / MAXTIME;
     }
 
     /// @notice Deposit and lock tokens for a user

@@ -40,4 +40,15 @@ interface IOmnichainStaking is IVotes {
 
     /// @dev receive the veStaked supply on the mainnet
     function updateSupplyFromLZ() external;
+
+    error InvalidUnstaker(address, address);
+    event RewardPaid(address indexed user, uint256 reward);
+    event RewardAdded(uint256 reward);
+    event Recovered(address token, uint256 amount);
+    event RewardsDurationUpdated(uint256 newDuration);
+    event LpOracleSet(address indexed oldLpOracle, address indexed newLpOracle);
+    event ZeroAggregatorSet(
+        address indexed oldZeroAggregator,
+        address indexed newZeroAggregator
+    );
 }

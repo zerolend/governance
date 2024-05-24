@@ -114,6 +114,5 @@ dist
 
 typechain-types/
 generated-abi
-
 scripts/*.json
 scripts/data/*.json
