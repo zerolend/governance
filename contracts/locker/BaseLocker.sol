@@ -52,14 +52,11 @@ contract BaseLocker is
     IERC20 public underlying;
     IOmnichainStaking public staking;
 
-    address stakingBonus;
-
     function __BaseLocker_init(
         string memory _name,
         string memory _symbol,
         address _token,
         address _staking,
-        address _stakingBonus,
         uint256 _maxTime,
         address _owner
     ) internal {
@@ -74,11 +71,9 @@ contract BaseLocker is
         MAXTIME = _maxTime;
         MULTIPLIER = 1 ether;
 
-        stakingBonus = _stakingBonus;
         staking = IOmnichainStaking(_staking);
         underlying = IERC20(_token);
 
-        _setApprovalForAll(address(this), stakingBonus, true);
         _setApprovalForAll(address(this), _staking, true);
     }
 
@@ -100,18 +95,6 @@ contract BaseLocker is
         address oldStaking = address(staking);
         staking = IOmnichainStaking(_staking);
         emit StakingAddressSet(oldStaking, _staking);
-    }
-
-    /**
-     * @notice Sets the staking bonus contract address
-     * @param _stakingBonus The new staking bonus contract address
-     */
-    function setStakingBonusAddress(address _stakingBonus) external onlyOwner {
-        _setApprovalForAll(address(this), stakingBonus, false);
-
-        emit StakingBonusAddressSet(stakingBonus, _stakingBonus);
-        stakingBonus = _stakingBonus;
-        _setApprovalForAll(address(this), _stakingBonus, true);
     }
 
     /// @dev Interface identification is specified in ERC-165.

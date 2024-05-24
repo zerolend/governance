@@ -58,19 +58,8 @@ contract OmnichainStaking is
     mapping(uint256 => address) public lockedByLp;
     mapping(address => uint256[]) public lockedLpIdNfts;
 
-
-    event RewardPaid(address indexed user, uint256 reward);
-    event RewardAdded(uint256 reward);
-    event Recovered(address token, uint256 amount);
-    event RewardsDurationUpdated(uint256 newDuration);
-    event TokenLockerUpdated(address previousLocker, address _tokenLocker);
-    event LpLockerUpdated(address previousLocker, address _lpLocker);
-    event RewardsTokenUpdated(address previousToken, address _zeroToken);
-    event PoolVoterUpdated(address previousVoter,address _poolVoter);
-
     ILPOracle public lpOracle;
     IPythAggregatorV3 public zeroAggregator;
-
 
     // constructor() {
     //     _disableInitializers();

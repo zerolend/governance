@@ -42,13 +42,17 @@ interface IOmnichainStaking is IVotes {
     function updateSupplyFromLZ() external;
 
     error InvalidUnstaker(address, address);
-    event RewardPaid(address indexed user, uint256 reward);
-    event RewardAdded(uint256 reward);
-    event Recovered(address token, uint256 amount);
-    event RewardsDurationUpdated(uint256 newDuration);
     event LpOracleSet(address indexed oldLpOracle, address indexed newLpOracle);
     event ZeroAggregatorSet(
         address indexed oldZeroAggregator,
         address indexed newZeroAggregator
     );
+    event RewardPaid(address indexed user, uint256 reward);
+    event RewardAdded(uint256 reward);
+    event Recovered(address token, uint256 amount);
+    event RewardsDurationUpdated(uint256 newDuration);
+    event TokenLockerUpdated(address previousLocker, address _tokenLocker);
+    event LpLockerUpdated(address previousLocker, address _lpLocker);
+    event RewardsTokenUpdated(address previousToken, address _zeroToken);
+    event PoolVoterUpdated(address previousVoter, address _poolVoter);
 }
