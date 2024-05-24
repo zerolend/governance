@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import { BytesLike, parseEther } from "ethers";
 import * as mongo from "mongodb";
 import {
@@ -8,6 +7,7 @@ import {
 
 import data from "./data/data.json";
 import zksync from "./data/a.json";
+import manta from "./data/manta.json";
 
 type AddressInfo = {
   address: string;
@@ -33,7 +33,7 @@ const client = new mongo.MongoClient(url);
 
 let airdropData = data as AddressInput[];
 
-const excludedWallets = zksync.filter((a) => {
+const excludedWalletsZKS = zksync.filter((a) => {
   if (
     a.address.toLowerCase() ===
     "0xb76F765A785eCa438e1d95f594490088aFAF9acc".toLowerCase()
@@ -52,17 +52,47 @@ const excludedWallets = zksync.filter((a) => {
   );
 });
 
+console.log("finish with zks");
+
+const excludedWalletsManta = manta.filter((a) => {
+  if (
+    a.address.toLowerCase() ===
+    "0xb76F765A785eCa438e1d95f594490088aFAF9acc".toLowerCase()
+  )
+    return false;
+
+  if (
+    a.address.toLowerCase() ===
+    "0xBE2F0354D970265BFc36D383af77F72736b81B54".toLowerCase()
+  )
+    return false;
+  return (
+    airdropData.findIndex(
+      (b) => a.address.toLowerCase() == b.wallet.toLowerCase()
+    ) == -1
+  );
+});
+
+console.log("finish with manta");
+
 airdropData = [
   ...airdropData,
-  ...excludedWallets.map((a) => ({
+  ...excludedWalletsZKS.map((a) => ({
     wallet: a.address,
     zero: a.data,
     skewed: a.data,
     usd: a.data,
   })),
+  ...excludedWalletsManta.map((a) => ({
+    wallet: a.address,
+    zero: a.points,
+    skewed: a.points,
+    usd: a.points,
+  })),
 ];
 
-console.log("got", excludedWallets.length);
+console.log("got", excludedWalletsZKS.length);
+console.log("got", excludedWalletsManta.length);
 
 // airdropData = airdropData.filter((a) => a.usd > 5);
 console.log(airdropData.reduce((prev, curr) => prev + curr.zero, 0));
