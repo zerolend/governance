@@ -68,6 +68,9 @@ contract OmnichainStaking is
     ILPOracle public lpOracle;
     IPythAggregatorV3 public zeroAggregator;
 
+    uint256 public totalSupplyToken;
+    uint256 public totalSupplyLp;
+
     // constructor() {
     //     _disableInitializers();
     // }
@@ -104,6 +107,9 @@ contract OmnichainStaking is
         // give approvals for increase lock functions
         tokenLocker.underlying().approve(_tokenLocker, type(uint256).max);
         lpLocker.underlying().approve(_lpLocker, type(uint256).max);
+
+        // one-time only; set the total supply of the token as current total supply
+        totalSupplyToken = totalSupply();
     }
 
     /**
@@ -138,6 +144,7 @@ contract OmnichainStaking is
 
             // mint voting power
             lpPower[tokenId] = getLpTokenPower(lpLocker.balanceOfNFT(tokenId));
+            totalSupplyLp += lpPower[tokenId];
             _mint(from, lpPower[tokenId]);
         }
         // if the stake is from a regular token locker, then give 1 times the voting power
@@ -148,6 +155,7 @@ contract OmnichainStaking is
 
             // mint voting power
             tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
+            totalSupplyToken += tokenPower[tokenId];
             _mint(from, tokenPower[tokenId]);
         } else require(false, "invalid operator");
 
@@ -209,6 +217,7 @@ contract OmnichainStaking is
 
         // reset and burn voting power
         _burn(msg.sender, lpPower[tokenId]);
+        totalSupplyLp -= lpPower[tokenId];
         lpPower[tokenId] = 0;
         poolVoter.reset(msg.sender);
 
@@ -233,6 +242,7 @@ contract OmnichainStaking is
 
         // reset and burn voting power
         _burn(msg.sender, tokenPower[tokenId]);
+        totalSupplyToken -= tokenPower[tokenId];
         tokenPower[tokenId] = 0;
         poolVoter.reset(msg.sender);
 
@@ -242,32 +252,36 @@ contract OmnichainStaking is
     /**
      * @dev Updates the lock duration for a specific NFT.
      * @param kind 0 for token locker, 1 for lp token locker
-     * @param nftId The ID of the NFT for which to update the lock duration.
+     * @param tokenId The ID of the NFT for which to update the lock duration.
      * @param newLockDuration The new lock duration in seconds.
      */
     function increaseLockDuration(
         uint8 kind,
-        uint256 nftId,
+        uint256 tokenId,
         uint256 newLockDuration
     ) external {
         require(newLockDuration > 0, "!newLockAmount");
 
         if (kind == 0) {
-            require(msg.sender == lockedByToken[nftId], "!nftId");
-            tokenLocker.increaseUnlockTime(nftId, newLockDuration);
+            require(msg.sender == lockedByToken[tokenId], "!tokenId");
+            tokenLocker.increaseUnlockTime(tokenId, newLockDuration);
 
             // update voting power
-            _burn(msg.sender, tokenPower[nftId]);
-            tokenPower[nftId] = tokenLocker.balanceOfNFT(nftId);
-            _mint(msg.sender, tokenPower[nftId]);
+            _burn(msg.sender, tokenPower[tokenId]);
+            totalSupplyToken -= tokenPower[tokenId];
+            tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
+            totalSupplyToken += tokenPower[tokenId];
+            _mint(msg.sender, tokenPower[tokenId]);
         } else {
-            require(msg.sender == lockedByLp[nftId], "!nftId");
-            lpLocker.increaseUnlockTime(nftId, newLockDuration);
+            require(msg.sender == lockedByLp[tokenId], "!tokenId");
+            lpLocker.increaseUnlockTime(tokenId, newLockDuration);
 
             // update voting power
-            _burn(msg.sender, lpPower[nftId]);
-            lpPower[nftId] = getLpTokenPower(lpLocker.balanceOfNFT(nftId));
-            _mint(msg.sender, lpPower[nftId]);
+            _burn(msg.sender, lpPower[tokenId]);
+            totalSupplyLp -= lpPower[tokenId];
+            lpPower[tokenId] = getLpTokenPower(lpLocker.balanceOfNFT(tokenId));
+            totalSupplyLp += lpPower[tokenId];
+            _mint(msg.sender, lpPower[tokenId]);
         }
 
         // reset all the votes for the user
@@ -277,42 +291,46 @@ contract OmnichainStaking is
     /**
      * @dev Updates the lock amount for a specific NFT.
      * @param kind 0 for token locker, 1 for lp token locker
-     * @param nftId The ID of the NFT for which to update the lock amount.
+     * @param tokenId The ID of the NFT for which to update the lock amount.
      * @param newLockAmount The new lock amount in tokens.
      */
     function increaseLockAmount(
         uint8 kind,
-        uint256 nftId,
+        uint256 tokenId,
         uint256 newLockAmount
     ) external {
         require(newLockAmount > 0, "!newLockAmount");
 
         if (kind == 0) {
-            require(msg.sender == lockedByToken[nftId], "!nftId");
+            require(msg.sender == lockedByToken[tokenId], "!tokenId");
             tokenLocker.underlying().transferFrom(
                 msg.sender,
                 address(this),
                 newLockAmount
             );
-            tokenLocker.increaseAmount(nftId, newLockAmount);
+            tokenLocker.increaseAmount(tokenId, newLockAmount);
 
             // update voting power
-            _burn(msg.sender, tokenPower[nftId]);
-            tokenPower[nftId] = tokenLocker.balanceOfNFT(nftId);
-            _mint(msg.sender, tokenPower[nftId]);
+            _burn(msg.sender, tokenPower[tokenId]);
+            totalSupplyToken -= tokenPower[tokenId];
+            tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
+            totalSupplyToken += tokenPower[tokenId];
+            _mint(msg.sender, tokenPower[tokenId]);
         } else {
-            require(msg.sender == lockedByLp[nftId], "!nftId");
+            require(msg.sender == lockedByLp[tokenId], "!tokenId");
             lpLocker.underlying().transferFrom(
                 msg.sender,
                 address(this),
                 newLockAmount
             );
-            lpLocker.increaseAmount(nftId, newLockAmount);
+            lpLocker.increaseAmount(tokenId, newLockAmount);
 
             // update voting power
-            _burn(msg.sender, lpPower[nftId]);
-            lpPower[nftId] = getLpTokenPower(lpLocker.balanceOfNFT(nftId));
-            _mint(msg.sender, lpPower[nftId]);
+            _burn(msg.sender, lpPower[tokenId]);
+            totalSupplyLp -= lpPower[tokenId];
+            lpPower[tokenId] = getLpTokenPower(lpLocker.balanceOfNFT(tokenId));
+            totalSupplyLp += lpPower[tokenId];
+            _mint(msg.sender, lpPower[tokenId]);
         }
 
         // reset all the votes for the user
@@ -322,9 +340,9 @@ contract OmnichainStaking is
     /**
      * @dev Updates the voting power on a different chain.
      * @param chainId The ID of the chain to update the voting power on.
-     * @param nftId The ID of the NFT for which voting power is being updated.
+     * @param tokenId The ID of the NFT for which voting power is being updated.
      */
-    function updatePowerOnChain(uint256 chainId, uint256 nftId) external {
+    function updatePowerOnChain(uint256 chainId, uint256 tokenId) external {
         // TODO
         // ensure that the user has no votes anywhere and no delegation then send voting
         // power to another chain.
@@ -334,9 +352,9 @@ contract OmnichainStaking is
     /**
      * @dev Deletes the voting power on a different chain.
      * @param chainId The ID of the chain to delete the voting power on.
-     * @param nftId The ID of the NFT for which voting power is being deleted.
+     * @param tokenId The ID of the NFT for which voting power is being deleted.
      */
-    function deletePowerOnChain(uint256 chainId, uint256 nftId) external {
+    function deletePowerOnChain(uint256 chainId, uint256 tokenId) external {
         // TODO
         // using layerzero, deletes the updated voting power across the different chains
     }
