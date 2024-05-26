@@ -13,6 +13,9 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+import {ILocker} from "./ILocker.sol";
 
 interface IOmnichainStaking is IVotes {
     struct StakeInformation {
@@ -40,6 +43,12 @@ interface IOmnichainStaking is IVotes {
 
     /// @dev receive the veStaked supply on the mainnet
     function updateSupplyFromLZ() external;
+
+    function rewardRate() external view returns (uint256);
+
+    function getLockedNftDetails(
+        address _user
+    ) external view returns (uint256[] memory, ILocker.LockedBalance[] memory);
 
     error InvalidUnstaker(address, address);
     event LpOracleSet(address indexed oldLpOracle, address indexed newLpOracle);

@@ -1,40 +1,55 @@
 import hre from "hardhat";
 import { deployLendingPool } from "./lending";
 import { ZERO_ADDRESS, supply } from "./utils";
+import {
+  LockerLP,
+  LockerToken,
+  OmnichainStaking,
+  PoolVoter,
+  StakingBonus,
+  VestedZeroNFT,
+} from "../../typechain-types";
+
+const initProxy = async <T>(contract: string): Promise<T> => {
+  const instanceF = await hre.ethers.getContractFactory(contract);
+  const instance = await instanceF.deploy();
+
+  const [deployer] = await hre.ethers.getSigners();
+
+  const TransparentUpgradeableProxy = await hre.ethers.getContractFactory(
+    "TransparentUpgradeableProxy"
+  );
+
+  const proxy = await TransparentUpgradeableProxy.deploy(
+    instance,
+    deployer.address,
+    "0x"
+  );
+
+  return (await hre.ethers.getContractAt(contract, proxy.target)) as T;
+};
 
 export async function deployGovernance() {
   const lendingPool = await deployLendingPool();
-  const secondsIn6Months = 15780000;
 
   // Contracts are deployed using the first signer/account by default
   const [deployer, ant, whale] = await hre.ethers.getSigners();
 
   // Deploy contracts
-  const EarlyZERO = await hre.ethers.getContractFactory("EarlyZERO");
-
   const ZeroLendToken = await hre.ethers.getContractFactory("ZeroLend");
-  const VestedZeroNFT = await hre.ethers.getContractFactory("VestedZeroNFT");
-  const StakingBonus = await hre.ethers.getContractFactory("StakingBonus");
-  const OmnichainStaking = await hre.ethers.getContractFactory(
-    "OmnichainStaking"
-  );
-  const LockerToken = await hre.ethers.getContractFactory("LockerToken");
-  const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
 
-  const stakingBonus = await StakingBonus.deploy();
-  const omnichainStaking = await OmnichainStaking.deploy();
-  const lockerToken = await LockerToken.deploy();
-  const lockerLP = await LockerToken.deploy();
-  const earlyZERO = await EarlyZERO.deploy();
   const zero = await ZeroLendToken.deploy();
-  const vestedZeroNFT = await VestedZeroNFT.deploy();
-  const poolVoter = await PoolVoter.deploy();
+  const stakingBonus = await initProxy<StakingBonus>("StakingBonus");
+  const staking = await initProxy<OmnichainStaking>("OmnichainStaking");
+  const lockerLP = await initProxy<LockerLP>("LockerLP");
+  const lockerToken = await initProxy<LockerToken>("LockerToken");
+  const poolVoter = await initProxy<PoolVoter>("PoolVoter");
+  const vestedZeroNFT = await initProxy<VestedZeroNFT>("VestedZeroNFT");
 
   console.log("stakingBonus", stakingBonus.target);
-  console.log("omnichainStaking", omnichainStaking.target);
+  console.log("omnichainStaking", staking.target);
   console.log("lockerToken", lockerToken.target);
   console.log("lockerLP", lockerLP.target);
-  console.log("earlyZERO", earlyZERO.target);
   console.log("zero", zero.target);
   console.log("vestedZeroNFT", vestedZeroNFT.target);
 
@@ -46,27 +61,22 @@ export async function deployGovernance() {
     vestedZeroNFT.target,
     2000
   );
-  await lockerToken.init(
-    zero.target,
-    omnichainStaking.target,
-    stakingBonus.target
-  );
+  await lockerToken.init(zero.target, staking.target);
 
   // TODO use lp tokens
-  await lockerLP.init(
-    zero.target,
-    omnichainStaking.target,
-    stakingBonus.target
-  );
+  await lockerLP.init(zero.target, staking.target);
 
-  await poolVoter.init(omnichainStaking.target, zero.target);
-  await omnichainStaking.init(
+  await poolVoter.init(staking.target, zero.target);
+
+  await staking.init(
     ZERO_ADDRESS,
     lockerToken.target,
     lockerLP.target,
     zero.target,
     poolVoter.target,
-    secondsIn6Months
+    86400 * 14, // 7 days
+    ZERO_ADDRESS,
+    ZERO_ADDRESS
   );
 
   // unpause zero
@@ -78,11 +88,10 @@ export async function deployGovernance() {
   return {
     ant,
     deployer,
-    earlyZERO,
     lending: lendingPool,
     lockerToken,
     lockerLP,
-    omnichainStaking,
+    omnichainStaking: staking,
     stakingBonus,
     vestedZeroNFT,
     whale,
