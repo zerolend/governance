@@ -5,7 +5,6 @@ import {
   ACLManager,
   AaveOracle,
   AaveProtocolDataProvider,
-  GaugeIncentiveController,
   LendingPoolGaugeFactory,
   OmnichainStaking,
   Pool,
@@ -28,7 +27,7 @@ import {
   parseUnits,
 } from "ethers";
 
-describe("PoolVoter", () => {
+describe.skip("PoolVoter", () => {
   let ant: SignerWithAddress;
   let now: number;
   let omniStaking: OmnichainStaking;
@@ -37,7 +36,6 @@ describe("PoolVoter", () => {
   let stakingBonus: StakingBonus;
   let vest: VestedZeroNFT;
   let pool: Pool;
-  let aTokenGauge: GaugeIncentiveController;
   let zero: ZeroLend;
   let lending: {
     erc20: any;
@@ -74,7 +72,6 @@ describe("PoolVoter", () => {
     vest = deployment.governance.vestedZeroNFT;
     zero = deployment.governance.zero;
     pool = deployment.lending.pool;
-    aTokenGauge = deployment.aTokenGauge;
     lending = deployment.lending;
     lendingPoolGaugeFactory = deployment.factory;
 

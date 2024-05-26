@@ -1,6 +1,6 @@
 import hre from "hardhat";
 import { deployLendingPool } from "./lending";
-import { ZERO_ADDRESS, supply } from "./utils";
+import { ZERO_ADDRESS, initProxy, supply } from "./utils";
 import {
   LockerLP,
   LockerToken,
@@ -9,25 +9,6 @@ import {
   StakingBonus,
   VestedZeroNFT,
 } from "../../typechain-types";
-
-const initProxy = async <T>(contract: string): Promise<T> => {
-  const instanceF = await hre.ethers.getContractFactory(contract);
-  const instance = await instanceF.deploy();
-
-  const [deployer] = await hre.ethers.getSigners();
-
-  const TransparentUpgradeableProxy = await hre.ethers.getContractFactory(
-    "TransparentUpgradeableProxy"
-  );
-
-  const proxy = await TransparentUpgradeableProxy.deploy(
-    instance,
-    deployer.address,
-    "0x"
-  );
-
-  return (await hre.ethers.getContractAt(contract, proxy.target)) as T;
-};
 
 export async function deployGovernance() {
   const lendingPool = await deployLendingPool();
@@ -46,13 +27,6 @@ export async function deployGovernance() {
   const poolVoter = await initProxy<PoolVoter>("PoolVoter");
   const vestedZeroNFT = await initProxy<VestedZeroNFT>("VestedZeroNFT");
 
-  console.log("stakingBonus", stakingBonus.target);
-  console.log("omnichainStaking", staking.target);
-  console.log("lockerToken", lockerToken.target);
-  console.log("lockerLP", lockerLP.target);
-  console.log("zero", zero.target);
-  console.log("vestedZeroNFT", vestedZeroNFT.target);
-
   // init contracts
   await vestedZeroNFT.init(zero.target, stakingBonus.target);
   await stakingBonus.init(
@@ -61,20 +35,17 @@ export async function deployGovernance() {
     vestedZeroNFT.target,
     2000
   );
+
   await lockerToken.init(zero.target, staking.target);
-
-  // TODO use lp tokens
-  await lockerLP.init(zero.target, staking.target);
-
+  await lockerLP.init(zero.target, staking.target); // TODO: add a simple LP token
   await poolVoter.init(staking.target, zero.target);
-
   await staking.init(
     ZERO_ADDRESS,
     lockerToken.target,
     lockerLP.target,
     zero.target,
     poolVoter.target,
-    86400 * 14, // 7 days
+    86400 * 14, // 14 days
     ZERO_ADDRESS,
     ZERO_ADDRESS
   );

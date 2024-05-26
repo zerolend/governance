@@ -10,9 +10,9 @@ import {
   ZeroLend,
 } from "../typechain-types";
 import { e18 } from "./fixtures/utils";
-import { parseEther } from "ethers";
+import { AbiCoder, parseEther } from "ethers";
 
-describe.only("Omnichain Staking Unit tests", () => {
+describe("Omnichain Staking Unit tests", () => {
   let ant: SignerWithAddress;
   let vest: VestedZeroNFT;
   let now: number;
@@ -52,15 +52,23 @@ describe.only("Omnichain Staking Unit tests", () => {
       0
     );
 
+    const encoder = AbiCoder.defaultAbiCoder();
+    const data = encoder.encode(
+      ["bool", "address", "uint256"],
+      [true, ant.address, 365 * 86400 * 1]
+    );
+
     await vest
       .connect(ant)
-      ["safeTransferFrom(address,address,uint256)"](
+      ["safeTransferFrom(address,address,uint256,bytes)"](
         ant.address,
         stakingBonus.target,
-        1
+        1,
+        data
       );
+
     expect(await omniStaking.balanceOf(ant.address)).greaterThan(
-      (e18 * 199n) / 10n
+      (e18 * 49n) / 10n
     );
   });
 
@@ -68,7 +76,8 @@ describe.only("Omnichain Staking Unit tests", () => {
     const oldLockDetails = await lockerToken.locked(1);
     expect(
       ((oldLockDetails.end - oldLockDetails.start) * 100n) / (86400n * 365n)
-    ).to.closeTo(400, 5);
+    ).to.closeTo(100, 5);
+
     await omniStaking.connect(ant).increaseLockDuration(0, 1, 86400 * 365 * 3);
     const newLockDetails = await lockerToken.locked(1);
     expect(
