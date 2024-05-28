@@ -15,6 +15,7 @@ import { ethers } from "hardhat";
 import { AddressLike, parseEther } from "ethers";
 import { expect } from "chai";
 import { deployGovernance } from "./fixtures/governance";
+import { initProxy } from "./fixtures/utils";
 
 describe("Airdrop Tests", async () => {
   let airdropRewarder: AirdropRewarder;
@@ -45,13 +46,14 @@ describe("Airdrop Tests", async () => {
     await zero.whitelist(governance.lockerToken.target, true);
     await zero.whitelist(vest.target, true);
 
-    airdropRewarder = (await deployProxy(
-      "AirdropRewarder",
-      "initialize(address,address,address)",
+    airdropRewarder = await initProxy<AirdropRewarder>("AirdropRewarder");
+    await airdropRewarder.initialize(
       zero.target,
       locker.target,
-      vest.target
-    )) as unknown as AirdropRewarder;
+      vest.target,
+      0,
+      Math.floor(Date.now() / 1000 + 30 * 86400)
+    );
     await airdropRewarder.setMerkleRoot(tree.getHexRoot());
     await zero.whitelist(airdropRewarder.target, true);
     await zero.transfer(airdropRewarder.target, parseEther("100"));

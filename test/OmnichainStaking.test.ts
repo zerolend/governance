@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { deployGovernance } from "./fixtures/governance";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import {
   LockerToken,
@@ -10,7 +10,7 @@ import {
   ZeroLend,
 } from "../typechain-types";
 import { e18 } from "./fixtures/utils";
-import { parseEther } from "ethers";
+import { AbiCoder, parseEther } from "ethers";
 
 describe("Omnichain Staking Unit tests", () => {
   let ant: SignerWithAddress;
@@ -36,9 +36,8 @@ describe("Omnichain Staking Unit tests", () => {
     await zero.whitelist(stakingBonus.target, true);
     await zero.whitelist(lockerToken.target, true);
 
+    // send 100 ZERO
     await zero.transfer(omniStaking.target, parseEther("100"));
-
-    await omniStaking.setRewardsDuration(86400 * 14);
     await omniStaking.notifyRewardAmount(parseEther("1"));
 
     // deployer should be able to mint a nft for another user
@@ -53,24 +52,46 @@ describe("Omnichain Staking Unit tests", () => {
       0
     );
 
+    const encoder = AbiCoder.defaultAbiCoder();
+    const data = encoder.encode(
+      ["bool", "address", "uint256"],
+      [true, ant.address, 365 * 86400 * 1]
+    );
+
     await vest
       .connect(ant)
-      ["safeTransferFrom(address,address,uint256)"](
+      ["safeTransferFrom(address,address,uint256,bytes)"](
         ant.address,
         stakingBonus.target,
-        1
+        1,
+        data
       );
+
     expect(await omniStaking.balanceOf(ant.address)).greaterThan(
-      (e18 * 199n) / 10n
+      (e18 * 49n) / 10n
     );
   });
 
-  it("should give rewards for staking vests", async () => {
-    expect(await zero.balanceOf(ant.address)).to.equal(0);
-    await expect(omniStaking.connect(ant).getReward()).to.emit(
-      omniStaking,
-      "RewardPaid"
-    );
-    expect(await zero.balanceOf(ant.address)).to.be.greaterThan(0);
+  it("should update the lock duration for an existing lock", async () => {
+    const oldLockDetails = await lockerToken.locked(1);
+    expect(
+      ((oldLockDetails.end - oldLockDetails.start) * 100n) / (86400n * 365n)
+    ).to.closeTo(100, 5);
+
+    await omniStaking.connect(ant).increaseLockDuration(0, 1, 86400 * 365 * 3);
+    const newLockDetails = await lockerToken.locked(1);
+    expect(
+      ((newLockDetails.end - newLockDetails.start) * 100n) / (86400n * 365n)
+    ).to.closeTo(300, 5);
+  });
+
+  it("should update the lock amount for an existing lock", async () => {
+    await zero.transfer(ant.address, e18 * 100n);
+    const oldLockDetails = await lockerToken.locked(1);
+    expect(oldLockDetails.amount).to.eq(e18 * 20n);
+    await zero.connect(ant).approve(omniStaking.target, 25n * e18);
+    await omniStaking.connect(ant).increaseLockAmount(0, 1, e18 * 25n);
+    const newLockDetails = await lockerToken.locked(1);
+    expect(newLockDetails.amount).to.eq(45n * e18);
   });
 });

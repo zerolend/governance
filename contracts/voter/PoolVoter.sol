@@ -3,12 +3,17 @@ pragma solidity ^0.8.6;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IGauge} from "../interfaces/IGauge.sol";
+import {IPoolVoter} from "../interfaces/IPoolVoter.sol";
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
+contract PoolVoter is
+    IPoolVoter,
+    ReentrancyGuardUpgradeable,
+    OwnableUpgradeable
+{
     using SafeERC20 for IERC20;
 
     IERC20 public staking; // the ve token that governs these contracts
@@ -31,8 +36,6 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     mapping(address => uint256) public supplyIndex;
     mapping(address => uint256) public claimable;
 
-    error ResetNotAllowed();
-
     /**
      * @notice Initializes the PoolVoter contract with the specified staking and reward tokens.
      * @dev This function is called only once during deployment.
@@ -47,12 +50,55 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     }
 
     /**
+     * @notice Sets the staking token address
+     * @param _staking The new staking token address
+     */
+    function setStakingToken(address _staking) external onlyOwner {
+        address oldStaking = address(staking);
+        staking = IERC20(_staking);
+        emit StakingTokenUpdated(oldStaking, _staking);
+    }
+
+    /**
+     * @notice Sets the reward token address
+     * @param _reward The new reward token address
+     */
+    function setRewardToken(address _reward) external onlyOwner {
+        address oldReward = address(reward);
+        reward = IERC20(_reward);
+        emit RewardTokenUpdated(oldReward, _reward);
+    }
+
+    /**
+     * @notice Sets the LayerZero endpoint address
+     * @param _lzEndpoint The new LayerZero endpoint address
+     */
+    function setLzEndpoint(address _lzEndpoint) external onlyOwner {
+        address oldLzEndpoint = lzEndpoint;
+        lzEndpoint = _lzEndpoint;
+        emit LzEndpointUpdated(oldLzEndpoint, _lzEndpoint);
+    }
+
+    /**
+     * @notice Sets the mainnet emissions address
+     * @param _mainnetEmissions The new mainnet emissions address
+     */
+    function setMainnetEmissions(address _mainnetEmissions) external onlyOwner {
+        address oldMainnetEmissions = mainnetEmissions;
+        mainnetEmissions = _mainnetEmissions;
+        emit MainnetEmissionsUpdated(oldMainnetEmissions, _mainnetEmissions);
+    }
+
+    /**
      * @notice Resets the user's voting state, clearing their previous votes and weights.
      * @param _who the user who's voting state is reset
      * @dev Only callable by the owner of the contract.
      */
-    function reset(address _who) external {
-        require(msg.sender == _who || msg.sender == address(staking),"Invalid reset performed");
+    function reset(address _who) external override {
+        require(
+            msg.sender == _who || msg.sender == address(staking),
+            "Invalid reset performed"
+        );
         _reset(_who);
     }
 
@@ -178,7 +224,7 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
      * @param who The address of the user whose voting state is being updated.
      * @dev This function is public and can be called by anyone.
      */
-    function poke(address who) public {
+    function poke(address who) external {
         address[] memory _poolVote = poolVote[who];
         uint256 _poolCnt = _poolVote.length;
         uint256[] memory _weights = new uint256[](_poolCnt);
@@ -215,7 +261,7 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
      * @param amount The amount of rewards being notified to the contract.
      * @dev This function is reentrant and can be called multiple times.
      */
-    function notifyRewardAmount(uint256 amount) public nonReentrant {
+    function notifyRewardAmount(uint256 amount) external override nonReentrant {
         reward.safeTransferFrom(msg.sender, address(this), amount); // transfer the distro in
         uint256 _ratio = (amount * 1e18) / totalWeight; // 1e18 adjustment is removed during claim
         if (_ratio > 0) index += _ratio;
@@ -329,4 +375,27 @@ contract PoolVoter is ReentrancyGuardUpgradeable, OwnableUpgradeable {
     function getRevision() internal pure virtual returns (uint256) {
         return 0;
     }
+
+    // function updateFor(address[] memory _gauges) external override {}
+
+    // function updateAll() external override {}
+
+    // function updateGauge(address _gauge) external override {}
+
+    // function claimRewards(
+    //     address[] memory _gauges,
+    //     address[][] memory _tokens
+    // ) external override {}
+
+    // function claimBribes(
+    //     address[] memory _bribes,
+    //     address[][] memory _tokens,
+    //     uint _tokenId
+    // ) external override {}
+
+    // function claimFees(
+    //     address[] memory _fees,
+    //     address[][] memory _tokens,
+    //     uint _tokenId
+    // ) external override {}
 }

@@ -63,7 +63,7 @@ if (FORK) {
           e18 * 5n, // 5 ZERO upfront
           1000, // linear duration - 1000 seconds
           500, // cliff duration - 500 seconds
-          now + 1000, // unlock date
+          0, // unlock date
           false, // penalty -> false
           0
         );
@@ -204,7 +204,7 @@ if (FORK) {
           0, // 0 ZERO upfront
           1000, // linear duration - 1000 seconds
           0, // cliff duration - 0 seconds
-          now + 1000, // unlock date
+          0, // unlock date
           true, // penalty -> false
           0
         );
@@ -247,16 +247,7 @@ if (FORK) {
       await zero.connect(deployer).transfer(deployerForked.address, e18 * 15n);
       await zero.connect(deployerForked).approve(vest.target, e18 * 15n);
 
-      await vest.mint(
-        ant.address,
-        e18 * 10n,
-        e18 * 5n,
-        1000,
-        500,
-        now + 1000,
-        false,
-        0
-      );
+      await vest.mint(ant.address, e18 * 10n, e18 * 5n, 1000, 500, 0, false, 0);
 
       const tokenIds = [1, 2];
       const linearDurations = [100, 200];
@@ -294,16 +285,7 @@ if (FORK) {
       await zero.connect(deployer).transfer(deployerForked.address, e18 * 20n);
       await zero.connect(deployerForked).approve(vest.target, e18 * 20n);
 
-      await vest.mint(
-        ant.address,
-        e18 * 15n,
-        e18 * 5n,
-        1000,
-        500,
-        now + 1000,
-        false,
-        0
-      );
+      await vest.mint(ant.address, e18 * 15n, e18 * 5n, 1000, 500, 0, false, 0);
 
       const stakingBonusSigner = await initMainnetUser(
         await vest.stakingBonus(),
