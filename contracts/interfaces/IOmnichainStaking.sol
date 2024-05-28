@@ -35,6 +35,9 @@ interface IOmnichainStaking is IVotes {
     /// @dev receive the veStaked supply on the mainnet
     function updateSupplyFromLZ() external;
 
+    function totalSupply() external view returns (uint256);
+
+    function balanceOf(address account) external view returns (uint256);
     function rewardRate() external view returns (uint256);
 
     function getLockedNftDetails(
@@ -46,6 +49,7 @@ interface IOmnichainStaking is IVotes {
     ) external view returns (uint256 power);
 
     error InvalidUnstaker(address, address);
+
     event LpOracleSet(address indexed oldLpOracle, address indexed newLpOracle);
     event ZeroAggregatorSet(
         address indexed oldZeroAggregator,
