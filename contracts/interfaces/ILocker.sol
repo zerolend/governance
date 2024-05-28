@@ -11,12 +11,54 @@ interface ILocker is IERC721Enumerable {
         uint256 power;
     }
 
-    function balanceOfNFT(uint256 _tokenId) external view returns (uint256);
-
     function balanceOfNFTAt(
         uint256 _tokenId,
         uint256 _t
     ) external view returns (uint256);
 
-    function locked(uint256 _tokenId) external view returns (LockedBalance memory);
+    function locked(
+        uint256 _tokenId
+    ) external view returns (LockedBalance memory);
+
+    function supportsInterface(
+        bytes4 _interfaceID
+    ) external view returns (bool);
+
+    function lockedEnd(uint256 _tokenId) external view returns (uint256);
+
+    function votingPowerOf(
+        address _owner
+    ) external view returns (uint256 _power);
+
+    function merge(uint256 _from, uint256 _to) external;
+
+    function depositFor(uint256 _tokenId, uint256 _value) external;
+
+    function createLockFor(
+        uint256 _value,
+        uint256 _lockDuration,
+        address _to,
+        bool _stakeNFT
+    ) external returns (uint256);
+
+    function createLock(
+        uint256 _value,
+        uint256 _lockDuration,
+        bool _stakeNFT
+    ) external returns (uint256);
+
+    function increaseAmount(uint256 _tokenId, uint256 _value) external;
+
+    function increaseUnlockTime(
+        uint256 _tokenId,
+        uint256 _lockDuration
+    ) external;
+
+    function withdraw(uint256 _tokenId) external;
+
+    function withdraw(uint256[] calldata _tokenIds) external;
+
+    function withdraw(address _user) external;
+
+    function balanceOfNFT(uint256 _tokenId) external view returns (uint256);
 }
