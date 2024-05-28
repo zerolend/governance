@@ -35,9 +35,10 @@ interface IOmnichainStaking is IVotes {
     /// @dev receive the veStaked supply on the mainnet
     function updateSupplyFromLZ() external;
 
-    function totalSupply() external view returns (uint256);
+    // function totalSupply() external view returns (uint256);
 
-    function balanceOf(address account) external view returns (uint256);
+    // function balanceOf(address account) external view returns (uint256);
+
     function rewardRate() external view returns (uint256);
 
     function getLockedNftDetails(

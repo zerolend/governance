@@ -46,6 +46,7 @@ abstract contract OmnichainStakingBase is
     uint256 public rewardPerTokenStored;
 
     // used to keep track of voting powers for each nft id
+    mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
 
     // used to keep track of ownership of token lockers

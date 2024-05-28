@@ -75,6 +75,7 @@ contract Zap is Initializable, OwnableUpgradeable {
         (bool success, bytes memory outputSwapData) = odosRouter.call{
             value: msg.value / 2
         }(odosSwapData);
+
         if (!success) revert OdosSwapFailed();
 
         uint256 zeroAmount = abi.decode(outputSwapData, (uint256));
