@@ -13,13 +13,13 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {VestedZeroNFT} from "../vesting/VestedZeroNFT.sol";
-import {OmnichainStaking} from "../locker/staking/OmnichainStaking.sol";
+import {OmnichainStakingBase} from "../locker/staking/OmnichainStakingBase.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
 
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
 contract VestedZeroUiHelper {
     VestedZeroNFT vestedZero;
-    OmnichainStaking omnichainStaking;
+    OmnichainStakingBase omnichainStaking;
 
     struct VestDetails {
         uint256 id;
@@ -53,7 +53,7 @@ contract VestedZeroUiHelper {
         address _omnichainStaking
     ) external {
         vestedZero = VestedZeroNFT(_vestedZeroNFT);
-        omnichainStaking = OmnichainStaking(_omnichainStaking);
+        omnichainStaking = OmnichainStakingBase(_omnichainStaking);
     }
 
     function getVestedNFTData(
