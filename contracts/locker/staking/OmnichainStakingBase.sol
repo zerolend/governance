@@ -28,14 +28,13 @@ import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/ut
  * @dev An omnichain staking contract that allows users to stake their veNFT
  * and get some voting power. Once staked, the voting power is available cross-chain.
  */
-contract OmnichainStaking is
+abstract contract OmnichainStakingBase is
     IOmnichainStaking,
     ERC20VotesUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable
 {
-    ILocker public lpLocker;
-    ILocker public tokenLocker;
+    ILocker public locker;
     IPoolVoter public poolVoter;
 
     // staking reward variables
@@ -58,50 +57,35 @@ contract OmnichainStaking is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
-    // used to keep track of ownership of lp lockers
-    mapping(uint256 => address) public lockedByLp;
-    mapping(address => uint256[]) public lockedLpIdNfts;
-
-    // oracles to help keep track of prices of LP tokens
-    ILPOracle public lpOracle;
-    IPythAggregatorV3 public zeroAggregator;
-
-    // constructor() {
-    //     _disableInitializers();
-    // }
+    constructor() {
+        _disableInitializers();
+    }
 
     /**
      * @dev Initializes the contract with the provided token lockers.
-     * @param _tokenLocker The address of the token locker contract.
-     * @param _lpLocker The address of the LP locker contract.
+     * @param _locker The address of the token locker contract.
      */
-    function init(
-        address, // LZ endpoint
-        address _tokenLocker,
-        address _lpLocker,
+    function __OmnichainStakingBase_init(
+        string memory name,
+        string memory symbol,
+        address _locker,
         address _zeroToken,
         address _poolVoter,
-        uint256 _rewardsDuration,
-        address _lpOracle,
-        address _zeroPythAggregator
-    ) external initializer {
+        uint256 _rewardsDuration
+    ) internal initializer {
         // TODO add LZ
         __ERC20Votes_init();
         __Ownable_init(msg.sender);
         __ReentrancyGuard_init();
-        __ERC20_init("ZERO Voting Power", "ZEROvp");
+        __ERC20_init(name, symbol);
 
-        tokenLocker = ILocker(_tokenLocker);
-        lpLocker = ILocker(_lpLocker);
+        locker = ILocker(_locker);
         poolVoter = IPoolVoter(_poolVoter);
         rewardsToken = IZeroLend(_zeroToken);
         rewardsDuration = _rewardsDuration;
-        lpOracle = ILPOracle(_lpOracle);
-        zeroAggregator = IPythAggregatorV3(_zeroPythAggregator);
 
         // give approvals for increase lock functions
-        tokenLocker.underlying().approve(_tokenLocker, type(uint256).max);
-        lpLocker.underlying().approve(_lpLocker, type(uint256).max);
+        locker.underlying().approve(_locker, type(uint256).max);
     }
 
     /**
@@ -117,37 +101,20 @@ contract OmnichainStaking is
         uint256 tokenId,
         bytes calldata data
     ) internal returns (bytes4) {
-        require(
-            msg.sender == address(lpLocker) ||
-                msg.sender == address(tokenLocker),
-            "only lockers"
-        );
+        require(msg.sender == address(locker), "only locker");
 
         if (data.length > 0)
             (, from, ) = abi.decode(data, (bool, address, uint256));
 
         updateRewardFor(from);
 
-        // if the stake is from the LP locker, then give voting power based on the price of lpToken
-        if (msg.sender == address(lpLocker)) {
-            // track nft id
-            lockedByLp[tokenId] = from;
-            lockedLpIdNfts[from].push(tokenId);
+        // track nft id
+        lockedByToken[tokenId] = from;
+        lockedTokenIdNfts[from].push(tokenId);
 
-            // mint voting power
-            lpPower[tokenId] = getLpTokenPower(lpLocker.balanceOfNFT(tokenId));
-            _mint(from, lpPower[tokenId]);
-        }
-        // if the stake is from a regular token locker, then give 1 times the voting power
-        else if (msg.sender == address(tokenLocker)) {
-            // track nft id
-            lockedByToken[tokenId] = from;
-            lockedTokenIdNfts[from].push(tokenId);
-
-            // mint voting power
-            tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
-            _mint(from, tokenPower[tokenId]);
-        } else require(false, "invalid operator");
+        // mint voting power
+        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        _mint(from, tokenPower[tokenId]);
 
         return this.onERC721Received.selector;
     }
@@ -169,7 +136,7 @@ contract OmnichainStaking is
             memory tokenDetails = new ILocker.LockedBalance[](tokenIdsLength);
 
         for (uint256 i; i < tokenIdsLength; ) {
-            tokenDetails[i] = tokenLocker.locked(lockedTokenIds[i]);
+            tokenDetails[i] = locker.locked(lockedTokenIds[i]);
             tokenIds[i] = lockedTokenIds[i];
 
             unchecked {
@@ -187,30 +154,6 @@ contract OmnichainStaking is
         bytes calldata data
     ) external returns (bytes4) {
         return _onERC721ReceivedInternal(to, from, tokenId, data);
-    }
-
-    /**
-     * @dev Unstakes an LP NFT and transfers it back to the user.
-     * @param tokenId The ID of the LP NFT to unstake.
-     */
-    function unstakeLP(uint256 tokenId) external updateReward(msg.sender) {
-        require(lockedByLp[tokenId] != address(0), "!tokenId");
-        address lockedBy_ = lockedByLp[tokenId];
-        if (_msgSender() != lockedBy_)
-            revert InvalidUnstaker(_msgSender(), lockedBy_);
-
-        delete lockedByLp[tokenId];
-        lockedLpIdNfts[_msgSender()] = deleteAnElement(
-            lockedLpIdNfts[_msgSender()],
-            tokenId
-        );
-
-        // reset and burn voting power
-        _burn(msg.sender, lpPower[tokenId]);
-        lpPower[tokenId] = 0;
-        poolVoter.reset(msg.sender);
-
-        lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
     /**
@@ -234,39 +177,27 @@ contract OmnichainStaking is
         tokenPower[tokenId] = 0;
         poolVoter.reset(msg.sender);
 
-        tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
+        locker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
     /**
      * @dev Updates the lock duration for a specific NFT.
-     * @param kind 0 for token locker, 1 for lp token locker
      * @param tokenId The ID of the NFT for which to update the lock duration.
      * @param newLockDuration The new lock duration in seconds.
      */
     function increaseLockDuration(
-        uint8 kind,
         uint256 tokenId,
         uint256 newLockDuration
     ) external {
         require(newLockDuration > 0, "!newLockAmount");
 
-        if (kind == 0) {
-            require(msg.sender == lockedByToken[tokenId], "!tokenId");
-            tokenLocker.increaseUnlockTime(tokenId, newLockDuration);
+        require(msg.sender == lockedByToken[tokenId], "!tokenId");
+        locker.increaseUnlockTime(tokenId, newLockDuration);
 
-            // update voting power
-            _burn(msg.sender, tokenPower[tokenId]);
-            tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
-            _mint(msg.sender, tokenPower[tokenId]);
-        } else {
-            require(msg.sender == lockedByLp[tokenId], "!tokenId");
-            lpLocker.increaseUnlockTime(tokenId, newLockDuration);
-
-            // update voting power
-            _burn(msg.sender, lpPower[tokenId]);
-            lpPower[tokenId] = getLpTokenPower(lpLocker.balanceOfNFT(tokenId));
-            _mint(msg.sender, lpPower[tokenId]);
-        }
+        // update voting power
+        _burn(msg.sender, tokenPower[tokenId]);
+        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        _mint(msg.sender, tokenPower[tokenId]);
 
         // reset all the votes for the user
         poolVoter.reset(msg.sender);
@@ -274,44 +205,27 @@ contract OmnichainStaking is
 
     /**
      * @dev Updates the lock amount for a specific NFT.
-     * @param kind 0 for token locker, 1 for lp token locker
      * @param tokenId The ID of the NFT for which to update the lock amount.
      * @param newLockAmount The new lock amount in tokens.
      */
     function increaseLockAmount(
-        uint8 kind,
         uint256 tokenId,
         uint256 newLockAmount
     ) external {
         require(newLockAmount > 0, "!newLockAmount");
 
-        if (kind == 0) {
-            require(msg.sender == lockedByToken[tokenId], "!tokenId");
-            tokenLocker.underlying().transferFrom(
-                msg.sender,
-                address(this),
-                newLockAmount
-            );
-            tokenLocker.increaseAmount(tokenId, newLockAmount);
+        require(msg.sender == lockedByToken[tokenId], "!tokenId");
+        locker.underlying().transferFrom(
+            msg.sender,
+            address(this),
+            newLockAmount
+        );
+        locker.increaseAmount(tokenId, newLockAmount);
 
-            // update voting power
-            _burn(msg.sender, tokenPower[tokenId]);
-            tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
-            _mint(msg.sender, tokenPower[tokenId]);
-        } else {
-            require(msg.sender == lockedByLp[tokenId], "!tokenId");
-            lpLocker.underlying().transferFrom(
-                msg.sender,
-                address(this),
-                newLockAmount
-            );
-            lpLocker.increaseAmount(tokenId, newLockAmount);
-
-            // update voting power
-            _burn(msg.sender, lpPower[tokenId]);
-            lpPower[tokenId] = getLpTokenPower(lpLocker.balanceOfNFT(tokenId));
-            _mint(msg.sender, lpPower[tokenId]);
-        }
+        // update voting power
+        _burn(msg.sender, tokenPower[tokenId]);
+        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        _mint(msg.sender, tokenPower[tokenId]);
 
         // reset all the votes for the user
         poolVoter.reset(msg.sender);
@@ -506,22 +420,6 @@ contract OmnichainStaking is
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
-    }
-
-    /**
-     * Helper function that determines the voting power of an LP token given the units
-     * @param amount The amount of the LP token in wei
-     * @return power The voting power of the LP tokens
-     */
-    function getLpTokenPower(
-        uint256 amount
-    ) public view returns (uint256 power) {
-        // calculate voting power based on how much the LP token is worth in ZERO terms
-        uint256 lpPrice = lpOracle.getPrice();
-        int256 zeroPrice = zeroAggregator.latestAnswer();
-        require(zeroPrice > 0 && lpPrice > 0, "!price");
-
-        power = ((lpPrice * amount) / uint256(zeroPrice)) * 4;
     }
 
     /**
