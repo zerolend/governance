@@ -6,7 +6,7 @@ import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {IStakingBonus} from "../interfaces/IStakingBonus.sol";
+import {ILocker} from "../interfaces/ILocker.sol";
 import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
 
 contract AirdropRewarder is Initializable, OwnableUpgradeable {
@@ -17,7 +17,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     mapping(address => bool) public rewardsClaimed;
 
     ERC20Upgradeable public rewardToken;
-    IStakingBonus public locker;
+    ILocker public locker;
     IVestedZeroNFT public vestedZeroNFT;
     uint256 public unlockDate;
     uint256 public endDate;
@@ -52,7 +52,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         __Ownable_init(msg.sender);
         unlockDate = _unlockDate;
         endDate = _endDate;
-        locker = IStakingBonus(_locker);
+        locker = ILocker(_locker);
         vestedZeroNFT = IVestedZeroNFT(_vestedZeroNFT);
         rewardToken = ERC20Upgradeable(_rewardToken);
     }
@@ -71,7 +71,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     function setLocker(address _locker) external onlyOwner {
         if (_locker == address(0)) revert InvalidAddress();
         emit LockerSet(address(locker), _locker);
-        locker = IStakingBonus(_locker);
+        locker = ILocker(_locker);
     }
 
     function setVestedZeroNFT(address _vestedZeroNFT) external onlyOwner {
@@ -107,7 +107,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         if (_lockAndStake) {
             if (lockUntil < 365 days) revert InvalidLockDuration();
             rewardToken.approve(address(locker), remainingAmount);
-            locker.createLockFor(_user, remainingAmount, lockUntil);
+            locker.createLockFor(remainingAmount,lockUntil, _user, _lockAndStake);
             emit RewardsLocked(_user, remainingAmount);
         } else {
             rewardToken.approve(address(vestedZeroNFT), remainingAmount);
