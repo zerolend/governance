@@ -17,9 +17,9 @@ async function main(hre: HardhatRuntimeEnvironment) {
     LOCKER_TOKEN_ADDRESS.length &&
     LOCKER_LP_ADDRESS.length
   ) {
-    await deploy("OmnichainStaking", {
+    await deploy("OmnichainStakingToken", {
       from: deployer,
-      contract: "OmnichainStaking",
+      contract: "OmnichainStakingToken",
       proxy: {
         owner: deployer,
         proxyContract: "OpenZeppelinTransparentProxy",
@@ -43,5 +43,5 @@ async function main(hre: HardhatRuntimeEnvironment) {
   }
 }
 
-main.tags = ["OmnichainStaking"];
+main.tags = ["OmnichainStakingToken"];
 export default main;
