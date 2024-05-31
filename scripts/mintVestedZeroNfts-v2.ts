@@ -2,7 +2,7 @@ import hre from "hardhat";
 import * as fs from "fs";
 import { parseEther } from "ethers";
 
-const VESTED_ZERO_NFT_ADDRESS = "0xBDd0F194C29e337411f98589548E03F7b38D044b";
+const VESTED_ZERO_NFT_ADDRESS = "0x9fa72ea96591e486ff065e7c8a89282dedfa6c12";
 const ZERO_ADDRESS = "0x78354f8dccb269a615a7e0a24f9b0718fdc3c7a7";
 
 async function main() {
@@ -18,7 +18,7 @@ async function main() {
   );
 
   const zero = await hre.ethers.getContractAt("ZeroLend", ZERO_ADDRESS);
-  await zero.approve(vest, parseEther("100000000"));
+  // await zero.approve(vest, parseEther("100000000"));
 
   // Initialize an empty array to store the parsed data
   const parsedData: any[] = [];
@@ -40,8 +40,8 @@ async function main() {
       // Iterate over the rows starting from index 1 (skipping the header)
       for (let i = 1; i < rows.length; i++) {
         const [
-          totalTokens,
           walletAddress,
+          totalTokens,
           ,
           cliffDays,
           vestingDays,
@@ -98,7 +98,7 @@ async function main() {
           hasPenalty,
           category
         );
-        // console.log("Vest minted for: ", tx);
+        // // console.log("Vest minted for: ", tx);
         console.log("Vest minted for: ", tx.hash);
         await tx.wait();
       }
