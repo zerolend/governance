@@ -12,82 +12,80 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {OApp} from "@layerzerolabs/lz-evm-oapp-v2/contracts/oapp/OApp.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {Votes} from "@openzeppelin/contracts/governance/utils/Votes.sol";
-import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
-import {ILocker} from "../interfaces/ILocker.sol";
-import {IPoolVoter} from "../interfaces/IPoolVoter.sol";
-import {IZeroLend} from "../interfaces/IZeroLend.sol";
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
-import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ILocker} from "../../interfaces/ILocker.sol";
+import {ILPOracle} from "../../interfaces/ILPOracle.sol";
+import {IOmnichainStaking} from "../../interfaces/IOmnichainStaking.sol";
+import {IPoolVoter} from "../../interfaces/IPoolVoter.sol";
+import {IPythAggregatorV3} from "../../interfaces/IPythAggregatorV3.sol";
+import {IZeroLend} from "../../interfaces/IZeroLend.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 
 /**
  * @title OmnichainStaking
  * @dev An omnichain staking contract that allows users to stake their veNFT
  * and get some voting power. Once staked, the voting power is available cross-chain.
  */
-contract OmnichainStaking is
+abstract contract OmnichainStakingBase is
     IOmnichainStaking,
     ERC20VotesUpgradeable,
     ReentrancyGuardUpgradeable,
     OwnableUpgradeable
 {
-    ILocker public lpLocker;
-    ILocker public tokenLocker;
+    ILocker public locker;
     IPoolVoter public poolVoter;
-    IZeroLend public rewardsToken;
 
+    // staking reward variables
+    IZeroLend public rewardsToken;
     uint256 public periodFinish;
     uint256 public rewardRate;
     uint256 public rewardsDuration;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
 
+    // used to keep track of voting powers for each nft id
     mapping(uint256 => uint256) public lpPower;
     mapping(uint256 => uint256) public tokenPower;
-    mapping(uint256 => address) public lockedBy;
-    mapping(address => uint256[]) public lockedNfts;
 
+    // used to keep track of ownership of token lockers
+    mapping(uint256 => address) public lockedByToken;
+    mapping(address => uint256[]) public lockedTokenIdNfts;
+
+    // used to keep track of rewards
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
-    error InvalidUnstaker(address, address);
-
-    event RewardPaid(address indexed user, uint256 reward);
-    event RewardAdded(uint256 reward);
-    event Recovered(address token, uint256 amount);
-    event RewardsDurationUpdated(uint256 newDuration);
-
-    // constructor() {
-    //     _disableInitializers();
-    // }
+    constructor() {
+        _disableInitializers();
+    }
 
     /**
      * @dev Initializes the contract with the provided token lockers.
-     * @param _tokenLocker The address of the token locker contract.
-     * @param _lpLocker The address of the LP locker contract.
+     * @param _locker The address of the token locker contract.
      */
-    function init(
-        address, // LZ endpoint
-        address _tokenLocker,
-        address _lpLocker,
+    function __OmnichainStakingBase_init(
+        string memory name,
+        string memory symbol,
+        address _locker,
         address _zeroToken,
         address _poolVoter,
         uint256 _rewardsDuration
-    ) external initializer {
+    ) internal initializer {
         // TODO add LZ
         __ERC20Votes_init();
         __Ownable_init(msg.sender);
         __ReentrancyGuard_init();
-        __ERC20_init("ZERO Voting Power", "ZEROvp");
+        __ERC20_init(name, symbol);
 
-        tokenLocker = ILocker(_tokenLocker);
-        lpLocker = ILocker(_lpLocker);
+        locker = ILocker(_locker);
         poolVoter = IPoolVoter(_poolVoter);
         rewardsToken = IZeroLend(_zeroToken);
         rewardsDuration = _rewardsDuration;
+
+        // give approvals for increase lock functions
+        locker.underlying().approve(_locker, type(uint256).max);
     }
 
     /**
@@ -97,35 +95,27 @@ contract OmnichainStaking is
      * @param data Additional data.
      * @return ERC721 onERC721Received selector.
      */
-    function onERC721Received(
+    function _onERC721ReceivedInternal(
         address,
         address from,
         uint256 tokenId,
         bytes calldata data
-    ) external returns (bytes4) {
-        require(
-            msg.sender == address(lpLocker) ||
-                msg.sender == address(tokenLocker),
-            "only lockers"
-        );
+    ) internal returns (bytes4) {
+        require(msg.sender == address(locker), "only locker");
 
         if (data.length > 0)
             (, from, ) = abi.decode(data, (bool, address, uint256));
-        lockedBy[tokenId] = from;
-        lockedNfts[from].push(tokenId);
 
         updateRewardFor(from);
 
-        // if the stake is from the LP locker, then give 4 times the voting power
-        if (msg.sender == address(lpLocker)) {
-            lpPower[tokenId] = lpLocker.balanceOfNFT(tokenId);
-            _mint(from, lpPower[tokenId] * 4);
-        }
-        // if the stake is from a regular token locker, then give 1 times the voting power
-        else if (msg.sender == address(tokenLocker)) {
-            tokenPower[tokenId] = tokenLocker.balanceOfNFT(tokenId);
-            _mint(from, tokenPower[tokenId]);
-        } else require(false, "invalid operator");
+        // track nft id
+        lockedByToken[tokenId] = from;
+        lockedTokenIdNfts[from].push(tokenId);
+
+        // mint voting power
+        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        _mint(from, tokenPower[tokenId]);
+
         return this.onERC721Received.selector;
     }
 
@@ -138,15 +128,15 @@ contract OmnichainStaking is
     function getLockedNftDetails(
         address _user
     ) external view returns (uint256[] memory, ILocker.LockedBalance[] memory) {
-        uint256 tokenIdsLength = lockedNfts[_user].length;
-        uint256[] memory lockedTokenIds = lockedNfts[_user];
+        uint256 tokenIdsLength = lockedTokenIdNfts[_user].length;
+        uint256[] memory lockedTokenIds = lockedTokenIdNfts[_user];
 
         uint256[] memory tokenIds = new uint256[](tokenIdsLength);
         ILocker.LockedBalance[]
             memory tokenDetails = new ILocker.LockedBalance[](tokenIdsLength);
 
         for (uint256 i; i < tokenIdsLength; ) {
-            tokenDetails[i] = tokenLocker.locked(lockedTokenIds[i]);
+            tokenDetails[i] = locker.locked(lockedTokenIds[i]);
             tokenIds[i] = lockedTokenIds[i];
 
             unchecked {
@@ -157,26 +147,13 @@ contract OmnichainStaking is
         return (tokenIds, tokenDetails);
     }
 
-    /**
-     * @dev Unstakes an LP NFT and transfers it back to the user.
-     * @param tokenId The ID of the LP NFT to unstake.
-     */
-    function unstakeLP(uint256 tokenId) external updateReward(msg.sender) {
-        address lockedBy_ = lockedBy[tokenId];
-        if (_msgSender() != lockedBy_)
-            revert InvalidUnstaker(_msgSender(), lockedBy_);
-        delete lockedBy[tokenId];
-        lockedNfts[_msgSender()] = deleteAnElement(
-            lockedNfts[_msgSender()],
-            tokenId
-        );
-
-        _burn(msg.sender, lpPower[tokenId] * 4);
-
-        lpPower[tokenId] = 0;
-        poolVoter.reset(msg.sender);
-
-        lpLocker.safeTransferFrom(address(this), msg.sender, tokenId);
+    function onERC721Received(
+        address to,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4) {
+        return _onERC721ReceivedInternal(to, from, tokenId, data);
     }
 
     /**
@@ -184,29 +161,82 @@ contract OmnichainStaking is
      * @param tokenId The ID of the regular token NFT to unstake.
      */
     function unstakeToken(uint256 tokenId) external updateReward(msg.sender) {
-        address lockedBy_ = lockedBy[tokenId];
+        require(lockedByToken[tokenId] != address(0), "!tokenId");
+        address lockedBy_ = lockedByToken[tokenId];
         if (_msgSender() != lockedBy_)
             revert InvalidUnstaker(_msgSender(), lockedBy_);
-        delete lockedBy[tokenId];
-        lockedNfts[_msgSender()] = deleteAnElement(
-            lockedNfts[_msgSender()],
+
+        delete lockedByToken[tokenId];
+        lockedTokenIdNfts[_msgSender()] = deleteAnElement(
+            lockedTokenIdNfts[_msgSender()],
             tokenId
         );
 
+        // reset and burn voting power
         _burn(msg.sender, tokenPower[tokenId]);
-
         tokenPower[tokenId] = 0;
         poolVoter.reset(msg.sender);
 
-        tokenLocker.safeTransferFrom(address(this), msg.sender, tokenId);
+        locker.safeTransferFrom(address(this), msg.sender, tokenId);
+    }
+
+    /**
+     * @dev Updates the lock duration for a specific NFT.
+     * @param tokenId The ID of the NFT for which to update the lock duration.
+     * @param newLockDuration The new lock duration in seconds.
+     */
+    function increaseLockDuration(
+        uint256 tokenId,
+        uint256 newLockDuration
+    ) external {
+        require(newLockDuration > 0, "!newLockAmount");
+
+        require(msg.sender == lockedByToken[tokenId], "!tokenId");
+        locker.increaseUnlockTime(tokenId, newLockDuration);
+
+        // update voting power
+        _burn(msg.sender, tokenPower[tokenId]);
+        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        _mint(msg.sender, tokenPower[tokenId]);
+
+        // reset all the votes for the user
+        poolVoter.reset(msg.sender);
+    }
+
+    /**
+     * @dev Updates the lock amount for a specific NFT.
+     * @param tokenId The ID of the NFT for which to update the lock amount.
+     * @param newLockAmount The new lock amount in tokens.
+     */
+    function increaseLockAmount(
+        uint256 tokenId,
+        uint256 newLockAmount
+    ) external {
+        require(newLockAmount > 0, "!newLockAmount");
+
+        require(msg.sender == lockedByToken[tokenId], "!tokenId");
+        locker.underlying().transferFrom(
+            msg.sender,
+            address(this),
+            newLockAmount
+        );
+        locker.increaseAmount(tokenId, newLockAmount);
+
+        // update voting power
+        _burn(msg.sender, tokenPower[tokenId]);
+        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        _mint(msg.sender, tokenPower[tokenId]);
+
+        // reset all the votes for the user
+        poolVoter.reset(msg.sender);
     }
 
     /**
      * @dev Updates the voting power on a different chain.
      * @param chainId The ID of the chain to update the voting power on.
-     * @param nftId The ID of the NFT for which voting power is being updated.
+     * @param tokenId The ID of the NFT for which voting power is being updated.
      */
-    function updatePowerOnChain(uint256 chainId, uint256 nftId) external {
+    function updatePowerOnChain(uint256 chainId, uint256 tokenId) external {
         // TODO
         // ensure that the user has no votes anywhere and no delegation then send voting
         // power to another chain.
@@ -216,9 +246,9 @@ contract OmnichainStaking is
     /**
      * @dev Deletes the voting power on a different chain.
      * @param chainId The ID of the chain to delete the voting power on.
-     * @param nftId The ID of the NFT for which voting power is being deleted.
+     * @param tokenId The ID of the NFT for which voting power is being deleted.
      */
-    function deletePowerOnChain(uint256 chainId, uint256 nftId) external {
+    function deletePowerOnChain(uint256 chainId, uint256 tokenId) external {
         // TODO
         // using layerzero, deletes the updated voting power across the different chains
     }
@@ -390,15 +420,6 @@ contract OmnichainStaking is
             rewards[account] = earned(account);
             userRewardPerTokenPaid[account] = rewardPerTokenStored;
         }
-    }
-
-    function setRewardsDuration(uint256 _rewardsDuration) external onlyOwner {
-        require(
-            block.timestamp > periodFinish,
-            "Previous rewards period not finished"
-        );
-        rewardsDuration = _rewardsDuration;
-        emit RewardsDurationUpdated(rewardsDuration);
     }
 
     /**

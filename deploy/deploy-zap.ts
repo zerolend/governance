@@ -1,8 +1,10 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
-const LP_TOKEN_ADDRESS = "0x0040F36784dDA0821E74BA67f86E084D70d67a3A";
-const OMNICHAIN_STAKING_ADDRESS = "0xf374229a18ff691406f99CCBD93e8a3f16B68888";
-const STAKING_ADDRESS = "0xD676c56A93Fe2a05233Ce6EAFEfDe2bd4017B3eA";
+const ODOS_ROUTER = "";
+const NILE_ROUTER = "";
+const ZERO_TOKEN_ADDRESS = "";
+const LP_TOKEN_LOCKER = "";
+const SLIPPAGE = 0; // 0.01% = 1
 
 async function main(hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
@@ -10,30 +12,37 @@ async function main(hre: HardhatRuntimeEnvironment) {
   const { deployer } = await getNamedAccounts();
 
   if (
-    LP_TOKEN_ADDRESS.length &&
-    OMNICHAIN_STAKING_ADDRESS.length &&
-    STAKING_ADDRESS.length
+    ZERO_TOKEN_ADDRESS.length &&
+    ODOS_ROUTER.length &&
+    NILE_ROUTER.length &&
+    LP_TOKEN_LOCKER.length &&
+    SLIPPAGE
   ) {
-    const deployment = await deploy("LockerLP", {
+    await deploy("Zap", {
       from: deployer,
-      contract: "LockerToken",
+      contract: "Zap",
       proxy: {
         owner: deployer,
         proxyContract: "OpenZeppelinTransparentProxy",
         execute: {
           methodName: "init",
-          args: [LP_TOKEN_ADDRESS, OMNICHAIN_STAKING_ADDRESS, STAKING_ADDRESS],
+          args: [
+            deployer,
+            ODOS_ROUTER,
+            NILE_ROUTER,
+            LP_TOKEN_LOCKER,
+            ZERO_TOKEN_ADDRESS,
+            SLIPPAGE,
+          ],
         },
       },
       autoMine: true,
       log: true,
     });
-
-    await hre.run("verify:verify", {address: deployment.address});    
   } else {
     throw new Error("Invalid init arguments");
   }
 }
 
-main.tags = ["LockerLP"];
+main.tags = ["Zap"];
 export default main;

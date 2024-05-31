@@ -192,7 +192,7 @@ describe("VestedZeroNFT", () => {
         0, // 0 ZERO upfront
         1000, // linear duration - 1000 seconds
         0, // cliff duration - 0 seconds
-        now + 1000, // unlock date
+        0, // unlock date
         true, // penalty -> false
         0
       );
@@ -251,37 +251,10 @@ describe("VestedZeroNFT", () => {
   });
 
   it("Should update cliff durations for multiple tokens", async function () {
-    await vest.mint(
-      ant.address,
-      e18 * 10n,
-      e18 * 5n,
-      1000,
-      500,
-      now + 1000,
-      false,
-      0
-    );
-    await vest.mint(
-      ant.address,
-      e18 * 20n,
-      e18 * 5n,
-      1000,
-      500,
-      now + 1000,
-      false,
-      0
-    );
+    await vest.mint(ant.address, e18 * 10n, e18 * 5n, 1000, 500, 0, false, 0);
+    await vest.mint(ant.address, e18 * 20n, e18 * 5n, 1000, 500, 0, false, 0);
 
-    await vest.mint(
-      ant.address,
-      e18 * 30n,
-      e18 * 5n,
-      1000,
-      500,
-      now + 1000,
-      false,
-      0
-    );
+    await vest.mint(ant.address, e18 * 30n, e18 * 5n, 1000, 500, 0, false, 0);
 
     const tokenIds = [1, 2, 3];
     const linearDurations = [100, 200, 150];
@@ -343,20 +316,8 @@ describe("VestedZeroNFT", () => {
       parseEther("1")
     );
     await zero.whitelist(stakingBonusSigner.address, true);
-
-    await vest.mint(
-      ant.address,
-      e18 * 15n,
-      e18 * 5n,
-      1000,
-      500,
-      now + 1000,
-      false,
-      0
-    );
-
+    await vest.mint(ant.address, e18 * 15n, e18 * 5n, 1000, 500, 0, false, 0);
     const expectedPending = await vest.unclaimed(1);
-
     await vest.connect(stakingBonusSigner).claimUnvested(1);
 
     const stakingBonusBalance = await zero.balanceOf(
@@ -375,16 +336,7 @@ describe("VestedZeroNFT", () => {
   });
 
   it("Should freeze/unfreeze a token", async function () {
-    await vest.mint(
-      ant.address,
-      e18 * 15n,
-      e18 * 5n,
-      1000,
-      500,
-      now + 1000,
-      false,
-      0
-    );
+    await vest.mint(ant.address, e18 * 15n, e18 * 5n, 1000, 500, 0, false, 0);
     const tokenId = 1;
     const initialFrozenState = await vest.frozen(tokenId);
 

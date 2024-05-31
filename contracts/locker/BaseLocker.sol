@@ -6,6 +6,7 @@ import {IERC165, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgr
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 /**
   @title Voting Escrow
@@ -32,6 +33,7 @@ import {IOmnichainStaking} from "../interfaces/IOmnichainStaking.sol";
 contract BaseLocker is
     ReentrancyGuardUpgradeable,
     ERC721EnumerableUpgradeable,
+    OwnableUpgradeable,
     IZeroLocker
 {
     uint256 internal WEEK;
@@ -55,10 +57,11 @@ contract BaseLocker is
         string memory _symbol,
         address _token,
         address _staking,
-        address _stakingBonus,
-        uint256 _maxTime
+        uint256 _maxTime,
+        address _owner
     ) internal {
         __ERC721_init(_name, _symbol);
+        __Ownable_init(_owner);
         __ReentrancyGuard_init();
 
         version = "1.0.0";
@@ -71,8 +74,27 @@ contract BaseLocker is
         staking = IOmnichainStaking(_staking);
         underlying = IERC20(_token);
 
-        _setApprovalForAll(address(this), _stakingBonus, true);
         _setApprovalForAll(address(this), _staking, true);
+    }
+
+    /**
+     * @notice Sets the underlying token address
+     * @param _token The new token address
+     */
+    function setTokenAddress(address _token) external onlyOwner {
+        address oldToken = address(underlying);
+        underlying = IERC20(_token);
+        emit TokenAddressSet(oldToken, _token);
+    }
+
+    /**
+     * @notice Sets the staking contract address
+     * @param _staking The new staking contract address
+     */
+    function setStakingAddress(address _staking) external onlyOwner {
+        address oldStaking = address(staking);
+        staking = IOmnichainStaking(_staking);
+        emit StakingAddressSet(oldStaking, _staking);
     }
 
     /// @dev Interface identification is specified in ERC-165.
@@ -109,8 +131,8 @@ contract BaseLocker is
 
     function _calculatePower(
         LockedBalance memory lock
-    ) internal view returns (uint256) {
-        return ((lock.end - lock.start) * lock.amount) / MAXTIME;
+    ) internal view returns (uint256 power) {
+        power = ((lock.end - lock.start) * lock.amount) / MAXTIME;
     }
 
     /// @notice Deposit and lock tokens for a user

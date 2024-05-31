@@ -47,7 +47,7 @@ describe("StakingBonus", () => {
         0, // 0 ZERO upfront
         1000, // linear duration - 1000 seconds
         0, // cliff duration - 0 seconds
-        now + 1000, // unlock date
+        0, // unlock date
         true, // penalty -> false
         0
       );
