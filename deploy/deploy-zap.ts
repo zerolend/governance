@@ -18,7 +18,15 @@ async function main(hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  await hre.run("verify:verify", { address: deployment.address });
+  await hre.run("verify:verify", {
+    address: deployment.address,
+    constructorArguments: [
+      ODOS_ROUTER,
+      LP_TOKEN_LOCKER,
+      ZERO_TOKEN_ADDRESS,
+      WETH,
+    ],
+  });
 }
 
 main.tags = ["Zap"];
