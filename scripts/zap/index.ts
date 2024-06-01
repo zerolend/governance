@@ -5,9 +5,9 @@ import { parseEther } from "ethers";
 const WETH = "0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f";
 const ZERO = "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7";
 const LP_TOKEN = "0x0040F36784dDA0821E74BA67f86E084D70d67a3A";
-const ZAP_ADDRESS = "0x71Bdab6689c95a2AC1d0ce52fAbfFC5181206E6e";
 
 async function main() {
+  const ZAP_ADDRESS = (await hre.deployments.get("Zap")).address;
   const contract = await hre.ethers.getContractAt("Zap", ZAP_ADDRESS);
 
   // user set input on how much eth and zero the user would like to
