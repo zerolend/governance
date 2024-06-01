@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
 import {IERC20, IWETH} from "../interfaces/IWETH.sol";
 
@@ -9,7 +8,7 @@ import {IERC20, IWETH} from "../interfaces/IWETH.sol";
  * @title Zap
  * @dev This contract allows users to perform a Zap operation by swapping ETH for Zero tokens, adding liquidity to Nile LP, and locking LP tokens.
  */
-contract Zap is Initializable {
+contract Zap {
     address public odos;
     ILocker public locker;
     IERC20 public zero;
@@ -28,12 +27,7 @@ contract Zap is Initializable {
      * @param _zero The address of the Zero Token contract.
      * @param _weth The address of WETH.
      */
-    function init(
-        address _odos,
-        address _locker,
-        address _zero,
-        address _weth
-    ) external initializer {
+    constructor(address _odos, address _locker, address _zero, address _weth) {
         odos = _odos;
         locker = ILocker(_locker);
         zero = IERC20(_zero);
