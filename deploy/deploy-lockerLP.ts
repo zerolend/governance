@@ -50,7 +50,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
     );
 
     console.log("init locker");
-    (await locker.init(LP_TOKEN_ADDRESS, staking.target)).wait(1);
+    (await locker.init(LP_TOKEN_ADDRESS, staking.target)).wait(3);
 
     console.log("init staking");
     (
