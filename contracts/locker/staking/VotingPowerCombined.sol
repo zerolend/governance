@@ -16,17 +16,33 @@ import {IOmnichainStaking} from "../../interfaces/IOmnichainStaking.sol";
 import {IPoolVoter} from "../../interfaces/IPoolVoter.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
+// TODO: Write LayerZero functions over here
+
 contract VotingPowerCombined is OwnableUpgradeable {
     IOmnichainStaking public lpStaking;
     IOmnichainStaking public tokenStaking;
     IPoolVoter public voter;
 
     function init(
+        address _owner,
         address _tokenStaking,
-        address _lpStaking
+        address _lpStaking,
+        address _voter
     ) external reinitializer(1) {
         lpStaking = IOmnichainStaking(_lpStaking);
         tokenStaking = IOmnichainStaking(_tokenStaking);
+        voter = IPoolVoter(_voter);
+        __Ownable_init(_owner);
+    }
+
+    function setAddresses(
+        address _tokenStaking,
+        address _lpStaking,
+        address _voter
+    ) external onlyOwner {
+        lpStaking = IOmnichainStaking(_lpStaking);
+        tokenStaking = IOmnichainStaking(_tokenStaking);
+        voter = IPoolVoter(_voter);
     }
 
     function getVotes(address account) external view returns (uint256) {
