@@ -113,7 +113,7 @@ abstract contract OmnichainStakingBase is
         lockedTokenIdNfts[from].push(tokenId);
 
         // mint voting power
-        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        tokenPower[tokenId] = _getTokenPower(locker.balanceOfNFT(tokenId));
         _mint(from, tokenPower[tokenId]);
 
         return this.onERC721Received.selector;
@@ -196,7 +196,7 @@ abstract contract OmnichainStakingBase is
 
         // update voting power
         _burn(msg.sender, tokenPower[tokenId]);
-        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        tokenPower[tokenId] = _getTokenPower(locker.balanceOfNFT(tokenId));
         _mint(msg.sender, tokenPower[tokenId]);
 
         // reset all the votes for the user
@@ -224,7 +224,7 @@ abstract contract OmnichainStakingBase is
 
         // update voting power
         _burn(msg.sender, tokenPower[tokenId]);
-        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        tokenPower[tokenId] = _getTokenPower(locker.balanceOfNFT(tokenId));
         _mint(msg.sender, tokenPower[tokenId]);
 
         // reset all the votes for the user
@@ -422,6 +422,12 @@ abstract contract OmnichainStakingBase is
         }
     }
 
+    function getTokenPower(
+        uint256 amount
+    ) external view returns (uint256 power) {
+        power = _getTokenPower(amount);
+    }
+
     /**
      * @dev Modifier to update the reward for a given account.
      * @param account The address of the account.
@@ -435,4 +441,8 @@ abstract contract OmnichainStakingBase is
         }
         _;
     }
+
+    function _getTokenPower(
+        uint256 amount
+    ) internal view virtual returns (uint256 power);
 }

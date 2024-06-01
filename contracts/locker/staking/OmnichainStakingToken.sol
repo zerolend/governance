@@ -22,7 +22,7 @@ contract OmnichainStakingToken is OmnichainStakingBase {
         address _zeroToken,
         address _poolVoter,
         uint256 _rewardsDuration
-    ) external initializer {
+    ) external {
         super.__OmnichainStakingBase_init(
             "ZERO Voting Power",
             "ZEROvp",
@@ -33,7 +33,9 @@ contract OmnichainStakingToken is OmnichainStakingBase {
         );
     }
 
-    function getTokenPower(uint256 amount) public pure returns (uint256 power) {
+    function _getTokenPower(
+        uint256 amount
+    ) internal pure override returns (uint256 power) {
         power = amount;
     }
 }

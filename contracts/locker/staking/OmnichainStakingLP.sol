@@ -15,8 +15,10 @@ pragma solidity ^0.8.20;
 import {ILPOracle} from "../../interfaces/ILPOracle.sol";
 import {IPythAggregatorV3} from "../../interfaces/IPythAggregatorV3.sol";
 import {OmnichainStakingBase} from "./OmnichainStakingBase.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 contract OmnichainStakingLP is OmnichainStakingBase {
+    using SafeCast for int256;
     ILPOracle public lpOracle;
     IPythAggregatorV3 public zeroAggregator;
 
@@ -27,7 +29,7 @@ contract OmnichainStakingLP is OmnichainStakingBase {
         uint256 _rewardsDuration,
         address _lpOracle,
         address _zeroPythAggregator
-    ) external initializer {
+    ) external {
         super.__OmnichainStakingBase_init(
             "ZERO LP Voting Power",
             "ZEROvp-LP",
@@ -41,12 +43,14 @@ contract OmnichainStakingLP is OmnichainStakingBase {
         zeroAggregator = IPythAggregatorV3(_zeroPythAggregator);
     }
 
-    function getTokenPower(uint256 amount) public view returns (uint256 power) {
+    function _getTokenPower(
+        uint256 amount
+    ) internal view override returns (uint256 power) {
         // calculate voting power based on how much the LP token is worth in ZERO terms
         uint256 lpPrice = lpOracle.getPrice();
-        int256 zeroPrice = zeroAggregator.latestAnswer();
+        uint256 zeroPrice = zeroAggregator.latestAnswer().toUint256();
         require(zeroPrice > 0 && lpPrice > 0, "!price");
 
-        power = ((lpPrice * amount) / uint256(zeroPrice));
+        power = ((lpPrice * amount) / zeroPrice);
     }
 }
