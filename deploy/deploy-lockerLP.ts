@@ -35,6 +35,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
       },
       autoMine: true,
       log: true,
+      waitConfirmations: 3,
     });
 
     // init the proxies
@@ -48,8 +49,8 @@ async function main(hre: HardhatRuntimeEnvironment) {
       deploymentStaking.address
     );
 
-    // console.log("init locker");
-    // (await locker.init(LP_TOKEN_ADDRESS, staking.target)).wait(1);
+    console.log("init locker");
+    (await locker.init(LP_TOKEN_ADDRESS, staking.target)).wait(1);
 
     console.log("init staking");
     (
