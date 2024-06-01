@@ -232,41 +232,22 @@ abstract contract OmnichainStakingBase is
     }
 
     /**
-     * @dev Updates the voting power on a different chain.
-     * @param chainId The ID of the chain to update the voting power on.
-     * @param tokenId The ID of the NFT for which voting power is being updated.
+     * @dev Updates the reward for a given account.
+     * @param account The address of the account.
      */
-    function updatePowerOnChain(uint256 chainId, uint256 tokenId) external {
-        // TODO
-        // ensure that the user has no votes anywhere and no delegation then send voting
-        // power to another chain.
-        // using layerzero, sends the updated voting power across the different chains
+    function updateRewardFor(address account) public {
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        if (account != address(0)) {
+            rewards[account] = earned(account);
+            userRewardPerTokenPaid[account] = rewardPerTokenStored;
+        }
     }
 
-    /**
-     * @dev Deletes the voting power on a different chain.
-     * @param chainId The ID of the chain to delete the voting power on.
-     * @param tokenId The ID of the NFT for which voting power is being deleted.
-     */
-    function deletePowerOnChain(uint256 chainId, uint256 tokenId) external {
-        // TODO
-        // using layerzero, deletes the updated voting power across the different chains
-    }
-
-    /**
-     * @dev Updates the veStaked supply to the mainnet via LayerZero.
-     */
-    function updateSupplyToMainnetViaLZ() external {
-        // TODO
-        // send the veStaked supply to the mainnet
-    }
-
-    /**
-     * @dev Updates the veStaked supply from the mainnet via LayerZero.
-     */
-    function updateSupplyFromLZ() external {
-        // TODO
-        // receive the veStaked supply on the mainnet
+    function getTokenPower(
+        uint256 amount
+    ) external view returns (uint256 power) {
+        power = _getTokenPower(amount);
     }
 
     /**
@@ -347,6 +328,11 @@ abstract contract OmnichainStakingBase is
         emit Recovered(tokenAddress, tokenAmount);
     }
 
+    function setPoolVoter(address what) external onlyOwner {
+        emit PoolVoterUpdated(address(poolVoter), what);
+        poolVoter = IPoolVoter(what);
+    }
+
     /**
      * @dev Transfers rewards to the caller.
      */
@@ -407,25 +393,6 @@ abstract contract OmnichainStakingBase is
         }
 
         return updatedArray;
-    }
-
-    /**
-     * @dev Updates the reward for a given account.
-     * @param account The address of the account.
-     */
-    function updateRewardFor(address account) public {
-        rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = lastTimeRewardApplicable();
-        if (account != address(0)) {
-            rewards[account] = earned(account);
-            userRewardPerTokenPaid[account] = rewardPerTokenStored;
-        }
-    }
-
-    function getTokenPower(
-        uint256 amount
-    ) external view returns (uint256 power) {
-        power = _getTokenPower(amount);
     }
 
     /**
