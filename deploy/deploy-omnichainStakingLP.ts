@@ -3,8 +3,8 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 const LOCKER_LP_ADDRESS = "0x1eF0D6c32b1516692134A485338c85350D4482D0";
 const ZERO_TOKEN_ADDRESS = "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7";
 const POOL_VOTER_ADDRESS = "0x5346e9ab27D7874Db95993667D1Cb8338913f0aF";
-const SECONDS_IN_SIX_MONTHS = 31536000 / 2;
-const LP_ORACLE = "0x57359361a0e5351EBcE756E40Bdbaf9E3590A818";
+const SECONDS_IN_THREE_DAYS = 86400 * 3;
+const LP_ORACLE = "0x303598dddebB8A48CE0132b3Ba6c2fDC14986647";
 const ZERO_PYTH_AGGREGATOR = "0x130cc6e0301B58ab46504fb6F83BEE97Eb733054";
 
 async function main(hre: HardhatRuntimeEnvironment) {
@@ -16,7 +16,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
     LOCKER_LP_ADDRESS.length &&
     ZERO_TOKEN_ADDRESS.length &&
     POOL_VOTER_ADDRESS.length &&
-    SECONDS_IN_SIX_MONTHS &&
+    SECONDS_IN_THREE_DAYS &&
     LP_ORACLE.length &&
     ZERO_PYTH_AGGREGATOR
   ) {
@@ -32,7 +32,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
             LOCKER_LP_ADDRESS,
             ZERO_TOKEN_ADDRESS,
             POOL_VOTER_ADDRESS,
-            SECONDS_IN_SIX_MONTHS,
+            SECONDS_IN_THREE_DAYS,
             LP_ORACLE,
             ZERO_PYTH_AGGREGATOR,
           ],

@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 const ODOS_ROUTER = "0x2d8879046f1559E53eb052E949e9544bCB72f414";
 const WETH = "0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f";
 const ZERO_TOKEN_ADDRESS = "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7";
-const LP_TOKEN_LOCKER = "0x1eF0D6c32b1516692134A485338c85350D4482D0";
+const LP_TOKEN_LOCKER = "0xB4cc21FBFb4822C6Fbe10Fc115444c1689F67f1E";
 
 async function main(hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts } = hre;
