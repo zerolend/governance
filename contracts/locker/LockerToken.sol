@@ -10,8 +10,7 @@ contract LockerToken is BaseLocker {
             "T-ZERO",
             _token,
             _staking,
-            4 * 365 * 86400,
-            msg.sender
+            4 * 365 * 86400
         );
     }
 }
