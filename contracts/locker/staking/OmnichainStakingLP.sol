@@ -19,8 +19,8 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 contract OmnichainStakingLP is OmnichainStakingBase {
     using SafeCast for int256;
-    ILPOracle public lpOracle;
-    IPythAggregatorV3 public zeroAggregator;
+    ILPOracle public oracleLP;
+    IPythAggregatorV3 public oracleZERO;
 
     function init(
         address _locker,
@@ -39,18 +39,17 @@ contract OmnichainStakingLP is OmnichainStakingBase {
             _rewardsDuration
         );
 
-        lpOracle = ILPOracle(_lpOracle);
-        zeroAggregator = IPythAggregatorV3(_zeroPythAggregator);
+        oracleLP = ILPOracle(_lpOracle);
+        oracleZERO = IPythAggregatorV3(_zeroPythAggregator);
     }
 
     function _getTokenPower(
         uint256 amount
     ) internal view override returns (uint256 power) {
         // calculate voting power based on how much the LP token is worth in ZERO terms
-        uint256 lpPrice = lpOracle.getPrice();
-        uint256 zeroPrice = zeroAggregator.latestAnswer().toUint256();
+        uint256 lpPrice = oracleLP.getPrice();
+        uint256 zeroPrice = oracleZERO.latestAnswer().toUint256();
         require(zeroPrice > 0 && lpPrice > 0, "!price");
-
         power = ((lpPrice * amount) / zeroPrice);
     }
 }

@@ -72,7 +72,7 @@ abstract contract OmnichainStakingBase is
         address _zeroToken,
         address _poolVoter,
         uint256 _rewardsDuration
-    ) internal initializer {
+    ) internal reinitializer(2) {
         // TODO add LZ
         __ERC20Votes_init();
         __Ownable_init(msg.sender);

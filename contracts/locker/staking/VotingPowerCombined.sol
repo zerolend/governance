@@ -14,13 +14,17 @@ pragma solidity ^0.8.20;
 
 import {IOmnichainStaking} from "../../interfaces/IOmnichainStaking.sol";
 import {IPoolVoter} from "../../interfaces/IPoolVoter.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract VotingPowerCombined {
+contract VotingPowerCombined is OwnableUpgradeable {
     IOmnichainStaking public lpStaking;
     IOmnichainStaking public tokenStaking;
     IPoolVoter public voter;
 
-    constructor(address _tokenStaking, address _lpStaking) {
+    function init(
+        address _tokenStaking,
+        address _lpStaking
+    ) external reinitializer(1) {
         lpStaking = IOmnichainStaking(_lpStaking);
         tokenStaking = IOmnichainStaking(_tokenStaking);
     }
