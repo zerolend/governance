@@ -4,7 +4,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 const ZERO_TOKEN_ADDRESS = "";
 const LOCKER_TOKEN_ADDRESS = "";
 const LOCKER_LP_ADDRESS = "";
-const POOL_VOTER_ADDRESS = "";
+const POOL_VOTER_ADDRESS = "0x2666951A62d82860E8e1385581E2FB7669097647";
 const SECONDS_IN_SIX_MONTHS = 31536000 / 2;
 
 async function main(hre: HardhatRuntimeEnvironment) {
