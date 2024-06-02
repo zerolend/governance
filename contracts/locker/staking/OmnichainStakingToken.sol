@@ -22,7 +22,7 @@ contract OmnichainStakingToken is OmnichainStakingBase {
         address _zeroToken,
         address _poolVoter,
         uint256 _rewardsDuration
-    ) external {
+    ) external reinitializer(2) {
         super.__OmnichainStakingBase_init(
             "ZERO Voting Power",
             "ZEROvp",

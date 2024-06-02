@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const LP_TOKEN_ADDRESS = "0x0040F36784dDA0821E74BA67f86E084D70d67a3A";
-const ZERO_TOKEN_ADDRESS = "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7";
+const WETH = "0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f";
 const SECONDS_IN_THREE_DAYS = 86400 * 3;
 const ZERO_PYTH_AGGREGATOR = "0x130cc6e0301B58ab46504fb6F83BEE97Eb733054";
 
@@ -15,7 +15,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
   if (
     !LP_TOKEN_ADDRESS.length ||
     !ZERO_PYTH_AGGREGATOR.length ||
-    !ZERO_TOKEN_ADDRESS.length ||
+    !WETH.length ||
     !LP_ORACLE.length ||
     !POOL_VOTER_ADDRESS.length
   )
@@ -62,7 +62,7 @@ async function main(hre: HardhatRuntimeEnvironment) {
   (
     await staking.init(
       locker.target,
-      ZERO_TOKEN_ADDRESS,
+      WETH,
       POOL_VOTER_ADDRESS,
       SECONDS_IN_THREE_DAYS,
       LP_ORACLE,

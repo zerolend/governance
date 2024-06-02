@@ -28,7 +28,7 @@ contract VotingPowerCombined is OwnableUpgradeable {
         address _tokenStaking,
         address _lpStaking,
         address _voter
-    ) external reinitializer(1) {
+    ) external reinitializer(2) {
         lpStaking = IOmnichainStaking(_lpStaking);
         tokenStaking = IOmnichainStaking(_tokenStaking);
         voter = IPoolVoter(_voter);
