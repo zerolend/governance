@@ -27,12 +27,12 @@ contract EmissionsMainnet is
 {
     using SafeERC20 for IZeroLend;
 
-    IZeroLend zeroToken;
-    IPoolVoter poolVoter;
+    IZeroLend public zero;
+    IPoolVoter public voter;
 
-    uint256 totalSupply;
-    uint256 lastReleased;
-    uint256 emissionDuration = 1 weeks;
+    uint256 public totalSupply;
+    uint256 public lastReleased;
+    uint256 public emissionDuration = 1 weeks;
 
     uint256[] weeklyDividers;
 
@@ -44,10 +44,10 @@ contract EmissionsMainnet is
         address _zeroToken,
         address _poolVoter
     ) external initializer {
-        lastReleased = block.timestamp;
         __Ownable_init(msg.sender);
-        zeroToken = IZeroLend(_zeroToken);
-        poolVoter = IPoolVoter(_poolVoter);
+        lastReleased = block.timestamp;
+        zero = IZeroLend(_zeroToken);
+        voter = IPoolVoter(_poolVoter);
     }
 
     function setWeeklyDividers(
@@ -58,7 +58,7 @@ contract EmissionsMainnet is
     }
 
     function setTotalSupply(uint256 _totalSupply) external onlyOwner {
-        zeroToken.transferFrom(msg.sender, address(this), _totalSupply);
+        zero.transferFrom(msg.sender, address(this), _totalSupply);
         emit TotalSupplySet(totalSupply, _totalSupply);
         totalSupply = _totalSupply;
     }
@@ -68,8 +68,8 @@ contract EmissionsMainnet is
         if (weeksPassed == 0) revert ReleaseIntervalNotMet(weeksPassed);
         lastReleased = block.timestamp;
         uint256 releaseAmount = _getReleaseAmount(weeksPassed - 1);
-        zeroToken.approve(address(poolVoter), releaseAmount);
-        poolVoter.notifyRewardAmount(releaseAmount);
+        zero.approve(address(voter), releaseAmount);
+        voter.notifyRewardAmount(releaseAmount);
     }
 
     function getReleaseAmount(
