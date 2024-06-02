@@ -15,10 +15,11 @@ pragma solidity ^0.8.20;
 import {IOmnichainStaking} from "../../interfaces/IOmnichainStaking.sol";
 import {IPoolVoter} from "../../interfaces/IPoolVoter.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
 // TODO: Write LayerZero functions over here
 
-contract VotingPowerCombined is OwnableUpgradeable {
+contract VotingPowerCombined is IVotes, OwnableUpgradeable {
     IOmnichainStaking public lpStaking;
     IOmnichainStaking public tokenStaking;
     IPoolVoter public voter;
@@ -74,5 +75,25 @@ contract VotingPowerCombined is OwnableUpgradeable {
         return
             lpStaking.getPastTotalSupply(timepoint) +
             tokenStaking.getPastTotalSupply(timepoint);
+    }
+
+    function delegates(address) external pure override returns (address) {
+        require(false, "delegate set at the staking level");
+        return address(0);
+    }
+
+    function delegate(address) external pure override {
+        require(false, "delegate set at the staking level");
+    }
+
+    function delegateBySig(
+        address,
+        uint256,
+        uint256,
+        uint8,
+        bytes32,
+        bytes32
+    ) external pure override {
+        require(false, "delegate set at the staking level");
     }
 }
