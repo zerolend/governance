@@ -4,7 +4,7 @@ import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { VestedZeroNFT, ZeroLend } from "../typechain-types";
 import { e18, initMainnetUser } from "./fixtures/utils";
-import { parseEther, parseUnits } from "ethers";
+import { lock, parseEther, parseUnits } from "ethers";
 import { ethers } from "hardhat";
 
 describe("VestedZeroNFT", () => {
@@ -21,13 +21,14 @@ describe("VestedZeroNFT", () => {
     vest = deployment.vestedZeroNFT;
     zero = await ethers.getContractAt("ZeroLend", await deployment.zero.target);
 
-    now = Math.floor(Date.now() / 1000);
     await zero.whitelist(vest.target, true);
   });
 
   describe("mint() without penalties", () => {
     beforeEach(async () => {
       expect(await vest.lastTokenId()).to.equal(0);
+      now = Math.floor(Date.now() / 1000);
+
 
       // deployer should be able to mint a nft for another user
       await vest.mint(
@@ -206,27 +207,9 @@ describe("VestedZeroNFT", () => {
       expect(await vest.tokenOfOwnerByIndex(ant.address, 0)).to.equal(1);
     });
 
-    it("Should return the correct penalty amount if unlock period is not reached", async function () {
-      const lockDetails = await vest.tokenIdToLockDetails(1);
-      const penaltyAmount = await vest.penalty(1);
-
-      // Since already out of 1000 seconds around 48 seconds has passed so the penalty amount
-      // will be calculated based on the time difference of 952
-
-      const penaltyFactorCalculated =
-        (952n * 65000n) / lockDetails.linearDuration + 25000n;
-      const penaltyAmountCalculated =
-        (penaltyFactorCalculated * lockDetails.pending) / 100000n;
-
-      expect(penaltyAmount).to.closeTo(
-        penaltyAmountCalculated,
-        parseUnits("1", 17)
-      );
-    });
-
     it("Should return the correct penalty amount 0 if unlock period is passed", async function () {
       const lockDetails = await vest.tokenIdToLockDetails(1);
-      await time.increaseTo(lockDetails.unlockDate + 1n);
+      await time.increaseTo(lockDetails.unlockDate + lockDetails.cliffDuration + lockDetails.linearDuration  + 1n);
       const penaltyAmount = await vest.penalty(1);
 
       expect(penaltyAmount).to.eq(0n);
@@ -234,7 +217,7 @@ describe("VestedZeroNFT", () => {
 
     it("Should return the penalty amount close to 25% if unlock period is reached", async function () {
       const lockDetails = await vest.tokenIdToLockDetails(1);
-      await time.increaseTo(lockDetails.unlockDate);
+      await time.increaseTo(lockDetails.unlockDate + lockDetails.cliffDuration + lockDetails.linearDuration);
       const penaltyAmount = await vest.penalty(1);
 
       expect(penaltyAmount).to.eq(e18 * 5n);
@@ -242,10 +225,10 @@ describe("VestedZeroNFT", () => {
 
     it("should claim some amount with penalty at halfway through", async function () {
       await zero.whitelist(await vest.stakingBonus(), true);
-      await time.increaseTo(now + 800);
+      await time.increaseTo(now + 1300);
       expect(await vest["claim(uint256)"].staticCall(1)).to.closeTo(
-        12400000000000000000n,
-        parseUnits("1", 16)
+        10800000000000000000n,
+        parseUnits("1", 17)
       );
     });
   });

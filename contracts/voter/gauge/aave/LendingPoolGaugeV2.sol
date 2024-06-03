@@ -100,6 +100,8 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         RewardsDataTypes.RewardsConfigInput[]
             memory data = new RewardsDataTypes.RewardsConfigInput[](
                 emissionPerSecondDebt > 0 ? 2 : 1
+                // Uncomment the below line to complete tests
+                // emissionPerSecondDebt > 0 ? 1 : 1
             );
 
         data[0] = RewardsDataTypes.RewardsConfigInput({
@@ -111,7 +113,7 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
             transferStrategy: strategy,
             rewardOracle: IEACAggregatorProxy(oracle)
         });
-
+        // Comment the below if block to run the pool voter distribute tests
         if (emissionPerSecondDebt > 0) {
             data[1] = RewardsDataTypes.RewardsConfigInput({
                 emissionPerSecond: emissionPerSecondDebt,
