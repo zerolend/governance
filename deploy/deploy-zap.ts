@@ -11,9 +11,9 @@ async function main(hre: HardhatRuntimeEnvironment) {
 
   const LP_TOKEN_LOCKER = (await get("LockerLP")).address;
 
-  const deployment = await deploy("Zap", {
+  const deployment = await deploy("ZapLockerLP", {
     from: deployer,
-    contract: "Zap",
+    contract: "ZapLockerLP",
     args: [ODOS_ROUTER, LP_TOKEN_LOCKER, ZERO_TOKEN_ADDRESS, WETH],
     autoMine: true,
     log: true,
