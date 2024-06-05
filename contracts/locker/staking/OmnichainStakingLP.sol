@@ -43,6 +43,10 @@ contract OmnichainStakingLP is OmnichainStakingBase {
         oracleZERO = IPythAggregatorV3(_zeroPythAggregator);
     }
 
+    receive() external payable {
+        // nothing; just accept the ETH
+    }
+
     /**
      * Calculate voting power based on how much the LP token is worth in ZERO terms
      * @param amount The LP token amount
