@@ -13,15 +13,15 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {VestedZeroNFT} from "../vesting/VestedZeroNFT.sol";
-import {OmnichainStakingToken} from "../locker/staking/OmnichainStakingToken.sol";
+import {OmnichainStakingBase} from "../locker/staking/OmnichainStakingBase.sol";
 import {OmnichainStakingLP} from "../locker/staking/OmnichainStakingLP.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
 
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
 contract VestedZeroUiHelper {
     VestedZeroNFT vestedZero;
-    OmnichainStakingToken omnichainStakingToken;
-    OmnichainStakingLP omnichainStakingLP;
+    OmnichainStakingBase omnichainStaking;
+    OmnichainStakingLP omnichainStakingLp;
 
     struct VestDetails {
         uint256 id;
@@ -52,12 +52,12 @@ contract VestedZeroUiHelper {
 
     function initialize(
         address _vestedZeroNFT,
-        address _omnichainStakingToken,
-        address _omnichainStakingLP
+        address _omnichainStaking,
+        address _omnichainStakingLp
     ) external {
         vestedZero = VestedZeroNFT(_vestedZeroNFT);
-        omnichainStakingToken = OmnichainStakingToken(_omnichainStakingToken);
-        omnichainStakingLP = OmnichainStakingLP(_omnichainStakingLP);
+        omnichainStaking = OmnichainStakingBase(_omnichainStaking);
+        omnichainStakingLp = OmnichainStakingLP(_omnichainStakingLp);
     }
 
     function getVestedNFTData(
@@ -121,10 +121,10 @@ contract VestedZeroUiHelper {
         (
             uint256[] memory tokenIds,
             ILocker.LockedBalance[] memory lockedBalances
-        ) = omnichainStakingToken.getLockedNftDetails(_userAddress);
+        ) = omnichainStaking.getLockedNftDetails(_userAddress);
 
-        uint256 rewardRate = omnichainStakingToken.rewardRate();
-        uint256 totalSupply = omnichainStakingToken.totalSupply();
+        uint256 rewardRate = omnichainStaking.rewardRate();
+        uint256 totalSupply = omnichainStaking.totalSupply();
 
         uint256 totalTokenIds = tokenIds.length;
         LockedBalanceWithApr[] memory lockDetails = new LockedBalanceWithApr[](
@@ -135,7 +135,7 @@ contract VestedZeroUiHelper {
             LockedBalanceWithApr memory lock;
             ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
 
-            uint256 vePower = omnichainStakingToken.getTokenPower(lockedBalance.amount);
+            uint256 vePower = getLockPower(lockedBalance);
             uint256 scale = (vePower != 0 && lockedBalance.amount != 0)
                 ? (vePower * 1e18) / lockedBalance.amount
                 : 1e18;
@@ -166,10 +166,10 @@ contract VestedZeroUiHelper {
         (
             uint256[] memory tokenIds,
             ILocker.LockedBalance[] memory lockedBalances
-        ) = omnichainStakingLP.getLockedNftDetails(_userAddress);
+        ) = omnichainStakingLp.getLockedNftDetails(_userAddress);
 
-        uint256 rewardRate = omnichainStakingLP.rewardRate();
-        uint256 totalSupply = omnichainStakingLP.totalSupply();
+        uint256 rewardRate = omnichainStakingLp.rewardRate();
+        uint256 totalSupply = omnichainStakingLp.totalSupply();
 
         uint256 totalTokenIds = tokenIds.length;
         LockedBalanceWithApr[] memory lockDetails = new LockedBalanceWithApr[](
@@ -180,7 +180,7 @@ contract VestedZeroUiHelper {
             LockedBalanceWithApr memory lock;
             ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
 
-            uint256 vePower = omnichainStakingLP.getTokenPower(lockedBalance.amount);
+            uint256 vePower = omnichainStakingLp.getTokenPower(lockedBalance.amount);
             uint256 scale = (vePower != 0 && lockedBalance.amount != 0)
                 ? (vePower * 1e18) / lockedBalance.amount
                 : 1e18;
@@ -203,5 +203,17 @@ contract VestedZeroUiHelper {
         }
 
         return lockDetails;
+    }
+
+    function getLockPower(
+        ILocker.LockedBalance memory lock
+    ) internal pure returns (uint256) {
+        uint256 duration = lock.end - lock.start;
+        uint256 durationInYears = (lock.end - lock.start) / 365 days;
+        uint256 amountWithBonus = lock.amount +
+            (lock.amount * durationInYears * 5) /
+            100;
+
+        return (duration * amountWithBonus) / (4 * 365 days);
     }
 }

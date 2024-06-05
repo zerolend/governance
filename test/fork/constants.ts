@@ -20,17 +20,22 @@ export interface INetworkDetails {
   LiquidationLogic: IContractDetails;
   LockerLP: IContractDetails;
   LockerToken: IContractDetails;
+  LPOracle: IContractDetails;
   OmnichainStaking: IContractDetails;
+  OmnichainStakingToken: IContractDetails;
+  OmnichainStakingLP: IContractDetails;
   Pool: IContractDetails;
   PoolAddressesProvider: IContractDetails;
   PoolConfigurator: IContractDetails;
   PoolLogic: IContractDetails;
+  PoolVoter: IContractDetails;
   ReserveTreasury: IContractDetails;
   StableDebtToken: IContractDetails;
   StakingBonus: IContractDetails;
   SupplyLogic: IContractDetails;
   VariableDebtToken: IContractDetails;
   VestedZeroNFT: IContractDetails;
+  VestedZeroUiHelper: IContractDetails;
   ZeroLend: IContractDetails;
 }
 
@@ -147,9 +152,29 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
       name: "ZeroLend",
       address: "0xf140Fd0cca2360533b259c4E34f22a1F6c947EFE",
     },
+    OmnichainStakingToken: {
+      name: "",
+      address: "",
+    },
+    OmnichainStakingLP: {
+      name: "",
+      address: "",
+    },
+    PoolVoter: {
+      name: "",
+      address: ""
+    },
+    VestedZeroUiHelper: {
+      name: "",
+      address: ""
+    },
+    LPOracle: {
+      name: "",
+      address: ""
+    }
   },
   linea: {
-    BLOCK_NUMBER: 3997833,
+    BLOCK_NUMBER: 5176728,
     ant: "",
     deployer: "",
     AaveOracle: {
@@ -201,8 +226,8 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
       address: "",
     },
     LockerLP: {
-      name: "",
-      address: "",
+      name: "LockerLP",
+      address: "0x1eF0D6c32b1516692134A485338c85350D4482D0",
     },
     LockerToken: {
       name: "",
@@ -210,7 +235,15 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
     },
     OmnichainStaking: {
       name: "",
-      address: "",
+      address: "0xf374229a18ff691406f99CCBD93e8a3f16B68888",
+    },
+    OmnichainStakingToken: {
+      name: "",
+      address: "0xf374229a18ff691406f99CCBD93e8a3f16B68888",
+    },
+    OmnichainStakingLP: {
+      name: "",
+      address: "0xf36F8089D7dDc4522a1c10C8dA41555aCDcCCb4D",
     },
     Pool: {
       name: "",
@@ -250,11 +283,23 @@ export const contractAddresses: { [key: string]: INetworkDetails } = {
     },
     VestedZeroNFT: {
       name: "",
-      address: "",
+      address: "0x9FA72ea96591e486FF065E7C8A89282dEDfA6C12",
     },
     ZeroLend: {
       name: "",
+      address: "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7",
+    },
+    VestedZeroUiHelper: {
+      name: "",
       address: "",
     },
+    PoolVoter: {
+      name: "",
+      address: "0x5346e9ab27D7874Db95993667D1Cb8338913f0aF"
+    },
+    LPOracle: {
+      name: "",
+      address: ""
+    }
   },
 };
