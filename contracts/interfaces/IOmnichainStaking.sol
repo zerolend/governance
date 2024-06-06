@@ -23,18 +23,6 @@ interface IOmnichainStaking is IVotes {
 
     function unstakeToken(uint256 tokenId) external;
 
-    /// @dev using layerzero, sends the updated voting power across the different chains
-    function updatePowerOnChain(uint256 chainId, uint256 nftId) external;
-
-    /// @dev using layerzero, deletes the updated voting power across the different chains
-    function deletePowerOnChain(uint256 chainId, uint256 nftId) external;
-
-    /// @dev send the veStaked supply to the mainnet
-    function updateSupplyToMainnetViaLZ() external;
-
-    /// @dev receive the veStaked supply on the mainnet
-    function updateSupplyFromLZ() external;
-
     // function totalSupply() external view returns (uint256);
 
     // function balanceOf(address account) external view returns (uint256);

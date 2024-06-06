@@ -116,3 +116,5 @@ typechain-types/
 generated-abi
 scripts/*.json
 scripts/data/*.json
+deployments/
+hardhat-dependency-compiler/

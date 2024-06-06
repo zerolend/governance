@@ -93,7 +93,11 @@ const config: HardhatUserConfig = {
     ],
   },
   networks: {
-    hardhat: {},
+    hardhat: {
+      forking: {
+        url: `https://rpc.linea.build/`,
+      },
+    },
     goerli: {
       url: `https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161	`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
@@ -179,14 +183,14 @@ const config: HardhatUserConfig = {
           browserURL: "https://www.oklink.com/xlayer", //or https://www.oklink.com/xlayer for mainnet
         },
       },
-        {
-          network: "blastSepolia",
-          chainId: 168587773,
-          urls: {
-            apiURL: "https://api-sepolia.blastscan.io/api",
-            browserURL: "https://sepolia.blastscan.io/"
-          }
-        }
+      {
+        network: "blastSepolia",
+        chainId: 168587773,
+        urls: {
+          apiURL: "https://api-sepolia.blastscan.io/api",
+          browserURL: "https://sepolia.blastscan.io/",
+        },
+      },
     ],
   },
 };

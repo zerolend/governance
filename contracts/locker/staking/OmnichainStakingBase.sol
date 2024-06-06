@@ -19,6 +19,7 @@ import {ILPOracle} from "../../interfaces/ILPOracle.sol";
 import {IOmnichainStaking} from "../../interfaces/IOmnichainStaking.sol";
 import {IPoolVoter} from "../../interfaces/IPoolVoter.sol";
 import {IPythAggregatorV3} from "../../interfaces/IPythAggregatorV3.sol";
+import {IWETH} from "../../interfaces/IWETH.sol";
 import {IZeroLend} from "../../interfaces/IZeroLend.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
@@ -72,7 +73,7 @@ abstract contract OmnichainStakingBase is
         address _zeroToken,
         address _poolVoter,
         uint256 _rewardsDuration
-    ) internal initializer {
+    ) internal {
         // TODO add LZ
         __ERC20Votes_init();
         __Ownable_init(msg.sender);
@@ -112,8 +113,11 @@ abstract contract OmnichainStakingBase is
         lockedByToken[tokenId] = from;
         lockedTokenIdNfts[from].push(tokenId);
 
+        // set delegate if not set already
+        if (delegates(from) == address(0)) _delegate(from, from);
+
         // mint voting power
-        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        tokenPower[tokenId] = _getTokenPower(locker.balanceOfNFT(tokenId));
         _mint(from, tokenPower[tokenId]);
 
         return this.onERC721Received.selector;
@@ -196,7 +200,7 @@ abstract contract OmnichainStakingBase is
 
         // update voting power
         _burn(msg.sender, tokenPower[tokenId]);
-        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        tokenPower[tokenId] = _getTokenPower(locker.balanceOfNFT(tokenId));
         _mint(msg.sender, tokenPower[tokenId]);
 
         // reset all the votes for the user
@@ -224,7 +228,7 @@ abstract contract OmnichainStakingBase is
 
         // update voting power
         _burn(msg.sender, tokenPower[tokenId]);
-        tokenPower[tokenId] = locker.balanceOfNFT(tokenId);
+        tokenPower[tokenId] = _getTokenPower(locker.balanceOfNFT(tokenId));
         _mint(msg.sender, tokenPower[tokenId]);
 
         // reset all the votes for the user
@@ -232,41 +236,28 @@ abstract contract OmnichainStakingBase is
     }
 
     /**
-     * @dev Updates the voting power on a different chain.
-     * @param chainId The ID of the chain to update the voting power on.
-     * @param tokenId The ID of the NFT for which voting power is being updated.
+     * @dev Updates the reward for a given account.
+     * @param account The address of the account.
      */
-    function updatePowerOnChain(uint256 chainId, uint256 tokenId) external {
-        // TODO
-        // ensure that the user has no votes anywhere and no delegation then send voting
-        // power to another chain.
-        // using layerzero, sends the updated voting power across the different chains
+    function updateRewardFor(address account) public {
+        rewardPerTokenStored = rewardPerToken();
+        lastUpdateTime = lastTimeRewardApplicable();
+        if (account != address(0)) {
+            rewards[account] = earned(account);
+            userRewardPerTokenPaid[account] = rewardPerTokenStored;
+        }
     }
 
     /**
-     * @dev Deletes the voting power on a different chain.
-     * @param chainId The ID of the chain to delete the voting power on.
-     * @param tokenId The ID of the NFT for which voting power is being deleted.
+     * Returns how much max voting power this locker will give out for the
+     * given amount of tokens. This varies for the instance of locker.
+     *
+     * @param amount The amount of tokens to give voting power for.
      */
-    function deletePowerOnChain(uint256 chainId, uint256 tokenId) external {
-        // TODO
-        // using layerzero, deletes the updated voting power across the different chains
-    }
-
-    /**
-     * @dev Updates the veStaked supply to the mainnet via LayerZero.
-     */
-    function updateSupplyToMainnetViaLZ() external {
-        // TODO
-        // send the veStaked supply to the mainnet
-    }
-
-    /**
-     * @dev Updates the veStaked supply from the mainnet via LayerZero.
-     */
-    function updateSupplyFromLZ() external {
-        // TODO
-        // receive the veStaked supply on the mainnet
+    function getTokenPower(
+        uint256 amount
+    ) external view returns (uint256 power) {
+        power = _getTokenPower(amount);
     }
 
     /**
@@ -311,7 +302,7 @@ abstract contract OmnichainStakingBase is
 
     function notifyRewardAmount(
         uint256 reward
-    ) external onlyOwner updateReward(address(0)) {
+    ) external updateReward(address(0)) {
         if (block.timestamp >= periodFinish) {
             rewardRate = reward / rewardsDuration;
         } else {
@@ -348,6 +339,29 @@ abstract contract OmnichainStakingBase is
     }
 
     /**
+     * Admin only function to set the pool voter contract
+     *
+     * @param what The new address for the pool voter contract
+     */
+    function setPoolVoter(address what) external onlyOwner {
+        emit PoolVoterUpdated(address(poolVoter), what);
+        poolVoter = IPoolVoter(what);
+    }
+
+    /**
+     * Temporary fix to init the delegate variable for a given user. This is
+     * an admin only function as it's a temporary fix. This can be permissionless.
+     *
+     * @param who The who for whom delegate should be called.
+     */
+    function initDelegates(address[] memory who) external {
+        for (uint i = 0; i < who.length; i++) {
+            require(delegates(who[i]) == address(0), "delegate already set");
+            _delegate(who[i], who[i]);
+        }
+    }
+
+    /**
      * @dev Transfers rewards to the caller.
      */
     function getReward() public nonReentrant updateReward(msg.sender) {
@@ -355,6 +369,21 @@ abstract contract OmnichainStakingBase is
         if (reward > 0) {
             rewards[msg.sender] = 0;
             rewardsToken.transfer(msg.sender, reward);
+            emit RewardPaid(msg.sender, reward);
+        }
+    }
+
+    /**
+     * @dev This is an ETH variant of the get rewards function. It unwraps the token and sends out
+     * raw ETH to the user.
+     */
+    function getRewardETH() public nonReentrant updateReward(msg.sender) {
+        uint256 reward = rewards[msg.sender];
+        if (reward > 0) {
+            rewards[msg.sender] = 0;
+            IWETH(address(rewardsToken)).withdraw(reward);
+            (bool ethSendSuccess, ) = msg.sender.call{value: reward}("");
+            require(ethSendSuccess, "eth send failed");
             emit RewardPaid(msg.sender, reward);
         }
     }
@@ -410,19 +439,6 @@ abstract contract OmnichainStakingBase is
     }
 
     /**
-     * @dev Updates the reward for a given account.
-     * @param account The address of the account.
-     */
-    function updateRewardFor(address account) public {
-        rewardPerTokenStored = rewardPerToken();
-        lastUpdateTime = lastTimeRewardApplicable();
-        if (account != address(0)) {
-            rewards[account] = earned(account);
-            userRewardPerTokenPaid[account] = rewardPerTokenStored;
-        }
-    }
-
-    /**
      * @dev Modifier to update the reward for a given account.
      * @param account The address of the account.
      */
@@ -435,4 +451,8 @@ abstract contract OmnichainStakingBase is
         }
         _;
     }
+
+    function _getTokenPower(
+        uint256 amount
+    ) internal view virtual returns (uint256 power);
 }

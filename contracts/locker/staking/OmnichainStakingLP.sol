@@ -15,10 +15,12 @@ pragma solidity ^0.8.20;
 import {ILPOracle} from "../../interfaces/ILPOracle.sol";
 import {IPythAggregatorV3} from "../../interfaces/IPythAggregatorV3.sol";
 import {OmnichainStakingBase} from "./OmnichainStakingBase.sol";
+import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 
 contract OmnichainStakingLP is OmnichainStakingBase {
-    ILPOracle public lpOracle;
-    IPythAggregatorV3 public zeroAggregator;
+    using SafeCast for int256;
+    ILPOracle public oracleLP;
+    IPythAggregatorV3 public oracleZERO;
 
     function init(
         address _locker,
@@ -27,7 +29,7 @@ contract OmnichainStakingLP is OmnichainStakingBase {
         uint256 _rewardsDuration,
         address _lpOracle,
         address _zeroPythAggregator
-    ) external initializer {
+    ) external reinitializer(2) {
         super.__OmnichainStakingBase_init(
             "ZERO LP Voting Power",
             "ZEROvp-LP",
@@ -37,16 +39,24 @@ contract OmnichainStakingLP is OmnichainStakingBase {
             _rewardsDuration
         );
 
-        lpOracle = ILPOracle(_lpOracle);
-        zeroAggregator = IPythAggregatorV3(_zeroPythAggregator);
+        oracleLP = ILPOracle(_lpOracle);
+        oracleZERO = IPythAggregatorV3(_zeroPythAggregator);
     }
 
-    function getTokenPower(uint256 amount) public view returns (uint256 power) {
-        // calculate voting power based on how much the LP token is worth in ZERO terms
-        uint256 lpPrice = lpOracle.getPrice();
-        int256 zeroPrice = zeroAggregator.latestAnswer();
-        require(zeroPrice > 0 && lpPrice > 0, "!price");
+    receive() external payable {
+        // nothing; just accept the ETH
+    }
 
-        power = ((lpPrice * amount) / uint256(zeroPrice));
+    /**
+     * Calculate voting power based on how much the LP token is worth in ZERO terms
+     * @param amount The LP token amount
+     */
+    function _getTokenPower(
+        uint256 amount
+    ) internal view override returns (uint256 power) {
+        uint256 lpPrice = oracleLP.getPrice();
+        uint256 zeroPrice = oracleZERO.latestAnswer().toUint256();
+        require(zeroPrice > 0 && lpPrice > 0, "!price");
+        power = ((lpPrice * amount) / zeroPrice);
     }
 }

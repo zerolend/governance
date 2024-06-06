@@ -10,8 +10,7 @@ contract LockerLP is BaseLocker {
             "LP-ZERO",
             _token,
             _staking,
-            365 * 86400,
-            msg.sender
+            365 * 86400
         );
     }
 }

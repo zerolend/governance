@@ -8,6 +8,7 @@ import "../interfaces/IPythAggregatorV3.sol";
 /// @title LPOracle
 /// @notice This contract provides a price oracle for the liquidity pool tokens in a Nile AMM.
 /// @dev This contract interacts with the INileAMM interface to fetch reserves and calculate prices.
+/// @dev Reference from https://github.com/AlphaFinanceLab/alpha-homora-v2-contract/blob/master/contracts/oracle/UniswapV2Oracle.sol
 contract LPOracle {
     INileAMM public immutable nileAMM;
     IPythAggregatorV3 public immutable zeroPriceFeed;
@@ -31,16 +32,15 @@ contract LPOracle {
     function getPrice() public view returns (uint256 price) {
         (uint256 reserve0, uint256 reserve1, ) = nileAMM.getReserves();
 
-        int256 priceToken0 = zeroPriceFeed.latestAnswer();
-        int256 priceToken1 = ethPriceFeed.latestAnswer();
+        int256 px0 = zeroPriceFeed.latestAnswer();
+        int256 px1 = ethPriceFeed.latestAnswer();
 
-        require(priceToken0 > 0 && priceToken1 > 0, "Invalid Price");
+        require(px0 > 0 && px1 > 0, "Invalid Price");
 
-        price =
-            (2 *
-                sqrt(reserve0 * reserve1) *
-                sqrt(uint256(priceToken0 * priceToken1))) /
+        uint256 sqrtK = (sqrt(reserve0 * reserve1) * 1e18) /
             nileAMM.totalSupply();
+
+        price = (sqrtK * 2 * sqrt(uint256(px0 * px1))) / 1e18;
     }
 
     /// @notice Computes the square root of a given number using the Babylonian method.
