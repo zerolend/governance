@@ -53,7 +53,7 @@ contract VestedZeroUiHelper {
     function initialize(
         address _vestedZeroNFT,
         address _omnichainStaking,
-        address _omnichainStakingLp
+        address payable _omnichainStakingLp
     ) external {
         vestedZero = VestedZeroNFT(_vestedZeroNFT);
         omnichainStaking = OmnichainStakingBase(_omnichainStaking);
