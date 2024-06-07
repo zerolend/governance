@@ -12,7 +12,7 @@ import {
 import { e18 } from "./fixtures/utils";
 import { parseEther } from "ethers";
 
-describe("Omnichain Staking Unit tests", () => {
+describe("Omnichain Staking Rewards Unit tests", () => {
   let ant: SignerWithAddress;
   let vest: VestedZeroNFT;
   let now: number;
@@ -38,7 +38,6 @@ describe("Omnichain Staking Unit tests", () => {
 
     await zero.transfer(omniStaking.target, parseEther("100"));
 
-    await omniStaking.setRewardsDuration(86400 * 14);
     await omniStaking.notifyRewardAmount(parseEther("1"));
 
     // deployer should be able to mint a nft for another user

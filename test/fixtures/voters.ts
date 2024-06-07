@@ -1,4 +1,4 @@
-import hre from "hardhat";
+import { ethers } from "hardhat";
 import { deployGovernance } from "./governance";
 import { ZERO_ADDRESS } from "./utils";
 
@@ -8,13 +8,13 @@ export async function deployVoters() {
   const lending = governance.lending;
   const poolVoter = governance.poolVoter;
 
-  const MockEligibilityCriteria = await hre.ethers.getContractFactory(
+  const MockEligibilityCriteria = await ethers.getContractFactory(
     "MockEligibilityCriteria"
   );
-  const LendingPoolGaugeFactory = await hre.ethers.getContractFactory(
+  const LendingPoolGaugeFactory = await ethers.getContractFactory(
     "LendingPoolGaugeFactory"
   );
-  const MockAggregator = await hre.ethers.getContractFactory(
+  const MockAggregator = await ethers.getContractFactory(
     "contracts/tests/MockAggregator.sol:MockAggregator"
   );
 
@@ -26,8 +26,8 @@ export async function deployVoters() {
 
 
   // get instances
-  const aToken = await hre.ethers.getContractAt("AToken", tokens.aTokenAddress);
-  const varToken = await hre.ethers.getContractAt(
+  const aToken = await ethers.getContractAt("AToken", tokens.aTokenAddress);
+  const varToken = await ethers.getContractAt(
     "AToken",
     tokens.variableDebtTokenAddress
   );
@@ -41,11 +41,23 @@ export async function deployVoters() {
     secondsIn6Months
   );
 
+  await lending.emissionManager.setEmissionAdmin(lending.erc20.target, governance.deployer.address)
+  await lending.emissionManager.setRewardOracle(lending.erc20.target, aggregator.target);
+  await lending.emissionManager.setEmissionAdmin(governance.zero.target, governance.deployer.address)
+  await lending.emissionManager.setRewardOracle(governance.zero.target, aggregator.target);
+
   // create gauge for the test token
-  await factory.createGauge(lending.erc20.target, ZERO_ADDRESS);
+  await factory.createGauge(lending.erc20.target, aggregator.target);
 
   // register the gauge in the factory
   const gauge = await factory.gauges(lending.erc20.target);
+
+  const gaugeContract = await ethers.getContractAt("LendingPoolGaugeV2", gauge);
+  
+  const emissionManagerProxy = await ethers.getContractAt("EmissionManagerProxy", await gaugeContract.emissionManagerProxy());
+  
+  await emissionManagerProxy.setWhitelist(gauge, true);
+  await lending.emissionManager.setEmissionAdmin(governance.zero.target, emissionManagerProxy.target);
   await poolVoter.registerGauge(lending.erc20.target, gauge);
 
   return {

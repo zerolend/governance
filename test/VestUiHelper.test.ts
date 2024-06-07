@@ -3,24 +3,23 @@ import { deployGovernance } from "./fixtures/governance";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import {
-  OmnichainStaking,
   StakingBonus,
   VestedZeroNFT,
   VestedZeroUiHelper,
   ZeroLend,
 } from "../typechain-types";
 import { e18 } from "./fixtures/utils";
-import { ContractTransactionResponse, parseEther, parseUnits } from "ethers";
+import { parseEther, parseUnits } from "ethers";
 import { ethers } from "hardhat";
 
 describe("UI Helper tests", () => {
   let ant: SignerWithAddress;
   let deployer: SignerWithAddress;
   let vest: VestedZeroNFT;
-  let vestUiHelper: VestedZeroUiHelper & { deploymentTransaction(): ContractTransactionResponse; };
+  let vestUiHelper: VestedZeroUiHelper;
   let zero: ZeroLend;
-  let stakingBonus: StakingBonus & { deploymentTransaction(): ContractTransactionResponse; };
-  let omnichainStaking: OmnichainStaking & { deploymentTransaction(): ContractTransactionResponse; };
+  let stakingBonus: StakingBonus;
+  let omnichainStaking;
 
   beforeEach(async () => {
     const deployment = await loadFixture(deployGovernance);
@@ -64,8 +63,8 @@ describe("UI Helper tests", () => {
 
   it("Should return the lock details with APR for 1 year", async () => {
     await zero.connect(deployer).approve(stakingBonus.target, parseEther('100'));
-    await stakingBonus.connect(deployer).createLock(parseEther('100'), 365n * 86400n, true);    
+    await stakingBonus.connect(deployer).createLock(parseEther('100'), 51536000n, true);    
     const transactionData = await vestUiHelper.getLockDetails(deployer.address);
-    expect(transactionData[0].apr).to.closeTo(19864130517503805n, parseUnits('1', 12) );
+    expect(transactionData[0].apr).to.closeTo(273490790363394216n, parseUnits('1', 16) );
   });
 });

@@ -134,6 +134,8 @@ export async function deployLendingPool() {
     emissionManager.target
   );
   await rewardsController.initialize(ZERO_ADDRESS);
+  await emissionManager.setEmissionAdmin(erc20.target, emissionManager.target);
+  await emissionManager.setRewardsController(rewardsController);
 
   const aToken = await AToken.deploy(pool.target);
   const stableDebtToken = await StableDebtToken.deploy(pool.target);

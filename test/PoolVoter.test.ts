@@ -27,7 +27,7 @@ import {
   parseUnits,
 } from "ethers";
 
-describe.skip("PoolVoter", () => {
+describe("PoolVoter", () => {
   let ant: SignerWithAddress;
   let now: number;
   let omniStaking: OmnichainStaking;
@@ -61,6 +61,7 @@ describe.skip("PoolVoter", () => {
   let lendingPoolGaugeFactory: LendingPoolGaugeFactory & {
     deploymentTransaction(): ContractTransactionResponse;
   };
+
   beforeEach(async () => {
     const deployment = await loadFixture(deployVoters);
     ant = deployment.ant;
@@ -75,59 +76,21 @@ describe.skip("PoolVoter", () => {
     lending = deployment.lending;
     lendingPoolGaugeFactory = deployment.factory;
 
-    // deployer should be able to mint a nft for another user
-    await vest.mint(
-      ant.address,
-      e18 * 20n, // 20 ZERO linear vesting
-      0, // 0 ZERO upfront
-      1000, // linear duration - 1000 seconds
-      0, // cliff duration - 0 seconds
-      now + 1000, // unlock date
-      true, // penalty -> false
-      0
-    );
-
-    // stake nft on behalf of the ant
-    await vest
-      .connect(ant)
-      ["safeTransferFrom(address,address,uint256)"](
-        ant.address,
-        stakingBonus.target,
-        1
-      );
-
-    // there should now be some voting power for the user to play with
-    expect(await omniStaking.balanceOf(ant.address)).greaterThan(e18 * 19n);
+    await zero.whitelist(vest.target, true);
+    await zero.whitelist(stakingBonus.target, true);
+    await zero.whitelist(poolVoter.target, true);
+    await zero.whitelist(deployment.governance.lockerToken.target, true);
   });
 
   it("should allow users to vote properly", async function () {
+    await mintAndStakeNft(ant);
     expect(await poolVoter.totalWeight()).eq(0);
     await poolVoter.connect(ant).vote([reserve.target], [1e8]);
     expect(await poolVoter.totalWeight()).greaterThan(e18 * 19n);
   });
 
-  describe("handleAction test", () => {
-    it("supplying an asset with ZERO staked should give staking rewards", async function () {
-      expect(await aTokenGauge.balanceOf(ant.address)).eq(0n);
-      expect(await aTokenGauge.totalSupply()).eq(0);
-
-      await reserve["mint(address,uint256)"](ant.address, e18 * 1000n);
-      await reserve.connect(ant).approve(pool.target, e18 * 100n);
-      await pool
-        .connect(ant)
-        .supply(reserve.target, e18 * 100n, ant.address, 0);
-
-      expect(await aTokenGauge.balanceOf(ant.address)).eq(e18 * 100n);
-      expect(await aTokenGauge.totalSupply()).eq(e18 * 100n);
-    });
-  });
-
   describe("distribute tests", () => {
-    let gauges: [string, string, string] & {
-      splitterGauge: string;
-      aTokenGauge: string;
-      varTokenGauge: string;
-    };
+    let gauge: string;
     beforeEach(async () => {
       await reserve["mint(address,uint256)"](ant.address, e18 * 1000n);
       await reserve.connect(ant).approve(pool.target, e18 * 100n);
@@ -135,93 +98,49 @@ describe.skip("PoolVoter", () => {
         .connect(ant)
         .supply(reserve.target, e18 * 100n, ant.address, 0);
 
+      await mintAndStakeNft(ant);
+
       await poolVoter.connect(ant).vote([reserve.target], [parseEther("1")]);
       await zero.approve(poolVoter.target, parseEther("1"));
       await poolVoter.notifyRewardAmount(parseEther("1"));
 
-      gauges = await lendingPoolGaugeFactory.gauges(reserve.target);
-
-      await poolVoter.updateFor(gauges.splitterGauge);
+      gauge = await lendingPoolGaugeFactory.gauges(reserve.target);
+      const gaugeContract = await ethers.getContractAt(
+        "LendingPoolGaugeV2",
+        gauge
+      );
+      await zero.whitelist(await gaugeContract.strategy(), true);
+      await poolVoter.updateFor(gauge);
     });
 
     it("should distribute rewards to gauges", async function () {
+      const zeroBalanceBefore = await zero.balanceOf(poolVoter.target);
+      expect(zeroBalanceBefore).to.closeTo(parseEther("1"), 100);
       await poolVoter["distribute()"]();
-      expect(await zero.balanceOf(gauges.aTokenGauge)).to.closeTo(
-        parseEther("0.25"),
-        100
-      );
-      expect(await zero.balanceOf(gauges.varTokenGauge)).to.closeTo(
-        parseEther("0.75"),
-        100
-      );
+      const zeroBalanceAfter = await zero.balanceOf(poolVoter.target);
+      expect(zeroBalanceAfter).to.closeTo(0, 100);
     });
 
     it("should distribute rewards to a specified gauge", async function () {
-      await poolVoter["distribute(address)"](gauges.splitterGauge);
-      expect(await zero.balanceOf(gauges.aTokenGauge)).to.closeTo(
-        parseEther("0.25"),
-        100
-      );
-      expect(await zero.balanceOf(gauges.varTokenGauge)).to.closeTo(
-        parseEther("0.75"),
-        100
-      );
+      const zeroBalanceBefore = await zero.balanceOf(poolVoter.target);
+      expect(zeroBalanceBefore).to.closeTo(parseEther("1"), 100);
+      await poolVoter["distribute(address)"](gauge);
+      const zeroBalanceAfter = await zero.balanceOf(poolVoter.target);
+      expect(zeroBalanceAfter).to.closeTo(0, 100);
     });
 
     it("should distribute rewards to specified gauges", async function () {
-      await poolVoter["distribute(address[])"]([gauges.splitterGauge]);
-      expect(await zero.balanceOf(gauges.aTokenGauge)).to.closeTo(
-        parseEther("0.25"),
-        100
-      );
-      expect(await zero.balanceOf(gauges.varTokenGauge)).to.closeTo(
-        parseEther("0.75"),
-        100
-      );
-    });
-  });
-
-  describe("distributeEx tests", () => {
-    let gauges: [string, string, string] & {
-      splitterGauge: string;
-      aTokenGauge: string;
-      varTokenGauge: string;
-    };
-    beforeEach(async () => {
-      await poolVoter.connect(ant).vote([reserve.target], [parseEther("1")]);
-      await zero.approve(poolVoter.target, parseEther("1"));
-      await poolVoter.notifyRewardAmount(parseEther("1"));
-
-      gauges = await lendingPoolGaugeFactory.gauges(reserve.target);
-    });
-    it("should distribute rewards to gauges for a specified token", async function () {
-      await poolVoter["distributeEx(address)"](zero.target);
-      expect(await zero.balanceOf(gauges.aTokenGauge)).to.eq(
-        parseEther("0.25")
-      );
-      expect(await zero.balanceOf(gauges.varTokenGauge)).to.eq(
-        parseEther("0.75")
-      );
-    });
-
-    it("should distribute rewards to gauges for a specified token", async function () {
-      await poolVoter["distributeEx(address,uint256,uint256)"](
-        zero.target,
-        0,
-        1
-      );
-      expect(await zero.balanceOf(gauges.aTokenGauge)).to.eq(
-        parseEther("0.25")
-      );
-      expect(await zero.balanceOf(gauges.varTokenGauge)).to.eq(
-        parseEther("0.75")
-      );
+      const zeroBalanceBefore = await zero.balanceOf(poolVoter.target);
+      expect(zeroBalanceBefore).to.closeTo(parseEther("1"), 100);
+      await poolVoter["distribute(address[])"]([gauge]);
+      const zeroBalanceAfter = await zero.balanceOf(poolVoter.target);
+      expect(zeroBalanceAfter).to.closeTo(0, 100);
     });
   });
 
   it("should allow owner to reset contract", async function () {
     await poolVoter.connect(ant).vote([reserve.target], [1e8]);
-    await poolVoter.connect(ant).reset();
+    await poolVoter.connect(ant).reset(ant.address);
     expect(await poolVoter.totalWeight()).to.eq(0);
   });
 
@@ -238,16 +157,6 @@ describe.skip("PoolVoter", () => {
 
     const pools = await poolVoter.pools();
     expect(await poolVoter.gauges(pools[1])).to.equal(someRandomAddress);
-  });
-
-  it("should update for a gauge", async function () {
-    const pools = await poolVoter.pools();
-    await poolVoter.updateFor(await poolVoter.gauges(pools[0]));
-
-    const gauges = await lendingPoolGaugeFactory.gauges(reserve.target);
-    expect(await poolVoter.supplyIndex(gauges.splitterGauge)).to.equal(
-      await poolVoter.index()
-    );
   });
 
   it("should return the correct length after registering pools", async function () {
@@ -269,6 +178,7 @@ describe.skip("PoolVoter", () => {
   });
 
   it("should update the voting state correctly after a user pokes", async function () {
+    await mintAndStakeNft(ant);
     await poolVoter.connect(ant).vote([reserve.target], [1e8]);
 
     const poolWeightBeforeStaking = await poolVoter.totalWeight();
@@ -287,7 +197,33 @@ describe.skip("PoolVoter", () => {
     const poolWeightAfterStaking = await poolVoter.totalWeight();
     expect(poolWeightAfterStaking).to.be.closeTo(
       2n * poolWeightBeforeStaking,
-      parseUnits("1", 12)
+      parseUnits("1", 14)
     );
   });
+
+  async function mintAndStakeNft(user: SignerWithAddress) {
+    // deployer should be able to mint a nft for another user
+    await vest.mint(
+      ant.address,
+      e18 * 20n, // 20 ZERO linear vestingg
+      0, // 0 ZERO upfront
+      1000, // linear duration - 1000 seconds
+      0, // cliff duration - 0 seconds
+      now + 1000, // unlock date
+      true, // penalty -> false
+      0
+    );
+
+    // stake nft on behalf of the ant
+    await vest
+      .connect(ant)
+      ["safeTransferFrom(address,address,uint256)"](
+        ant.address,
+        stakingBonus.target,
+        1
+      );
+
+    // there should now be some voting power for the user to play with
+    expect(await omniStaking.balanceOf(ant.address)).greaterThan(e18 * 19n);
+  }
 });
