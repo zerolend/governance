@@ -18,31 +18,14 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ILocker} from "./ILocker.sol";
 
 interface IOmnichainStaking is IVotes {
-    struct StakeInformation {
-        address owner;
-        uint256 tokenStake;
-        uint256 lpStake;
-        uint256 localVe;
-    }
-
     // An omni-chain staking contract that allows users to stake their veNFT
     // and get some voting power. Once staked the voting power is available cross-chain.
 
-    function unstakeLP(uint256 tokenId) external;
-
     function unstakeToken(uint256 tokenId) external;
 
-    /// @dev using layerzero, sends the updated voting power across the different chains
-    function updatePowerOnChain(uint256 chainId, uint256 nftId) external;
+    // function totalSupply() external view returns (uint256);
 
-    /// @dev using layerzero, deletes the updated voting power across the different chains
-    function deletePowerOnChain(uint256 chainId, uint256 nftId) external;
-
-    /// @dev send the veStaked supply to the mainnet
-    function updateSupplyToMainnetViaLZ() external;
-
-    /// @dev receive the veStaked supply on the mainnet
-    function updateSupplyFromLZ() external;
+    // function balanceOf(address account) external view returns (uint256);
 
     function rewardRate() external view returns (uint256);
 
@@ -50,7 +33,12 @@ interface IOmnichainStaking is IVotes {
         address _user
     ) external view returns (uint256[] memory, ILocker.LockedBalance[] memory);
 
+    function getTokenPower(
+        uint256 amount
+    ) external view returns (uint256 power);
+
     error InvalidUnstaker(address, address);
+
     event LpOracleSet(address indexed oldLpOracle, address indexed newLpOracle);
     event ZeroAggregatorSet(
         address indexed oldZeroAggregator,
@@ -61,7 +49,6 @@ interface IOmnichainStaking is IVotes {
     event Recovered(address token, uint256 amount);
     event RewardsDurationUpdated(uint256 newDuration);
     event TokenLockerUpdated(address previousLocker, address _tokenLocker);
-    event LpLockerUpdated(address previousLocker, address _lpLocker);
     event RewardsTokenUpdated(address previousToken, address _zeroToken);
     event PoolVoterUpdated(address previousVoter, address _poolVoter);
 }

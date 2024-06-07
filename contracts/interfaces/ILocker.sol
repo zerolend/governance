@@ -56,9 +56,52 @@ interface ILocker is IERC721Enumerable {
     ) external view returns (LockedBalance memory);
 
     /**
-     * @notice Increase the amount of tokens locked for a specific NFT
+     * @notice Get the end time of the lock for a specific NFT
      * @param _tokenId The NFT ID
-     * @param _value The additional amount to lock
+     * @return The end time of the lock period (timestamp)
+     */
+    function lockedEnd(uint256 _tokenId) external view returns (uint256);
+
+    /**
+     * @notice Get the voting power of a specific address
+     * @param _owner The address of the owner
+     * @return _power The voting power of the owner
+     */
+    function votingPowerOf(
+        address _owner
+    ) external view returns (uint256 _power);
+
+    /**
+     * @notice Merge two NFTs into one
+     * @param _from The ID of the NFT to merge from
+     * @param _to The ID of the NFT to merge into
+     */
+    function merge(uint256 _from, uint256 _to) external;
+
+    /**
+     * @notice Deposit tokens for a specific NFT
+     * @param _tokenId The ID of the NFT
+     * @param _value The amount of tokens to deposit
+     */
+    function depositFor(uint256 _tokenId, uint256 _value) external;
+
+    /**
+     * @notice Create a lock for a specified amount and duration
+     * @param _value The amount of tokens to lock
+     * @param _lockDuration The lock duration in seconds
+     * @param _stakeNFT Whether the NFT should be staked
+     * @return The ID of the created NFT
+     */
+    function createLock(
+        uint256 _value,
+        uint256 _lockDuration,
+        bool _stakeNFT
+    ) external returns (uint256);
+
+    /**
+     * @notice Increase the amount of tokens locked in a specific NFT
+     * @param _tokenId The ID of the NFT
+     * @param _value The additional amount of tokens to lock
      */
     function increaseAmount(uint256 _tokenId, uint256 _value) external;
 
@@ -85,4 +128,22 @@ interface ILocker is IERC721Enumerable {
         address _to,
         bool _stakeNFT
     ) external returns (uint256);
+
+    /**
+     * @notice Withdraw tokens from a specific NFT
+     * @param _tokenId The ID of the NFT
+     */
+    function withdraw(uint256 _tokenId) external;
+
+    /**
+     * @notice Withdraw tokens from multiple NFTs
+     * @param _tokenIds An array of NFT IDs
+     */
+    function withdraw(uint256[] calldata _tokenIds) external;
+
+    /**
+     * @notice Withdraw tokens for a specific user
+     * @param _user The address of the user
+     */
+    function withdraw(address _user) external;
 }

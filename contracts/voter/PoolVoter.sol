@@ -16,11 +16,9 @@ contract PoolVoter is
 {
     using SafeERC20 for IERC20;
 
-    IERC20 public staking; // the ve token that governs these contracts
+    IVotes public staking; // the ve token that governs these contracts
     IERC20 public reward;
     uint256 public totalWeight; // total voting weight
-    address public lzEndpoint;
-    address public mainnetEmissions;
 
     address[] internal _pools; // all pools viable for incentives
     mapping(address => address) public gauges; // pool => gauge
@@ -42,8 +40,8 @@ contract PoolVoter is
      * @param _staking The address of the staking token (VE token).
      * @param _reward The address of the reward token.
      */
-    function init(address _staking, address _reward) external initializer {
-        staking = IERC20(_staking);
+    function init(address _staking, address _reward) external reinitializer(1) {
+        staking = IVotes(_staking);
         reward = IERC20(_reward);
         __ReentrancyGuard_init();
         __Ownable_init(msg.sender);
@@ -53,9 +51,9 @@ contract PoolVoter is
      * @notice Sets the staking token address
      * @param _staking The new staking token address
      */
-    function setStakingToken(address _staking) external onlyOwner {
+    function setStaking(address _staking) external onlyOwner {
         address oldStaking = address(staking);
-        staking = IERC20(_staking);
+        staking = IVotes(_staking);
         emit StakingTokenUpdated(oldStaking, _staking);
     }
 
@@ -67,26 +65,6 @@ contract PoolVoter is
         address oldReward = address(reward);
         reward = IERC20(_reward);
         emit RewardTokenUpdated(oldReward, _reward);
-    }
-
-    /**
-     * @notice Sets the LayerZero endpoint address
-     * @param _lzEndpoint The new LayerZero endpoint address
-     */
-    function setLzEndpoint(address _lzEndpoint) external onlyOwner {
-        address oldLzEndpoint = lzEndpoint;
-        lzEndpoint = _lzEndpoint;
-        emit LzEndpointUpdated(oldLzEndpoint, _lzEndpoint);
-    }
-
-    /**
-     * @notice Sets the mainnet emissions address
-     * @param _mainnetEmissions The new mainnet emissions address
-     */
-    function setMainnetEmissions(address _mainnetEmissions) external onlyOwner {
-        address oldMainnetEmissions = mainnetEmissions;
-        mainnetEmissions = _mainnetEmissions;
-        emit MainnetEmissionsUpdated(oldMainnetEmissions, _mainnetEmissions);
     }
 
     /**
@@ -120,19 +98,21 @@ contract PoolVoter is
      * @notice Registers a new gauge for a pool, linking the pool to its gauge contract.
      * @param _asset The address of the pool asset.
      * @param _gauge The address of the gauge contract for the specified pool.
+     * @param _bribe The address of the bribe contract for the specified pool.
      * @return The address of the registered gauge contract.
      * @dev Only callable by the owner of the contract.
      */
     function registerGauge(
         address _asset,
-        address _gauge
+        address _gauge,
+        address _bribe
     ) external onlyOwner returns (address) {
         if (!isPool[_asset]) {
             _pools.push(_asset);
             isPool[_asset] = true;
         }
 
-        bribes[_gauge] = address(0);
+        bribes[_gauge] = _bribe;
         gauges[_asset] = _gauge;
         poolForGauge[_gauge] = _asset;
         _updateFor(_gauge);
@@ -230,7 +210,7 @@ contract PoolVoter is
         uint256[] memory _weights = new uint256[](_poolCnt);
 
         uint256 _prevUsedWeight = usedWeights[who];
-        uint256 _weight = staking.balanceOf(who);
+        uint256 _weight = staking.getVotes(who);
 
         for (uint256 i = 0; i < _poolCnt; i++) {
             uint256 _prevWeight = votes[who][_poolVote[i]];
@@ -316,10 +296,9 @@ contract PoolVoter is
         address[] memory _poolVote,
         uint256[] memory _weights
     ) internal {
-        // require(ve(_ve).isApprovedOrOwner(msg.sender, _tokenId));
         _reset(_who);
         uint256 _poolCnt = _poolVote.length;
-        uint256 _weight = staking.balanceOf(_who);
+        uint256 _weight = staking.getVotes(_who);
         uint256 _totalVoteWeight = 0;
         uint256 _usedWeight = 0;
 

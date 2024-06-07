@@ -12,20 +12,30 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
-import {IAaveOracle} from "@zerolendxyz/core-v3/contracts/interfaces/IAaveOracle.sol";
+import {ILPOracle} from "../../interfaces/ILPOracle.sol";
+import {IPythAggregatorV3} from "../../interfaces/IPythAggregatorV3.sol";
+import {OmnichainStakingBase} from "./OmnichainStakingBase.sol";
 
-import {IEligibilityCriteria} from "../../interfaces/IEligibilityCriteria.sol";
+contract OmnichainStakingToken is OmnichainStakingBase {
+    function init(
+        address _locker,
+        address _zeroToken,
+        address _poolVoter,
+        uint256 _rewardsDuration
+    ) external reinitializer(2) {
+        super.__OmnichainStakingBase_init(
+            "ZERO Voting Power",
+            "ZEROvp",
+            _locker,
+            _zeroToken,
+            _poolVoter,
+            _rewardsDuration
+        );
+    }
 
-contract MockEligibilityCriteria is IEligibilityCriteria {
-    IVotes public staking;
-    IAaveOracle public oracle;
-    address public zero;
-
-    function checkEligibility(
-        address,
-        uint256
-    ) external pure returns (uint256 multiplierE18) {
-        return 1e18;
+    function _getTokenPower(
+        uint256 amount
+    ) internal pure override returns (uint256 power) {
+        power = amount;
     }
 }
