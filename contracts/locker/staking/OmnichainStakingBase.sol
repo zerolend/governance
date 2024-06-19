@@ -36,6 +36,7 @@ abstract contract OmnichainStakingBase is
     OwnableUpgradeable
 {
     ILocker public locker;
+    // ILocker public __; // unwanted variable to keep storage layout
     IPoolVoter public poolVoter;
 
     // staking reward variables
