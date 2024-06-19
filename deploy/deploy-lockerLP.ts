@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const LP_TOKEN_ADDRESS = "0x0040F36784dDA0821E74BA67f86E084D70d67a3A";
 const WETH = "0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f";
-const SECONDS_IN_THREE_DAYS = 86400 * 3;
+const SECONDS_IN_THREE_DAYS = 86400 * 7;
 const ZERO_PYTH_AGGREGATOR = "0x130cc6e0301B58ab46504fb6F83BEE97Eb733054";
 
 async function main(hre: HardhatRuntimeEnvironment) {
