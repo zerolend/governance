@@ -14,12 +14,14 @@ pragma solidity ^0.8.20;
 
 import {VestedZeroNFT} from "../vesting/VestedZeroNFT.sol";
 import {OmnichainStakingBase} from "../locker/staking/OmnichainStakingBase.sol";
+import {OmnichainStakingLP} from "../locker/staking/OmnichainStakingLP.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
 
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
-contract VestedZeroUiHelper {
-    VestedZeroNFT vestedZero;
-    OmnichainStakingBase omnichainStaking;
+contract VestUiHelper {
+    VestedZeroNFT public vestedZero;
+    OmnichainStakingBase public omnichainStaking;
+    OmnichainStakingLP public omnichainStakingLp;
 
     struct VestDetails {
         uint256 id;
@@ -48,12 +50,14 @@ contract VestedZeroUiHelper {
         uint256 apr;
     }
 
-    function initialize(
+    constructor(
         address _vestedZeroNFT,
-        address _omnichainStaking
-    ) external {
+        address _omnichainStaking,
+        address _omnichainStakingLp
+    ) {
         vestedZero = VestedZeroNFT(_vestedZeroNFT);
         omnichainStaking = OmnichainStakingBase(_omnichainStaking);
+        omnichainStakingLp = OmnichainStakingLP(_omnichainStakingLp);
     }
 
     function getVestedNFTData(
@@ -132,9 +136,12 @@ contract VestedZeroUiHelper {
             ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
 
             uint256 vePower = getLockPower(lockedBalance);
-            uint256 scale = (vePower != 0 && lockedBalance.amount != 0)
-                ? (vePower * 1e18) / lockedBalance.amount
+
+            uint256 scale = (lockedBalance.power != 0 &&
+                lockedBalance.amount != 0)
+                ? (lockedBalance.power * 1e18) / lockedBalance.amount
                 : 1e18;
+
             uint256 poolRewardAnnual = rewardRate * 31536000;
             uint256 apr = (poolRewardAnnual * 1000) / totalSupply;
             uint256 aprScaled = (apr * scale) / 1000;
@@ -143,7 +150,60 @@ contract VestedZeroUiHelper {
             lock.amount = lockedBalance.amount;
             lock.start = lockedBalance.start;
             lock.end = lockedBalance.end;
-            lock.power = lockedBalance.power;
+            lock.power = vePower;
+            lock.apr = aprScaled;
+
+            lockDetails[i] = lock;
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        return lockDetails;
+    }
+
+    function getLPLockDetails(
+        address _userAddress
+    ) external view returns (LockedBalanceWithApr[] memory) {
+        (
+            uint256[] memory tokenIds,
+            ILocker.LockedBalance[] memory lockedBalances
+        ) = omnichainStakingLp.getLockedNftDetails(_userAddress);
+
+        uint256 rewardRate = omnichainStakingLp.rewardRate();
+        uint256 totalSupply = omnichainStakingLp.totalSupply();
+
+        uint256 totalTokenIds = tokenIds.length;
+        LockedBalanceWithApr[] memory lockDetails = new LockedBalanceWithApr[](
+            totalTokenIds
+        );
+
+        for (uint i; i < totalTokenIds; ) {
+            LockedBalanceWithApr memory lock;
+            ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
+
+            uint256 vePower = omnichainStakingLp.getTokenPower(
+                lockedBalance.amount
+            );
+
+            uint256 scale = (lockedBalance.power != 0 &&
+                lockedBalance.amount != 0)
+                ? (lockedBalance.power * 1e18) / lockedBalance.amount
+                : 1e18;
+
+            uint256 priceConversion = zeroToETH();
+
+            uint256 poolRewardAnnual = rewardRate * 31536000;
+            uint256 apr = (priceConversion * (poolRewardAnnual * 1000)) /
+                totalSupply;
+            uint256 aprScaled = (apr * scale) / 1000;
+
+            lock.id = tokenIds[i];
+            lock.amount = lockedBalance.amount;
+            lock.start = lockedBalance.start;
+            lock.end = lockedBalance.end;
+            lock.power = vePower;
             lock.apr = aprScaled;
 
             lockDetails[i] = lock;
@@ -166,5 +226,9 @@ contract VestedZeroUiHelper {
             100;
 
         return (duration * amountWithBonus) / (4 * 365 days);
+    }
+
+    function zeroToETH() public pure returns (uint256) {
+        return 6753941;
     }
 }
