@@ -307,6 +307,8 @@ abstract contract OmnichainStakingBase is
     function notifyRewardAmount(
         uint256 reward
     ) external updateReward(address(0)) {
+        rewardsToken.transferFrom(msg.sender, address(this), reward);
+
         if (block.timestamp >= periodFinish) {
             rewardRate = reward / rewardsDuration;
         } else {
