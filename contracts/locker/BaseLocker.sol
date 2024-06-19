@@ -123,7 +123,7 @@ contract BaseLocker is
         uint256 _unlockTime,
         LockedBalance memory _lock,
         DepositType _type
-    ) internal {
+    ) internal virtual {
         LockedBalance memory lock = _lock;
         uint256 supplyBefore = supply;
 
@@ -290,7 +290,7 @@ contract BaseLocker is
 
     /// @notice Withdraw all tokens for `_tokenId`
     /// @dev Only possible if the lock has expired
-    function withdraw(uint256 _tokenId) public nonReentrant {
+    function withdraw(uint256 _tokenId) public virtual nonReentrant {
         require(
             _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
             "caller is not owner nor approved"
