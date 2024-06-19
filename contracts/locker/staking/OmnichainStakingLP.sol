@@ -30,7 +30,7 @@ contract OmnichainStakingLP is OmnichainStakingBase {
         address _lpOracle,
         address _zeroPythAggregator,
         address _owner
-    ) external reinitializer(3) {
+    ) external reinitializer(4) {
         super.__OmnichainStakingBase_init(
             "ZERO LP Voting Power",
             "ZEROvp-LP",
@@ -44,6 +44,10 @@ contract OmnichainStakingLP is OmnichainStakingBase {
         oracleZERO = IPythAggregatorV3(_zeroPythAggregator);
 
         _transferOwnership(_owner);
+    }
+
+    receive() external payable {
+        // accept eth in the contract
     }
 
     /**

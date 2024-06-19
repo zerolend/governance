@@ -21,15 +21,13 @@ const main = async function () {
   // const impl = await factory.deploy();
   const impl = await hre.ethers.getContractAt(
     "OmnichainStakingLP",
-    "0xD16F82394eb2f6Af638Dd19f0bEEe81cBe905704"
+    "0x9B6094fd7fb183d15983cAd9f02eF2706b9a0621"
   );
 
-  const iface = new hre.ethers.Interface(["function changeAdmin(address)"]);
-
   // proxies
-  const proxy = new hre.ethers.Contract(
-    "0x0374ae8e866723adae4a62dce376129f292369b4",
-    iface
+  const proxy = await hre.ethers.getContractAt(
+    "TransparentUpgradeableProxy",
+    "0x0374ae8e866723adae4a62dce376129f292369b4"
   );
 
   const implP = await hre.ethers.getContractAt(
@@ -76,10 +74,6 @@ const main = async function () {
     safe
   );
 
-  // @ts-ignore
-  const tx1 = await proxy.connect(safeSigner).changeAdmin(admin.target);
-  console.log(tx1.data, tx1.hash);
-
   const tx = await admin
     .connect(safeSigner)
     .upgradeAndCall(proxy.target, impl.target, call.data);
@@ -92,6 +86,17 @@ const main = async function () {
   console.log("lockedByToken", await implP.lockedByToken(1));
   console.log("lockedTokenIdNfts", await implP.lockedTokenIdNfts(d, 0));
   console.log("owner", await implP.owner());
+
+  // this must fail
+  await implP.init(
+    "0x8bB8B092f3f872a887F377f73719c665Dd20Ab06", // address _locker,
+    "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f", // address _zeroToken,
+    "0x2666951A62d82860E8e1385581E2FB7669097647", // address _poolVoter,
+    86400 * 7, // uint256 _rewardsDuration
+    "0x303598dddebB8A48CE0132b3Ba6c2fDC14986647", // address _lpOracle,
+    "0x130cc6e0301B58ab46504fb6F83BEE97Eb733054", // address _zeroPythAggregator
+    safe
+  );
 };
 
 main();

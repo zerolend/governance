@@ -57,7 +57,7 @@ contract VestUiHelper {
     ) {
         vestedZero = VestedZeroNFT(_vestedZeroNFT);
         omnichainStaking = OmnichainStakingBase(_omnichainStaking);
-        omnichainStakingLp = OmnichainStakingLP(_omnichainStakingLp);
+        omnichainStakingLp = OmnichainStakingLP(payable(_omnichainStakingLp));
     }
 
     function getVestedNFTData(

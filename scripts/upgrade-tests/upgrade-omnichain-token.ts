@@ -87,6 +87,14 @@ const main = async function () {
   console.log("lockedByToken", await implP.lockedByToken(1));
   console.log("lockedTokenIdNfts", await implP.lockedTokenIdNfts(d, 0));
   console.log("owner", await implP.owner());
+
+  // this must fail
+  await implP.init(
+    "0x08D5FEA625B1dBf9Bae0b97437303a0374ee02F8", // address _locker,
+    "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7", // address _zeroToken,
+    "0x2666951a62d82860e8e1385581e2fb7669097647", // address _poolVoter,
+    86400 * 30 // uint256 _rewardsDuration
+  );
 };
 
 main();
