@@ -284,6 +284,10 @@ abstract contract OmnichainStakingBase is
         return time;
     }
 
+    function totalNFTStaked(address who) public view returns (uint256) {
+        return lockedTokenIdNfts[who].length;
+    }
+
     /**
      * @dev Calculates the reward per token.
      * @return The reward per token.
@@ -302,7 +306,7 @@ abstract contract OmnichainStakingBase is
 
     function notifyRewardAmount(
         uint256 reward
-    ) external onlyOwner updateReward(address(0)) {
+    ) external updateReward(address(0)) {
         if (block.timestamp >= periodFinish) {
             rewardRate = reward / rewardsDuration;
         } else {
