@@ -21,7 +21,7 @@ const main = async function () {
   // const impl = await factory.deploy();
   const impl = await hre.ethers.getContractAt(
     "OmnichainStakingLP",
-    "0x9B6094fd7fb183d15983cAd9f02eF2706b9a0621"
+    "0x4cA072BaA0D1BC61ce591aDdB3E1B6702AcC9251"
   );
 
   // proxies
@@ -71,7 +71,8 @@ const main = async function () {
     86400 * 7, // uint256 _rewardsDuration
     "0x303598dddebB8A48CE0132b3Ba6c2fDC14986647", // address _lpOracle,
     "0x130cc6e0301B58ab46504fb6F83BEE97Eb733054", // address _zeroPythAggregator
-    safe
+    safe,
+    d
   );
 
   const tx = await admin
@@ -95,7 +96,8 @@ const main = async function () {
     86400 * 7, // uint256 _rewardsDuration
     "0x303598dddebB8A48CE0132b3Ba6c2fDC14986647", // address _lpOracle,
     "0x130cc6e0301B58ab46504fb6F83BEE97Eb733054", // address _zeroPythAggregator
-    safe
+    safe,
+    d
   );
 };
 

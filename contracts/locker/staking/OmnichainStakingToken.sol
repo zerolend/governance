@@ -21,16 +21,21 @@ contract OmnichainStakingToken is OmnichainStakingBase {
         address _locker,
         address _zeroToken,
         address _poolVoter,
-        uint256 _rewardsDuration
-    ) external reinitializer(2) {
+        uint256 _rewardsDuration,
+        address _owner,
+        address _distributor
+    ) external reinitializer(5) {
         super.__OmnichainStakingBase_init(
             "ZERO Voting Power",
             "ZEROvp",
             _locker,
             _zeroToken,
             _poolVoter,
-            _rewardsDuration
+            _rewardsDuration,
+            _distributor
         );
+
+        _transferOwnership(_owner);
     }
 
     function _getTokenPower(

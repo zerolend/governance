@@ -29,15 +29,17 @@ contract OmnichainStakingLP is OmnichainStakingBase {
         uint256 _rewardsDuration,
         address _lpOracle,
         address _zeroPythAggregator,
-        address _owner
-    ) external reinitializer(4) {
+        address _owner,
+        address _distributor
+    ) external reinitializer(5) {
         super.__OmnichainStakingBase_init(
             "ZERO LP Voting Power",
             "ZEROvp-LP",
             _locker,
             _zeroToken,
             _poolVoter,
-            _rewardsDuration
+            _rewardsDuration,
+            _distributor
         );
 
         oracleLP = ILPOracle(_lpOracle);
