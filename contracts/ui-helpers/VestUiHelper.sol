@@ -13,14 +13,14 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {VestedZeroNFT} from "../vesting/VestedZeroNFT.sol";
-import {OmnichainStakingBase} from "../locker/staking/OmnichainStakingBase.sol";
+import {OmnichainStakingToken} from "../locker/staking/OmnichainStakingToken.sol";
 import {OmnichainStakingLP} from "../locker/staking/OmnichainStakingLP.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
 
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
 contract VestUiHelper {
     VestedZeroNFT public vestedZero;
-    OmnichainStakingBase public omnichainStaking;
+    OmnichainStakingToken public omnichainStaking;
     OmnichainStakingLP public omnichainStakingLp;
 
     struct VestDetails {
@@ -56,7 +56,7 @@ contract VestUiHelper {
         address _omnichainStakingLp
     ) {
         vestedZero = VestedZeroNFT(_vestedZeroNFT);
-        omnichainStaking = OmnichainStakingBase(_omnichainStaking);
+        omnichainStaking = OmnichainStakingToken(_omnichainStaking);
         omnichainStakingLp = OmnichainStakingLP(payable(_omnichainStakingLp));
     }
 
@@ -135,7 +135,7 @@ contract VestUiHelper {
             LockedBalanceWithApr memory lock;
             ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
 
-            uint256 vePower = getLockPower(lockedBalance);
+            uint256 vePower = omnichainStaking.getTokenPower(lockedBalance.amount);
 
             uint256 scale = (lockedBalance.power != 0 &&
                 lockedBalance.amount != 0)
@@ -214,18 +214,6 @@ contract VestUiHelper {
         }
 
         return lockDetails;
-    }
-
-    function getLockPower(
-        ILocker.LockedBalance memory lock
-    ) internal pure returns (uint256) {
-        uint256 duration = lock.end - lock.start;
-        uint256 durationInYears = (lock.end - lock.start) / 365 days;
-        uint256 amountWithBonus = lock.amount +
-            (lock.amount * durationInYears * 5) /
-            100;
-
-        return (duration * amountWithBonus) / (4 * 365 days);
     }
 
     function zeroToETH() public pure returns (uint256) {
