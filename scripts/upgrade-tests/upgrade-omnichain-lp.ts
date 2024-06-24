@@ -72,7 +72,7 @@ const main = async function () {
     "0x303598dddebB8A48CE0132b3Ba6c2fDC14986647", // address _lpOracle,
     "0x130cc6e0301B58ab46504fb6F83BEE97Eb733054", // address _zeroPythAggregator
     safe,
-    d
+    "0xc0400264e71Fc9367719BE7bAdF228eac8fEdAB4"
   );
 
   const tx = await admin
