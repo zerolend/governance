@@ -34,17 +34,20 @@ contract PoolVoter is
     mapping(address => uint256) public supplyIndex;
     mapping(address => uint256) public claimable;
 
+    address public votingPowerCombined;
+
     /**
      * @notice Initializes the PoolVoter contract with the specified staking and reward tokens.
      * @dev This function is called only once during deployment.
      * @param _staking The address of the staking token (VE token).
      * @param _reward The address of the reward token.
      */
-    function init(address _staking, address _reward) external reinitializer(1) {
+    function init(address _staking, address _reward, address _votingPowerCombined) external reinitializer(1) {
         staking = IVotes(_staking);
         reward = IERC20(_reward);
         __ReentrancyGuard_init();
         __Ownable_init(msg.sender);
+        votingPowerCombined = _votingPowerCombined;
     }
 
     /**
@@ -74,7 +77,7 @@ contract PoolVoter is
      */
     function reset(address _who) external override {
         require(
-            msg.sender == _who || msg.sender == address(staking),
+            msg.sender == _who || msg.sender == address(staking) || msg.sender == votingPowerCombined,
             "Invalid reset performed"
         );
         _reset(_who);
