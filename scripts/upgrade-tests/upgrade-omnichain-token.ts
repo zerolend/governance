@@ -22,7 +22,7 @@ const main = async function () {
 
   const impl = await hre.ethers.getContractAt(
     "OmnichainStakingToken",
-    "0x369c3003610c69C6Cf8c6743B9033b5fcB079c2F"
+    "0x9067cE4F32242a78938e4AF7E2A4A3801D98Dd1B"
   );
 
   // proxies
@@ -69,15 +69,13 @@ const main = async function () {
     "0x08D5FEA625B1dBf9Bae0b97437303a0374ee02F8", // address _locker,
     "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7", // address _zeroToken,
     "0x2666951a62d82860e8e1385581e2fb7669097647", // address _poolVoter,
-    86400 * 30 // uint256 _rewardsDuration
+    86400 * 30, // uint256 _rewardsDuration
+    safe,
+    d
   );
   const tx = await admin
     .connect(safeSigner)
-    .upgradeAndCall(
-      proxy.target,
-      "0x369c3003610c69C6Cf8c6743B9033b5fcB079c2F",
-      call.data
-    );
+    .upgradeAndCall(proxy.target, impl.target, call.data);
   console.log(tx.data);
 
   console.log("rewardRate", await implP.rewardRate());
@@ -93,7 +91,9 @@ const main = async function () {
     "0x08D5FEA625B1dBf9Bae0b97437303a0374ee02F8", // address _locker,
     "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7", // address _zeroToken,
     "0x2666951a62d82860e8e1385581e2fb7669097647", // address _poolVoter,
-    86400 * 30 // uint256 _rewardsDuration
+    86400 * 30, // uint256 _rewardsDuration
+    safe,
+    d
   );
 };
 

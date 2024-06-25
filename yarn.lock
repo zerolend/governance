@@ -1267,6 +1267,11 @@
   resolved "https://registry.yarnpkg.com/@prb/math/-/math-4.0.2.tgz#0bcbc34eb2c49c56b70ded059d0af28c09b7833a"
   integrity sha512-kJgqvXR6iyU7+N959RzggSFhBdnRuSDnc/bs8u6MzdWw7aYIUaAr+uMVdpP6Dheypjerd7sfJgFOs19FRFhscg==
 
+"@pythnetwork/pyth-sdk-solidity@2.2.1":
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/@pythnetwork/pyth-sdk-solidity/-/pyth-sdk-solidity-2.2.1.tgz#604e71840b68d688281a64369e377dfc7109173e"
+  integrity sha512-Tb/5fWrQBRZ+IHDQVz3GiHh6+ZbgeS/muaNosJrD94cuL6DuAwcr7yEgMq4DrlPSrb+x7Vw8d5NMOvpsC7+Vlw==
+
 "@resolver-engine/core@^0.3.3":
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/@resolver-engine/core/-/core-0.3.3.tgz#590f77d85d45bc7ecc4e06c654f41345db6ca967"
@@ -1727,22 +1732,23 @@
     "@uniswap/v3-core" "^1.0.0"
     base64-sol "1.0.1"
 
-"@zerolendxyz/core-v3@^1.19.1":
-  version "1.19.1"
-  resolved "https://registry.yarnpkg.com/@zerolendxyz/core-v3/-/core-v3-1.19.1.tgz#1aa5fb505a0dd934a955bbc145bc2c86ca754741"
-  integrity sha512-UYIQSuW8BsaOIihurquGq8DL37/SFTIvTX6cfZ3YIzrxlxTsAa5QSxZwIasiGd8yJ4Fo1OZOgHHm5H9KAnLPwg==
+"@zerolendxyz/core-v3@^2.19.0":
+  version "2.21.0"
+  resolved "https://registry.yarnpkg.com/@zerolendxyz/core-v3/-/core-v3-2.21.0.tgz#2daccc92a82d772f3e94784de1a4a9abb8570804"
+  integrity sha512-u8tt3e26NVpIybRg61iVFUXo0L+7osfyOk5svhej4MKfI19HyF4n5BWBN+pl47ExXCZbvYLPSmp/Sn+CrHesvQ==
 
 "@zerolendxyz/core-v3@^2.8.0":
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/@zerolendxyz/core-v3/-/core-v3-2.8.0.tgz#db940a964b8d381af5f91844b4a5da289687f864"
   integrity sha512-x7CYLMB+w1v2p/UUVbIavRVCiJe0M8XTPyh2MgqI3LjQ4E4IaD69avxEan9HJhvPXLard5ElxV895ZfFH+eYLw==
 
-"@zerolendxyz/periphery-v3@^2.5.0":
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/@zerolendxyz/periphery-v3/-/periphery-v3-2.5.0.tgz#651e62dd98873e9ac60ce458cc715ee2e371512c"
-  integrity sha512-d/KPWf47TvJ4AjXkKcehXqH8fVK23T2XnVv69A/xZF4s9oC7DvGv9k9Ga5Vs13aSxmVv/MxuKp3tFrHxpPLKaA==
+"@zerolendxyz/periphery-v3@^3.4.0":
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/@zerolendxyz/periphery-v3/-/periphery-v3-3.4.0.tgz#709e34cd9b88e4305f5d8d33ecc557bdb0285309"
+  integrity sha512-GFpsPg2p/WuAMEUb8upwNKjop1T4qOXxVLHAyVcfwU/E5HbnF/hfG3MzzfSapxXQgh/ZTAEAjq2+VRx51ntkfw==
   dependencies:
-    "@zerolendxyz/core-v3" "^1.19.1"
+    "@pythnetwork/pyth-sdk-solidity" "2.2.1"
+    "@zerolendxyz/core-v3" "^2.19.0"
 
 JSONStream@1.3.2:
   version "1.3.2"

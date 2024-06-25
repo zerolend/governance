@@ -36,7 +36,7 @@ abstract contract OmnichainStakingBase is
     OwnableUpgradeable
 {
     ILocker public locker;
-    // ILocker public __; // unwanted variable to keep storage layout
+    ILocker public __; // unwanted variable to keep storage layout
     IPoolVoter public poolVoter;
 
     // staking reward variables
@@ -59,6 +59,9 @@ abstract contract OmnichainStakingBase is
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
+    /// @notice Account that distributes staking rewards
+    address public distributor;
+
     constructor() {
         _disableInitializers();
     }
@@ -73,9 +76,9 @@ abstract contract OmnichainStakingBase is
         address _locker,
         address _zeroToken,
         address _poolVoter,
-        uint256 _rewardsDuration
+        uint256 _rewardsDuration,
+        address _distributor
     ) internal {
-        // TODO add LZ
         __ERC20Votes_init();
         __Ownable_init(msg.sender);
         __ReentrancyGuard_init();
@@ -88,6 +91,8 @@ abstract contract OmnichainStakingBase is
 
         // give approvals for increase lock functions
         locker.underlying().approve(_locker, type(uint256).max);
+
+        distributor = _distributor;
     }
 
     /**
@@ -308,6 +313,7 @@ abstract contract OmnichainStakingBase is
     function notifyRewardAmount(
         uint256 reward
     ) external updateReward(address(0)) {
+        require(msg.sender == distributor, "!distributor");
         rewardsToken.transferFrom(msg.sender, address(this), reward);
 
         if (block.timestamp >= periodFinish) {
@@ -353,6 +359,15 @@ abstract contract OmnichainStakingBase is
     function setPoolVoter(address what) external onlyOwner {
         emit PoolVoterUpdated(address(poolVoter), what);
         poolVoter = IPoolVoter(what);
+    }
+
+    /**
+     * Admin only function to set the rewards distributor
+     *
+     * @param what The new address for the rewards distributor
+     */
+    function setRewardDistributor(address what) external onlyOwner {
+        distributor = what;
     }
 
     /**

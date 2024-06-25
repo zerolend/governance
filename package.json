@@ -19,7 +19,7 @@
     "@nomiclabs/hardhat-etherscan": "^3.1.7",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
-    "@zerolendxyz/periphery-v3": "^2.5.0",
+    "@zerolendxyz/periphery-v3": "^3.4.0",
     "chai": "^4.3.7",
     "dotenv": "^16.0.3",
     "ethereum-waffle": "^4.0.10",

@@ -18,7 +18,7 @@ async function main() {
   );
 
   const zero = await hre.ethers.getContractAt("ZeroLend", ZERO_ADDRESS);
-  // await zero.approve(vest, parseEther("100000000"));
+  await zero.approve(vest, parseEther("100000000"));
 
   // Initialize an empty array to store the parsed data
   const parsedData: any[] = [];
