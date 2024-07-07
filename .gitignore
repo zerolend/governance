@@ -118,3 +118,5 @@ scripts/*.json
 scripts/data/*.json
 deployments/
 hardhat-dependency-compiler/
+abi
+types

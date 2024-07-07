@@ -7,7 +7,7 @@ import {
   TestnetERC20,
   VestedZeroNFT,
   ZeroLend,
-} from "../typechain-types";
+} from "../types";
 import { deployVoters } from "./fixtures/voters";
 import { ethers } from "hardhat";
 import { expect } from "chai";

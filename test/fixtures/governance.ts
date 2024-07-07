@@ -8,7 +8,7 @@ import {
   PoolVoter,
   StakingBonus,
   VestedZeroNFT,
-} from "../../typechain-types";
+} from "../../types";
 
 export async function deployGovernance() {
   const lendingPool = await deployLendingPool();

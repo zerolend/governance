@@ -5,7 +5,7 @@ import {
   LendingPoolGaugeFactory,
   PoolVoter,
   VestedZeroNFT,
-} from "../../../typechain-types";
+} from "../../../types";
 import { e18, initMainnetUser } from "../../fixtures/utils";
 import { ethers } from "hardhat";
 import {

@@ -7,7 +7,8 @@
     "contracts",
     "artifacts",
     "artifacts-zk",
-    "typechain-types"
+    "abi",
+    "types"
   ],
   "private": false,
   "license": "MIT",
@@ -33,6 +34,7 @@
     "zksync-web3": "^0.14.3"
   },
   "scripts": {
+    "clean": "rimraf artifacts abi typechain-types artifacts-zk cache cache-zk dist types forge-build",
     "compile": "hardhat compile",
     "test-zk": "NODE_ENV=test hardhat test --network zkSyncTestnet",
     "test": "hardhat test",

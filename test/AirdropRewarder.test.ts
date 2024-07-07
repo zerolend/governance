@@ -4,7 +4,7 @@ import {
   LockerToken,
   VestedZeroNFT,
   ZeroLend,
-} from "../typechain-types";
+} from "../types";
 import { deployProxy } from "./airdrop-utils/deploy";
 
 import {

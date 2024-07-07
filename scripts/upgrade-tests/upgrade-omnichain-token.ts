@@ -3,7 +3,7 @@ import {
   impersonateAccount,
   setBalance,
 } from "@nomicfoundation/hardhat-network-helpers";
-import { TransparentUpgradeableProxy } from "../../typechain-types";
+import { TransparentUpgradeableProxy } from "../../types";
 
 const getSlot = async (proxy: TransparentUpgradeableProxy, key: string) => {
   const data = await hre.ethers.provider.getStorage(proxy.target, key);

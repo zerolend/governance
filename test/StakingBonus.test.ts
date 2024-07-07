@@ -4,11 +4,11 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import {
   LockerToken,
-  OmnichainStaking,
+  OmnichainStakingToken,
   StakingBonus,
   VestedZeroNFT,
   ZeroLend,
-} from "../typechain-types";
+} from "../types";
 import { AbiCoder, parseEther } from "ethers";
 import { e18 } from "./fixtures/utils";
 
@@ -19,7 +19,7 @@ describe("StakingBonus", () => {
   let stakingBonus: StakingBonus;
   let zero: ZeroLend;
   let locker: LockerToken;
-  let omniStaking: OmnichainStaking;
+  let omniStaking: OmnichainStakingToken;
 
   beforeEach(async () => {
     const deployment = await loadFixture(deployGovernance);

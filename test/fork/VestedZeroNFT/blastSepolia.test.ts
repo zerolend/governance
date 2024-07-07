@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { e18, initMainnetUser } from "../../fixtures/utils";
-import { VestedZeroNFT } from "../../../typechain-types";
+import { VestedZeroNFT } from "../../../types";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { setForkBlock } from "../utils";

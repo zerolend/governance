@@ -4,11 +4,11 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import {
   LockerToken,
-  OmnichainStaking,
+  OmnichainStakingToken,
   StakingBonus,
   VestedZeroNFT,
   ZeroLend,
-} from "../typechain-types";
+} from "../types";
 import { e18 } from "./fixtures/utils";
 import { parseEther } from "ethers";
 
@@ -19,7 +19,7 @@ describe("Omnichain Staking Rewards Unit tests", () => {
   let stakingBonus: StakingBonus;
   let zero: ZeroLend;
   let lockerToken: LockerToken;
-  let omniStaking: OmnichainStaking;
+  let omniStaking: OmnichainStakingToken;
 
   beforeEach(async () => {
     const deployment = await loadFixture(deployGovernance);

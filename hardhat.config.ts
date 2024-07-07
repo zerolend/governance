@@ -11,7 +11,7 @@ dotenv.config();
 
 const config: HardhatUserConfig = {
   abiExporter: {
-    path: "./generated-abi",
+    path: "./abi",
     runOnCompile: true,
     clear: true,
     // flat: true,
@@ -66,9 +66,11 @@ const config: HardhatUserConfig = {
       "@zerolendxyz/periphery-v3/contracts/rewards/RewardsController.sol",
       "@zerolendxyz/periphery-v3/contracts/rewards/EmissionManager.sol",
       "@zerolendxyz/periphery-v3/contracts/rewards/transfer-strategies/TransferStrategyBase.sol",
-
       "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol",
     ],
+  },
+  typechain: {
+    outDir: "types",
   },
   solidity: {
     compilers: [

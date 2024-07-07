@@ -6,7 +6,7 @@ import {
   AaveOracle,
   AaveProtocolDataProvider,
   LendingPoolGaugeFactory,
-  OmnichainStaking,
+  OmnichainStakingToken,
   Pool,
   PoolAddressesProvider,
   PoolConfigurator,
@@ -15,7 +15,7 @@ import {
   TestnetERC20,
   VestedZeroNFT,
   ZeroLend,
-} from "../typechain-types";
+} from "../types";
 import { e18 } from "./fixtures/utils";
 import { deployVoters } from "./fixtures/voters";
 import { ethers } from "hardhat";
@@ -30,7 +30,7 @@ import {
 describe("PoolVoter", () => {
   let ant: SignerWithAddress;
   let now: number;
-  let omniStaking: OmnichainStaking;
+  let omniStaking: OmnichainStakingToken;
   let poolVoter: PoolVoter;
   let reserve: TestnetERC20;
   let stakingBonus: StakingBonus;

@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { VestedZeroNFT } from "../typechain-types";
+import { VestedZeroNFT } from "../types";
 
 const VESTED_ZERO_NFT_ADDRESS = "0x9FA72ea96591e486FF065E7C8A89282dEDfA6C12";
 const LINEAR_DURATION = 86400 * 91;
@@ -17,14 +17,14 @@ async function main() {
 
     const tokenPromises = [];
     for (let i = 0; i < lastTokenId; i++) {
-        tokenPromises.push(getAirdropTokenId(i, vestContract));
+      tokenPromises.push(getAirdropTokenId(i, vestContract));
     }
 
     await Promise.all(tokenPromises);
 
     const linearDuration = tokenIds.map((item) => LINEAR_DURATION);
     const cliffDuration = tokenIds.map((item) => CLIFF_DURATION);
-    
+
     await vestContract.updateCliffDuration(
       tokenIds,
       linearDuration,
