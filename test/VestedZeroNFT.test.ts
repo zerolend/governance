@@ -143,7 +143,7 @@ describe("VestedZeroNFT", () => {
       expect(await vest["claim(uint256)"].staticCall(1)).to.greaterThan(
         (e18 * 74n) / 10n
       );
-      expect(await vest["claim(uint256)"].staticCall(1)).to.lessThan(
+      expect(await vest["claim(uint256)"].staticCall(1)).to.eq(
         (e18 * 75n) / 10n
       );
       await vest["claim(uint256)"](1);
@@ -235,7 +235,7 @@ describe("VestedZeroNFT", () => {
       await zero.whitelist(await vest.stakingBonus(), true);
       await time.increaseTo(now + 1300);
       expect(await vest["claim(uint256)"].staticCall(1)).to.closeTo(
-        10800000000000000000n,
+        20000000000000000000n,
         parseUnits("1", 17)
       );
     });

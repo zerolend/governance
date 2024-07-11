@@ -46,8 +46,6 @@ export async function deployLendingPool() {
     owner.address
   );
 
-  console.log("hit");
-
   const protocolDataProvider = await AaveProtocolDataProvider.deploy(
     addressesProvider.target
   );
@@ -197,7 +195,6 @@ export async function deployLendingPool() {
     8250,
     10500
   );
-  console.log("hit22");
 
   return {
     aclManager,

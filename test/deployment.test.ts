@@ -28,8 +28,7 @@ describe("Deployment Checks", function () {
     expect(await lockerToken.underlying()).eq(zero.target);
     expect(await lockerToken.staking()).eq(omnichainStaking.target);
 
-    expect(await omnichainStaking.lpLocker()).eq(lockerLP.target);
-    expect(await omnichainStaking.tokenLocker()).eq(lockerToken.target);
+    expect(await omnichainStaking.locker()).eq(lockerToken.target);
 
     expect(await stakingBonus.zero()).eq(zero.target);
     // expect(await stakingBonus.earlyZERO()).eq(earlyZERO.target);
@@ -44,10 +43,7 @@ describe("Deployment Checks", function () {
   });
 
   it("Should init voter properly", async function () {
-    const {
-      governance,
-      poolVoter
-    } = await loadFixture(deployVoters);
+    const { governance, poolVoter } = await loadFixture(deployVoters);
 
     expect(await poolVoter.staking()).eq(governance.omnichainStaking.target);
     expect(await poolVoter.reward()).eq(governance.zero.target);

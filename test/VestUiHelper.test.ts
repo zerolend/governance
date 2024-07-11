@@ -2,12 +2,7 @@ import { expect } from "chai";
 import { deployGovernance } from "./fixtures/governance";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
-import {
-  StakingBonus,
-  VestedZeroNFT,
-  VestedZeroUiHelper,
-  ZeroLend,
-} from "../types";
+import { StakingBonus, VestedZeroNFT, VestUiHelper, ZeroLend } from "../types";
 import { e18 } from "./fixtures/utils";
 import { parseEther, parseUnits } from "ethers";
 import { ethers } from "hardhat";
@@ -16,7 +11,7 @@ describe("UI Helper tests", () => {
   let ant: SignerWithAddress;
   let deployer: SignerWithAddress;
   let vest: VestedZeroNFT;
-  let vestUiHelper: VestedZeroUiHelper;
+  let vestUiHelper: VestUiHelper;
   let zero: ZeroLend;
   let stakingBonus: StakingBonus;
   let omnichainStaking;
@@ -32,8 +27,11 @@ describe("UI Helper tests", () => {
     let vestUiHelperFactory = await ethers.getContractFactory(
       "VestedZeroUiHelper"
     );
-    vestUiHelper = await vestUiHelperFactory.deploy();
-    await vestUiHelper.initialize(vest.target, omnichainStaking.target);
+    vestUiHelper = await vestUiHelperFactory.deploy(
+      vest.target,
+      omnichainStaking.target,
+      omnichainStaking.target
+    );
     zero = deployment.zero;
 
     await zero.whitelist(stakingBonus.target, true);
