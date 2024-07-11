@@ -1,0 +1,321 @@
+{
+  "address": "0xC8f4562037eCcEfb8E96675701bAb111C90071C5",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_odos",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_locker",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_zero",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_weth",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "EthSendFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "OdosSwapFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ZeroTransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "locker",
+      "outputs": [
+        {
+          "internalType": "contract ILocker",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lp",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "odos",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "sweep",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "weth",
+      "outputs": [
+        {
+          "internalType": "contract IWETH",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "duration",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "zeroAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "wethAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes",
+          "name": "odosSwapData",
+          "type": "bytes"
+        }
+      ],
+      "name": "zapAndStake",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "zero",
+      "outputs": [
+        {
+          "internalType": "contract IERC20",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x4b2b0551519a6a07d109c64536d9015a758acf8843f85f4360facc9405c0fd04",
+  "receipt": {
+    "to": null,
+    "from": "0x0F6e98A756A40dD050dC78959f45559F98d3289d",
+    "contractAddress": "0xC8f4562037eCcEfb8E96675701bAb111C90071C5",
+    "transactionIndex": 6,
+    "gasUsed": "869833",
+    "logsBloom": "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000010800000000000000000000000000000000000200000000100000000000000000000000000000000000000000000000000000000000020000000000000040080000000000000000000000200000000280000000000000000000000000000001000000000002000000000000000000000000000000000020000001200000000000040000000000000000000000000000000002000000000800000000000000000000000000000000000008000000000000000000000000010000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x3b81a846d61d7431a65c1f05c4547ac676a80cb29a1b9f6fd3f1b264356f6d60",
+    "transactionHash": "0x4b2b0551519a6a07d109c64536d9015a758acf8843f85f4360facc9405c0fd04",
+    "logs": [
+      {
+        "transactionIndex": 6,
+        "blockNumber": 5192973,
+        "transactionHash": "0x4b2b0551519a6a07d109c64536d9015a758acf8843f85f4360facc9405c0fd04",
+        "address": "0xe5D7C2a44FfDDf6b295A15c148167daaAf5Cf34f",
+        "topics": [
+          "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+          "0x000000000000000000000000c8f4562037eccefb8e96675701bab111c90071c5",
+          "0x0000000000000000000000002d8879046f1559e53eb052e949e9544bcb72f414"
+        ],
+        "data": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "logIndex": 20,
+        "blockHash": "0x3b81a846d61d7431a65c1f05c4547ac676a80cb29a1b9f6fd3f1b264356f6d60"
+      },
+      {
+        "transactionIndex": 6,
+        "blockNumber": 5192973,
+        "transactionHash": "0x4b2b0551519a6a07d109c64536d9015a758acf8843f85f4360facc9405c0fd04",
+        "address": "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7",
+        "topics": [
+          "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+          "0x000000000000000000000000c8f4562037eccefb8e96675701bab111c90071c5",
+          "0x0000000000000000000000002d8879046f1559e53eb052e949e9544bcb72f414"
+        ],
+        "data": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "logIndex": 21,
+        "blockHash": "0x3b81a846d61d7431a65c1f05c4547ac676a80cb29a1b9f6fd3f1b264356f6d60"
+      },
+      {
+        "transactionIndex": 6,
+        "blockNumber": 5192973,
+        "transactionHash": "0x4b2b0551519a6a07d109c64536d9015a758acf8843f85f4360facc9405c0fd04",
+        "address": "0x0040F36784dDA0821E74BA67f86E084D70d67a3A",
+        "topics": [
+          "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+          "0x000000000000000000000000c8f4562037eccefb8e96675701bab111c90071c5",
+          "0x0000000000000000000000008bb8b092f3f872a887f377f73719c665dd20ab06"
+        ],
+        "data": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "logIndex": 22,
+        "blockHash": "0x3b81a846d61d7431a65c1f05c4547ac676a80cb29a1b9f6fd3f1b264356f6d60"
+      }
+    ],
+    "blockNumber": 5192973,
+    "cumulativeGasUsed": "2111994",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x2d8879046f1559E53eb052E949e9544bCB72f414",
+    "0x8bB8B092f3f872a887F377f73719c665Dd20Ab06",
+    "0x78354f8DcCB269a615A7e0a24f9B0718FDC3C7A7",
+    "0xe5d7c2a44ffddf6b295a15c148167daaaf5cf34f"
+  ],
+  "numDeployments": 1,
+  "solcInputHash": "5ea4fcf9c50edf4b15fbc1502e39cfb1",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_odos\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_locker\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_zero\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_weth\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"EthSendFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"OdosSwapFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ZeroTransferFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"locker\",\"outputs\":[{\"internalType\":\"contract ILocker\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lp\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"odos\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sweep\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"weth\",\"outputs\":[{\"internalType\":\"contract IWETH\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"duration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"zeroAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"wethAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"odosSwapData\",\"type\":\"bytes\"}],\"name\":\"zapAndStake\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"zero\",\"outputs\":[{\"internalType\":\"contract IERC20\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"This contract allows users to perform a Zap operation by swapping ETH for Zero tokens, adding liquidity to Nile LP, and locking LP tokens.\",\"kind\":\"dev\",\"methods\":{\"constructor\":{\"details\":\"Initializes the contract with required parameters.\",\"params\":{\"_locker\":\"The address of the LP Token Locker contract.\",\"_odos\":\"The address of the Odos Router contract.\",\"_weth\":\"The address of WETH.\",\"_zero\":\"The address of the Zero Token contract.\"}},\"zapAndStake(uint256,uint256,uint256,bytes)\":{\"details\":\"Executes the Zap operation by swapping ETH for Zero tokens, adding liquidity to Nile LP, and locking LP tokens.\",\"params\":{\"duration\":\"The duration for which the LP tokens will be locked.\",\"odosSwapData\":\"The data required for the Odos swap.\",\"wethAmount\":\"How much WETH the user will pass into the LP token\",\"zeroAmount\":\"How much ZERO the user will pass into the LP token\"}}},\"title\":\"ZapLockerLP\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/zaps/ZapLockerLP.sol\":\"ZapLockerLP\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":100000},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/interfaces/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (interfaces/IERC20.sol)\\n\\npragma solidity ^0.8.20;\\n\\nimport {IERC20} from \\\"../token/ERC20/IERC20.sol\\\";\\n\",\"keccak256\":\"0xce41876e78d1badc0512229b4d14e4daf83bc1003d7f83978d18e0e56f965b9c\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC20/IERC20.sol)\\n\\npragma solidity ^0.8.20;\\n\\n/**\\n * @dev Interface of the ERC20 standard as defined in the EIP.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n\\n    /**\\n     * @dev Returns the value of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the value of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from the caller's account to `to`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address to, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets a `value` amount of tokens as the allowance of `spender` over the\\n     * caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 value) external returns (bool);\\n\\n    /**\\n     * @dev Moves a `value` amount of tokens from `from` to `to` using the\\n     * allowance mechanism. `value` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(address from, address to, uint256 value) external returns (bool);\\n}\\n\",\"keccak256\":\"0xc6a8ff0ea489379b61faa647490411b80102578440ab9d84e9a957cc12164e70\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC721/IERC721.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/IERC721.sol)\\n\\npragma solidity ^0.8.20;\\n\\nimport {IERC165} from \\\"../../utils/introspection/IERC165.sol\\\";\\n\\n/**\\n * @dev Required interface of an ERC721 compliant contract.\\n */\\ninterface IERC721 is IERC165 {\\n    /**\\n     * @dev Emitted when `tokenId` token is transferred from `from` to `to`.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);\\n\\n    /**\\n     * @dev Emitted when `owner` enables `approved` to manage the `tokenId` token.\\n     */\\n    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);\\n\\n    /**\\n     * @dev Emitted when `owner` enables or disables (`approved`) `operator` to manage all of its assets.\\n     */\\n    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);\\n\\n    /**\\n     * @dev Returns the number of tokens in ``owner``'s account.\\n     */\\n    function balanceOf(address owner) external view returns (uint256 balance);\\n\\n    /**\\n     * @dev Returns the owner of the `tokenId` token.\\n     *\\n     * Requirements:\\n     *\\n     * - `tokenId` must exist.\\n     */\\n    function ownerOf(uint256 tokenId) external view returns (address owner);\\n\\n    /**\\n     * @dev Safely transfers `tokenId` token from `from` to `to`.\\n     *\\n     * Requirements:\\n     *\\n     * - `from` cannot be the zero address.\\n     * - `to` cannot be the zero address.\\n     * - `tokenId` token must exist and be owned by `from`.\\n     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.\\n     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon\\n     *   a safe transfer.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;\\n\\n    /**\\n     * @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients\\n     * are aware of the ERC721 protocol to prevent tokens from being forever locked.\\n     *\\n     * Requirements:\\n     *\\n     * - `from` cannot be the zero address.\\n     * - `to` cannot be the zero address.\\n     * - `tokenId` token must exist and be owned by `from`.\\n     * - If the caller is not `from`, it must have been allowed to move this token by either {approve} or\\n     *   {setApprovalForAll}.\\n     * - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon\\n     *   a safe transfer.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function safeTransferFrom(address from, address to, uint256 tokenId) external;\\n\\n    /**\\n     * @dev Transfers `tokenId` token from `from` to `to`.\\n     *\\n     * WARNING: Note that the caller is responsible to confirm that the recipient is capable of receiving ERC721\\n     * or else they may be permanently lost. Usage of {safeTransferFrom} prevents loss, though the caller must\\n     * understand this adds an external call which potentially creates a reentrancy vulnerability.\\n     *\\n     * Requirements:\\n     *\\n     * - `from` cannot be the zero address.\\n     * - `to` cannot be the zero address.\\n     * - `tokenId` token must be owned by `from`.\\n     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(address from, address to, uint256 tokenId) external;\\n\\n    /**\\n     * @dev Gives permission to `to` to transfer `tokenId` token to another account.\\n     * The approval is cleared when the token is transferred.\\n     *\\n     * Only a single account can be approved at a time, so approving the zero address clears previous approvals.\\n     *\\n     * Requirements:\\n     *\\n     * - The caller must own the token or be an approved operator.\\n     * - `tokenId` must exist.\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address to, uint256 tokenId) external;\\n\\n    /**\\n     * @dev Approve or remove `operator` as an operator for the caller.\\n     * Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller.\\n     *\\n     * Requirements:\\n     *\\n     * - The `operator` cannot be the address zero.\\n     *\\n     * Emits an {ApprovalForAll} event.\\n     */\\n    function setApprovalForAll(address operator, bool approved) external;\\n\\n    /**\\n     * @dev Returns the account approved for `tokenId` token.\\n     *\\n     * Requirements:\\n     *\\n     * - `tokenId` must exist.\\n     */\\n    function getApproved(uint256 tokenId) external view returns (address operator);\\n\\n    /**\\n     * @dev Returns if the `operator` is allowed to manage all of the assets of `owner`.\\n     *\\n     * See {setApprovalForAll}\\n     */\\n    function isApprovedForAll(address owner, address operator) external view returns (bool);\\n}\\n\",\"keccak256\":\"0x5ef46daa3b58ef2702279d514780316efaa952915ee1aa3396f041ee2982b0b4\",\"license\":\"MIT\"},\"@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (token/ERC721/extensions/IERC721Enumerable.sol)\\n\\npragma solidity ^0.8.20;\\n\\nimport {IERC721} from \\\"../IERC721.sol\\\";\\n\\n/**\\n * @title ERC-721 Non-Fungible Token Standard, optional enumeration extension\\n * @dev See https://eips.ethereum.org/EIPS/eip-721\\n */\\ninterface IERC721Enumerable is IERC721 {\\n    /**\\n     * @dev Returns the total amount of tokens stored by the contract.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns a token ID owned by `owner` at a given `index` of its token list.\\n     * Use along with {balanceOf} to enumerate all of ``owner``'s tokens.\\n     */\\n    function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256);\\n\\n    /**\\n     * @dev Returns a token ID at a given `index` of all the tokens stored by the contract.\\n     * Use along with {totalSupply} to enumerate all tokens.\\n     */\\n    function tokenByIndex(uint256 index) external view returns (uint256);\\n}\\n\",\"keccak256\":\"0x3d6954a93ac198a2ffa384fa58ccf18e7e235263e051a394328002eff4e073de\",\"license\":\"MIT\"},\"@openzeppelin/contracts/utils/introspection/IERC165.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n// OpenZeppelin Contracts (last updated v5.0.0) (utils/introspection/IERC165.sol)\\n\\npragma solidity ^0.8.20;\\n\\n/**\\n * @dev Interface of the ERC165 standard, as defined in the\\n * https://eips.ethereum.org/EIPS/eip-165[EIP].\\n *\\n * Implementers can declare support of contract interfaces, which can then be\\n * queried by others ({ERC165Checker}).\\n *\\n * For an implementation, see {ERC165}.\\n */\\ninterface IERC165 {\\n    /**\\n     * @dev Returns true if this contract implements the interface defined by\\n     * `interfaceId`. See the corresponding\\n     * https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section]\\n     * to learn more about how these ids are created.\\n     *\\n     * This function call must use less than 30 000 gas.\\n     */\\n    function supportsInterface(bytes4 interfaceId) external view returns (bool);\\n}\\n\",\"keccak256\":\"0x4296879f55019b23e135000eb36896057e7101fb7fb859c5ef690cf14643757b\",\"license\":\"MIT\"},\"contracts/interfaces/ILocker.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.6;\\n\\nimport {IERC721Enumerable} from \\\"@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol\\\";\\nimport {IERC20} from \\\"@openzeppelin/contracts/interfaces/IERC20.sol\\\";\\n\\ninterface ILocker is IERC721Enumerable {\\n    struct LockedBalance {\\n        uint256 amount;\\n        uint256 end;\\n        uint256 start;\\n        uint256 power;\\n    }\\n\\n    function underlying() external view returns (IERC20);\\n\\n    function balanceOfNFTAt(\\n        uint256 _tokenId,\\n        uint256 _t\\n    ) external view returns (uint256);\\n\\n    function locked(\\n        uint256 _tokenId\\n    ) external view returns (LockedBalance memory);\\n\\n    function supportsInterface(\\n        bytes4 _interfaceID\\n    ) external view returns (bool);\\n\\n    function lockedEnd(uint256 _tokenId) external view returns (uint256);\\n\\n    function votingPowerOf(\\n        address _owner\\n    ) external view returns (uint256 _power);\\n\\n    function merge(uint256 _from, uint256 _to) external;\\n\\n    function depositFor(uint256 _tokenId, uint256 _value) external;\\n\\n    function createLockFor(\\n        uint256 _value,\\n        uint256 _lockDuration,\\n        address _to,\\n        bool _stakeNFT\\n    ) external returns (uint256);\\n\\n    function createLock(\\n        uint256 _value,\\n        uint256 _lockDuration,\\n        bool _stakeNFT\\n    ) external returns (uint256);\\n\\n    function increaseAmount(uint256 _tokenId, uint256 _value) external;\\n\\n    /// @notice Extend the unlock time for `_tokenId`\\n    /// @param _lockDuration New number of seconds until tokens unlock\\n    function increaseUnlockTime(\\n        uint256 _tokenId,\\n        uint256 _lockDuration\\n    ) external;\\n\\n    function withdraw(uint256 _tokenId) external;\\n\\n    function withdraw(uint256[] calldata _tokenIds) external;\\n\\n    function withdraw(address _user) external;\\n\\n    function balanceOfNFT(uint256 _tokenId) external view returns (uint256);\\n}\\n\",\"keccak256\":\"0xe38846217a8aae0f79cb7305f9a1b3f147996532cb020b2e423b95b6c261bac0\",\"license\":\"MIT\"},\"contracts/interfaces/IWETH.sol\":{\"content\":\"// SPDX-License-Identifier: UNLICENSED\\npragma solidity ^0.8.20;\\n\\nimport {IERC20} from \\\"@openzeppelin/contracts/token/ERC20/IERC20.sol\\\";\\n\\ninterface IWETH is IERC20 {\\n    function deposit() external payable;\\n\\n    function withdraw(uint256 wad) external;\\n}\\n\",\"keccak256\":\"0xf6bfc97297e3766b274ed7ee22ed5a43cf2a889ece0e4ff4d511170b881384d0\",\"license\":\"UNLICENSED\"},\"contracts/zaps/ZapLockerLP.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\nimport {ILocker} from \\\"../interfaces/ILocker.sol\\\";\\nimport {IERC20, IWETH} from \\\"../interfaces/IWETH.sol\\\";\\n\\n/**\\n * @title ZapLockerLP\\n * @dev This contract allows users to perform a Zap operation by swapping ETH for Zero tokens, adding liquidity to Nile LP, and locking LP tokens.\\n */\\ncontract ZapLockerLP {\\n    address public odos;\\n    ILocker public locker;\\n    IERC20 public zero;\\n    IWETH public weth;\\n    IERC20 public lp;\\n    address private me;\\n\\n    error OdosSwapFailed();\\n    error EthSendFailed();\\n    error ZeroTransferFailed();\\n\\n    /**\\n     * @dev Initializes the contract with required parameters.\\n     * @param _odos The address of the Odos Router contract.\\n     * @param _locker The address of the LP Token Locker contract.\\n     * @param _zero The address of the Zero Token contract.\\n     * @param _weth The address of WETH.\\n     */\\n    constructor(address _odos, address _locker, address _zero, address _weth) {\\n        odos = _odos;\\n        locker = ILocker(_locker);\\n        zero = IERC20(_zero);\\n        weth = IWETH(_weth);\\n        lp = locker.underlying();\\n\\n        // give approvals\\n        weth.approve(odos, type(uint256).max);\\n        zero.approve(odos, type(uint256).max);\\n        lp.approve(_locker, type(uint256).max);\\n\\n        me = address(this);\\n    }\\n\\n    /**\\n     * @dev Executes the Zap operation by swapping ETH for Zero tokens, adding liquidity to Nile LP, and locking LP tokens.\\n     * @param duration The duration for which the LP tokens will be locked.\\n     * @param zeroAmount How much ZERO the user will pass into the LP token\\n     * @param wethAmount How much WETH the user will pass into the LP token\\n     * @param odosSwapData The data required for the Odos swap.\\n     */\\n    function zapAndStake(\\n        uint256 duration,\\n        uint256 zeroAmount,\\n        uint256 wethAmount,\\n        bytes calldata odosSwapData\\n    ) external payable {\\n        // fetch tokens and wrap eth\\n        if (msg.value > 0) weth.deposit{value: msg.value}();\\n        if (zeroAmount > 0) zero.transferFrom(msg.sender, me, zeroAmount);\\n        if (wethAmount > 0) weth.transferFrom(msg.sender, me, wethAmount);\\n\\n        // odos should be able to swap into LP tokens directly.\\n        (bool success, ) = odos.call(odosSwapData);\\n        if (!success) revert OdosSwapFailed();\\n\\n        // stake the LP tokens that we get back from odos\\n        uint256 lpTokens = lp.balanceOf(address(this));\\n        locker.createLockFor(lpTokens, duration, msg.sender, true);\\n\\n        // sweep any dust\\n        sweep();\\n    }\\n\\n    function sweep() public {\\n        uint256 eth = address(this).balance;\\n        uint256 zeroB = zero.balanceOf(address(this));\\n        uint256 wethB = weth.balanceOf(address(this));\\n\\n        if (eth > 0) {\\n            (bool ethSendSuccess, ) = msg.sender.call{value: eth}(\\\"\\\");\\n            if (!ethSendSuccess) revert EthSendFailed();\\n        }\\n\\n        if (zeroB > 0 && !zero.transfer(msg.sender, zeroB))\\n            revert ZeroTransferFailed();\\n\\n        if (wethB > 0 && !weth.transfer(msg.sender, wethB))\\n            revert EthSendFailed();\\n    }\\n}\\n\",\"keccak256\":\"0x35a398821db3c1b2ca1e05960c585aa830b327eb36689448bde1a9ea1de6911a\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60806040523480156200001157600080fd5b5060405162000d8e38038062000d8e8339810160408190526200003491620002a9565b600080546001600160a01b038087166001600160a01b03199283161790925560018054868416908316811790915560028054868516908416179055600380549385169390921692909217905560408051636f307dc360e01b81529051636f307dc3916004808201926020929091908290030181865afa158015620000bc573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190620000e2919062000311565b600480546001600160a01b0319166001600160a01b0392831617815560035460005460405163095ea7b360e01b81529084169281019290925260001960248301529091169063095ea7b3906044016020604051808303816000875af115801562000150573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019062000176919062000338565b5060025460005460405163095ea7b360e01b81526001600160a01b039182166004820152600019602482015291169063095ea7b3906044016020604051808303816000875af1158015620001ce573d6000803e3d6000fd5b505050506040513d601f19601f82011682018060405250810190620001f4919062000338565b506004805460405163095ea7b360e01b81526001600160a01b0386811693820193909352600019602482015291169063095ea7b3906044016020604051808303816000875af11580156200024c573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019062000272919062000338565b5050600580546001600160a01b03191630179055506200035c915050565b6001600160a01b0381168114620002a657600080fd5b50565b60008060008060808587031215620002c057600080fd5b8451620002cd8162000290565b6020860151909450620002e08162000290565b6040860151909350620002f38162000290565b6060860151909250620003068162000290565b939692955090935050565b6000602082840312156200032457600080fd5b8151620003318162000290565b9392505050565b6000602082840312156200034b57600080fd5b815180151581146200033157600080fd5b610a22806200036c6000396000f3fe6080604052600436106100705760003560e01c806335faa4161161004e57806335faa4161461010d5780633fc8cef314610122578063bc1b392d1461014f578063d7b96d4e1461017c57600080fd5b80631eba02ec146100755780632ee2b12b146100cb578063313c06a0146100e0575b600080fd5b34801561008157600080fd5b506000546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b6100de6100d936600461090d565b6101a9565b005b3480156100ec57600080fd5b506004546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b34801561011957600080fd5b506100de61058f565b34801561012e57600080fd5b506003546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b34801561015b57600080fd5b506002546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b34801561018857600080fd5b506001546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b341561023357600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663d0e30db0346040518263ffffffff1660e01b81526004016000604051808303818588803b15801561021957600080fd5b505af115801561022d573d6000803e3d6000fd5b50505050505b83156102e0576002546005546040517f23b872dd00000000000000000000000000000000000000000000000000000000815233600482015273ffffffffffffffffffffffffffffffffffffffff9182166024820152604481018790529116906323b872dd906064016020604051808303816000875af11580156102ba573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102de919061099a565b505b821561038d576003546005546040517f23b872dd00000000000000000000000000000000000000000000000000000000815233600482015273ffffffffffffffffffffffffffffffffffffffff9182166024820152604481018690529116906323b872dd906064016020604051808303816000875af1158015610367573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061038b919061099a565b505b6000805460405173ffffffffffffffffffffffffffffffffffffffff909116906103ba90859085906109c3565b6000604051808303816000865af19150503d80600081146103f7576040519150601f19603f3d011682016040523d82523d6000602084013e6103fc565b606091505b5050905080610437576040517f45d4013e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600480546040517f70a08231000000000000000000000000000000000000000000000000000000008152309281019290925260009173ffffffffffffffffffffffffffffffffffffffff909116906370a0823190602401602060405180830381865afa1580156104ab573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104cf91906109d3565b600180546040517f0a2abdb300000000000000000000000000000000000000000000000000000000815260048101849052602481018b9052336044820152606481019290925291925073ffffffffffffffffffffffffffffffffffffffff90911690630a2abdb3906084016020604051808303816000875af1158015610559573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061057d91906109d3565b5061058661058f565b50505050505050565b6002546040517f70a08231000000000000000000000000000000000000000000000000000000008152306004820152479160009173ffffffffffffffffffffffffffffffffffffffff909116906370a0823190602401602060405180830381865afa158015610602573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061062691906109d3565b6003546040517f70a0823100000000000000000000000000000000000000000000000000000000815230600482015291925060009173ffffffffffffffffffffffffffffffffffffffff909116906370a0823190602401602060405180830381865afa15801561069a573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106be91906109d3565b9050821561074a57604051600090339085908381818185875af1925050503d8060008114610708576040519150601f19603f3d011682016040523d82523d6000602084013e61070d565b606091505b5050905080610748576040517f98248e6400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b505b6000821180156107f257506002546040517fa9059cbb0000000000000000000000000000000000000000000000000000000081523360048201526024810184905273ffffffffffffffffffffffffffffffffffffffff9091169063a9059cbb906044016020604051808303816000875af11580156107cc573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107f0919061099a565b155b15610829576040517f5a91840400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000811180156108d157506003546040517fa9059cbb0000000000000000000000000000000000000000000000000000000081523360048201526024810183905273ffffffffffffffffffffffffffffffffffffffff9091169063a9059cbb906044016020604051808303816000875af11580156108ab573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108cf919061099a565b155b15610908576040517f98248e6400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b505050565b60008060008060006080868803121561092557600080fd5b853594506020860135935060408601359250606086013567ffffffffffffffff8082111561095257600080fd5b818801915088601f83011261096657600080fd5b81358181111561097557600080fd5b89602082850101111561098757600080fd5b9699959850939650602001949392505050565b6000602082840312156109ac57600080fd5b815180151581146109bc57600080fd5b9392505050565b8183823760009101908152919050565b6000602082840312156109e557600080fd5b505191905056fea264697066735822122052593306e68182d2f0756459cf3f2407effc8afc6775256957d4e87ff4c67c6c64736f6c63430008140033",
+  "deployedBytecode": "0x6080604052600436106100705760003560e01c806335faa4161161004e57806335faa4161461010d5780633fc8cef314610122578063bc1b392d1461014f578063d7b96d4e1461017c57600080fd5b80631eba02ec146100755780632ee2b12b146100cb578063313c06a0146100e0575b600080fd5b34801561008157600080fd5b506000546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b60405173ffffffffffffffffffffffffffffffffffffffff909116815260200160405180910390f35b6100de6100d936600461090d565b6101a9565b005b3480156100ec57600080fd5b506004546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b34801561011957600080fd5b506100de61058f565b34801561012e57600080fd5b506003546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b34801561015b57600080fd5b506002546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b34801561018857600080fd5b506001546100a29073ffffffffffffffffffffffffffffffffffffffff1681565b341561023357600360009054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1663d0e30db0346040518263ffffffff1660e01b81526004016000604051808303818588803b15801561021957600080fd5b505af115801561022d573d6000803e3d6000fd5b50505050505b83156102e0576002546005546040517f23b872dd00000000000000000000000000000000000000000000000000000000815233600482015273ffffffffffffffffffffffffffffffffffffffff9182166024820152604481018790529116906323b872dd906064016020604051808303816000875af11580156102ba573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102de919061099a565b505b821561038d576003546005546040517f23b872dd00000000000000000000000000000000000000000000000000000000815233600482015273ffffffffffffffffffffffffffffffffffffffff9182166024820152604481018690529116906323b872dd906064016020604051808303816000875af1158015610367573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061038b919061099a565b505b6000805460405173ffffffffffffffffffffffffffffffffffffffff909116906103ba90859085906109c3565b6000604051808303816000865af19150503d80600081146103f7576040519150601f19603f3d011682016040523d82523d6000602084013e6103fc565b606091505b5050905080610437576040517f45d4013e00000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b600480546040517f70a08231000000000000000000000000000000000000000000000000000000008152309281019290925260009173ffffffffffffffffffffffffffffffffffffffff909116906370a0823190602401602060405180830381865afa1580156104ab573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906104cf91906109d3565b600180546040517f0a2abdb300000000000000000000000000000000000000000000000000000000815260048101849052602481018b9052336044820152606481019290925291925073ffffffffffffffffffffffffffffffffffffffff90911690630a2abdb3906084016020604051808303816000875af1158015610559573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061057d91906109d3565b5061058661058f565b50505050505050565b6002546040517f70a08231000000000000000000000000000000000000000000000000000000008152306004820152479160009173ffffffffffffffffffffffffffffffffffffffff909116906370a0823190602401602060405180830381865afa158015610602573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061062691906109d3565b6003546040517f70a0823100000000000000000000000000000000000000000000000000000000815230600482015291925060009173ffffffffffffffffffffffffffffffffffffffff909116906370a0823190602401602060405180830381865afa15801561069a573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906106be91906109d3565b9050821561074a57604051600090339085908381818185875af1925050503d8060008114610708576040519150601f19603f3d011682016040523d82523d6000602084013e61070d565b606091505b5050905080610748576040517f98248e6400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b505b6000821180156107f257506002546040517fa9059cbb0000000000000000000000000000000000000000000000000000000081523360048201526024810184905273ffffffffffffffffffffffffffffffffffffffff9091169063a9059cbb906044016020604051808303816000875af11580156107cc573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906107f0919061099a565b155b15610829576040517f5a91840400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b6000811180156108d157506003546040517fa9059cbb0000000000000000000000000000000000000000000000000000000081523360048201526024810183905273ffffffffffffffffffffffffffffffffffffffff9091169063a9059cbb906044016020604051808303816000875af11580156108ab573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906108cf919061099a565b155b15610908576040517f98248e6400000000000000000000000000000000000000000000000000000000815260040160405180910390fd5b505050565b60008060008060006080868803121561092557600080fd5b853594506020860135935060408601359250606086013567ffffffffffffffff8082111561095257600080fd5b818801915088601f83011261096657600080fd5b81358181111561097557600080fd5b89602082850101111561098757600080fd5b9699959850939650602001949392505050565b6000602082840312156109ac57600080fd5b815180151581146109bc57600080fd5b9392505050565b8183823760009101908152919050565b6000602082840312156109e557600080fd5b505191905056fea264697066735822122052593306e68182d2f0756459cf3f2407effc8afc6775256957d4e87ff4c67c6c64736f6c63430008140033",
+  "devdoc": {
+    "details": "This contract allows users to perform a Zap operation by swapping ETH for Zero tokens, adding liquidity to Nile LP, and locking LP tokens.",
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "details": "Initializes the contract with required parameters.",
+        "params": {
+          "_locker": "The address of the LP Token Locker contract.",
+          "_odos": "The address of the Odos Router contract.",
+          "_weth": "The address of WETH.",
+          "_zero": "The address of the Zero Token contract."
+        }
+      },
+      "zapAndStake(uint256,uint256,uint256,bytes)": {
+        "details": "Executes the Zap operation by swapping ETH for Zero tokens, adding liquidity to Nile LP, and locking LP tokens.",
+        "params": {
+          "duration": "The duration for which the LP tokens will be locked.",
+          "odosSwapData": "The data required for the Odos swap.",
+          "wethAmount": "How much WETH the user will pass into the LP token",
+          "zeroAmount": "How much ZERO the user will pass into the LP token"
+        }
+      }
+    },
+    "title": "ZapLockerLP",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {},
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [
+      {
+        "astId": 17414,
+        "contract": "contracts/zaps/ZapLockerLP.sol:ZapLockerLP",
+        "label": "odos",
+        "offset": 0,
+        "slot": "0",
+        "type": "t_address"
+      },
+      {
+        "astId": 17417,
+        "contract": "contracts/zaps/ZapLockerLP.sol:ZapLockerLP",
+        "label": "locker",
+        "offset": 0,
+        "slot": "1",
+        "type": "t_contract(ILocker)12810"
+      },
+      {
+        "astId": 17420,
+        "contract": "contracts/zaps/ZapLockerLP.sol:ZapLockerLP",
+        "label": "zero",
+        "offset": 0,
+        "slot": "2",
+        "type": "t_contract(IERC20)5355"
+      },
+      {
+        "astId": 17423,
+        "contract": "contracts/zaps/ZapLockerLP.sol:ZapLockerLP",
+        "label": "weth",
+        "offset": 0,
+        "slot": "3",
+        "type": "t_contract(IWETH)13318"
+      },
+      {
+        "astId": 17426,
+        "contract": "contracts/zaps/ZapLockerLP.sol:ZapLockerLP",
+        "label": "lp",
+        "offset": 0,
+        "slot": "4",
+        "type": "t_contract(IERC20)5355"
+      },
+      {
+        "astId": 17428,
+        "contract": "contracts/zaps/ZapLockerLP.sol:ZapLockerLP",
+        "label": "me",
+        "offset": 0,
+        "slot": "5",
+        "type": "t_address"
+      }
+    ],
+    "types": {
+      "t_address": {
+        "encoding": "inplace",
+        "label": "address",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IERC20)5355": {
+        "encoding": "inplace",
+        "label": "contract IERC20",
+        "numberOfBytes": "20"
+      },
+      "t_contract(ILocker)12810": {
+        "encoding": "inplace",
+        "label": "contract ILocker",
+        "numberOfBytes": "20"
+      },
+      "t_contract(IWETH)13318": {
+        "encoding": "inplace",
+        "label": "contract IWETH",
+        "numberOfBytes": "20"
+      }
+    }
+  }
+}
