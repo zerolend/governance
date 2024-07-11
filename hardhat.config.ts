@@ -5,7 +5,9 @@ import "hardhat-dependency-compiler";
 import "hardhat-abi-exporter";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-deploy";
-
+import "solidity-coverage";
+import "solidity-docgen";
+import "hardhat-tracer";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -14,10 +16,20 @@ const config: HardhatUserConfig = {
     path: "./abi",
     runOnCompile: true,
     clear: true,
-    // flat: true,
     spacing: 2,
-    // pretty: true,
-    // format: "minimal",
+    format: "minimal",
+  },
+  docgen: {
+    pages: "files",
+    exclude: ["interfaces", "tests"],
+  },
+  gasReporter: {
+    // @ts-ignore
+    reportFormat: "terminal",
+    outputFile: "coverage/gasReport.txt",
+    noColors: true,
+    forceTerminalOutput: true,
+    forceTerminalOutputFormat: "terminal",
   },
   dependencyCompiler: {
     paths: [

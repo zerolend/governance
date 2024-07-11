@@ -116,7 +116,8 @@ typechain-types/
 generated-abi
 scripts/*.json
 scripts/data/*.json
-deployments/
+solcInputs
 hardhat-dependency-compiler/
 abi
 types
+docs
