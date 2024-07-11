@@ -1,17 +1,16 @@
 # ZeroLend Governance
 
-todo
+[![Hardhat Build](https://github.com/zerolend/governance/actions/workflows/hardhat.yml/badge.svg)](https://github.com/zerolend/governance/actions/workflows/hardhat.yml)
+[![codecov](https://codecov.io/gh/zerolend/governance/graph/badge.svg?token=XZGYK0N6WR)](https://codecov.io/gh/zerolend/governance)
+[![NPM Version](https://img.shields.io/npm/v/%40zerolendxyz%2Fgovernance)](https://www.npmjs.com/package/@zerolendxyz/governance)
 
-~~-gauge voting ~~
-~~ locker for ve ~~
-~~ investors can otc vested tokens ~~
-~~ locker for DLP ~~
-~~ pool integration ~~
-~~ eligibility criteria ~~
-~~ allow users to convert their earlyZERO to vestake and let them otc it ~~
+This repo contains all the governance related contracts for the ZeroLend protocol. This project is built using hardhat.
 
-- unit tests
-- omnichain voting
-- zappers
-- field for vesting role
-- claim all vest
+# Features
+
+- Pool Voting & gauges
+- LP Staking
+- Single-token staking
+- Airdrop contracts
+- Vesting contracts
+- Voting and Timelock contracts
