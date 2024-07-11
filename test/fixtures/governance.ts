@@ -1,27 +1,29 @@
 import hre from "hardhat";
 import { deployLendingPool } from "./lending";
-import { ZERO_ADDRESS, initProxy, supply } from "./utils";
+import { initProxy, supply } from "./utils";
 import {
-  LockerLP,
   LockerToken,
-  OmnichainStaking,
+  ZeroLend,
+  OmnichainStakingToken,
   PoolVoter,
   StakingBonus,
   VestedZeroNFT,
 } from "../../types";
+import { LockerLP } from "../../typechain-types";
 
 export async function deployGovernance() {
   const lendingPool = await deployLendingPool();
-
   // Contracts are deployed using the first signer/account by default
   const [deployer, ant, whale] = await hre.ethers.getSigners();
 
   // Deploy contracts
-  const ZeroLendToken = await hre.ethers.getContractFactory("ZeroLend");
+  const ZeroLendTokenF = await hre.ethers.getContractFactory("ZeroLend");
 
-  const zero = await ZeroLendToken.deploy();
+  const zero: ZeroLend = await ZeroLendTokenF.deploy();
   const stakingBonus = await initProxy<StakingBonus>("StakingBonus");
-  const staking = await initProxy<OmnichainStaking>("OmnichainStaking");
+  const staking = await initProxy<OmnichainStakingToken>(
+    "OmnichainStakingToken"
+  );
   const lockerLP = await initProxy<LockerLP>("LockerLP");
   const lockerToken = await initProxy<LockerToken>("LockerToken");
   const poolVoter = await initProxy<PoolVoter>("PoolVoter");
@@ -40,14 +42,12 @@ export async function deployGovernance() {
   await lockerLP.init(zero.target, staking.target); // TODO: add a simple LP token
   await poolVoter.init(staking.target, zero.target);
   await staking.init(
-    ZERO_ADDRESS,
     lockerToken.target,
-    lockerLP.target,
     zero.target,
     poolVoter.target,
     86400 * 14, // 14 days
-    ZERO_ADDRESS,
-    ZERO_ADDRESS
+    deployer.address,
+    deployer.address
   );
 
   // unpause zero
@@ -59,8 +59,8 @@ export async function deployGovernance() {
   return {
     ant,
     deployer,
-    lending: lendingPool,
     lockerToken,
+    lending: lendingPool,
     lockerLP,
     omnichainStaking: staking,
     stakingBonus,

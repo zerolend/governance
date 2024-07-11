@@ -46,6 +46,8 @@ export async function deployLendingPool() {
     owner.address
   );
 
+  console.log("hit");
+
   const protocolDataProvider = await AaveProtocolDataProvider.deploy(
     addressesProvider.target
   );
@@ -131,7 +133,8 @@ export async function deployLendingPool() {
   // deploy incentives
   const emissionManager = await EmissionManager.deploy(owner.address);
   const rewardsController = await RewardsController.deploy(
-    emissionManager.target
+    emissionManager.target,
+    ZERO_ADDRESS
   );
   await rewardsController.initialize(ZERO_ADDRESS);
   await emissionManager.setEmissionAdmin(erc20.target, emissionManager.target);
@@ -194,6 +197,7 @@ export async function deployLendingPool() {
     8250,
     10500
   );
+  console.log("hit22");
 
   return {
     aclManager,

@@ -17,7 +17,7 @@ const main = async function () {
     "TransparentUpgradeableProxy"
   );
   const OmnichainStaking = await hre.ethers.getContractFactory(
-    "OmnichainStaking"
+    "OmnichainStakingToken"
   );
   const LockerToken = await hre.ethers.getContractFactory("LockerToken");
   const zero = await hre.ethers.getContractAt("ZeroLend", token);

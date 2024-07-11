@@ -5,7 +5,7 @@ import {BaseLocker} from "../BaseLocker.sol";
 import {IBlastPoints} from "../../interfaces/IBlastPoints.sol";
 import {IHyperLockERC20} from "../../interfaces/IHyperLockERC20.sol";
 
-contract LockerLP is BaseLocker {
+contract LockerLPBlast is BaseLocker {
     IHyperLockERC20 hyperlock;
 
     function init(

@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 // load env file
 import dotenv from "dotenv";
-import { ZERO_ADDRESS, supply } from "../test/fixtures/utils";
+import { supply } from "../test/fixtures/utils";
 dotenv.config();
 
 const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
@@ -15,7 +15,7 @@ const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
   const VestedZeroNFT = await hre.ethers.getContractFactory("VestedZeroNFT");
   const StakingBonus = await hre.ethers.getContractFactory("StakingBonus");
   const OmnichainStaking = await hre.ethers.getContractFactory(
-    "OmnichainStaking"
+    "OmnichainStakingToken"
   );
   const LockerToken = await hre.ethers.getContractFactory("LockerToken");
   const stakingBonus = await StakingBonus.deploy();
@@ -34,36 +34,26 @@ const deployGovernance = async function (hre: HardhatRuntimeEnvironment) {
     vestedZeroNFT.target,
     2000
   );
-  await lockerToken.init(
-    zero.target,
-    omnichainStaking.target,
-    stakingBonus.target
-  );
+  await lockerToken.init(zero.target, omnichainStaking.target);
+  await lockerLP.init(zero.target, omnichainStaking.target);
 
-  // TODO use lp tokens
-  await lockerLP.init(
-    zero.target,
-    omnichainStaking.target,
-    stakingBonus.target
-  );
   // unpause zero
   await zero.togglePause(false);
   // give necessary approvals
   await zero.approve(vestedZeroNFT.target, 100n * supply);
-  
+
   const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
   const poolVoter = await PoolVoter.deploy();
   await omnichainStaking.init(
-    ZERO_ADDRESS,
-    lockerToken.target,
-    lockerLP.target,
-    zero.target,
-    poolVoter.target,
-    51536000/2
+    lockerToken.target, // address _locker,
+    zero.target, // address _zeroToken,
+    poolVoter.target, // address _poolVoter,
+    0, // uint256 _rewardsDuration,
+    deployer.address, // address _owner,
+    deployer.address // address _distributor
   );
-  await poolVoter.init(omnichainStaking.target, zero.target);
 
-  //Deploying Gauges
+  await poolVoter.init(omnichainStaking.target, zero.target);
 
   console.log("stakingBonus", stakingBonus.target);
   console.log("omnichainStaking", omnichainStaking.target);

@@ -111,9 +111,6 @@ export async function getPoolVoterContracts(networkDetails: INetworkDetails) {
   const governance = await getGovernanceContracts(networkDetails);
   const lending = await getLendingPoolContracts(networkDetails);
 
-  const MockEligibilityCriteria = await ethers.getContractFactory(
-    "MockEligibilityCriteria"
-  );
   const LendingPoolGaugeFactory = await ethers.getContractFactory(
     "LendingPoolGaugeFactory"
   );
@@ -125,7 +122,6 @@ export async function getPoolVoterContracts(networkDetails: INetworkDetails) {
   );
 
   const aggregator = await MockAggregator.deploy(1e8);
-  const eligibilityCriteria = await MockEligibilityCriteria.deploy();
   const tokens = await lending.protocolDataProvider.getReserveTokensAddresses(
     lending.erc20.target
   );
@@ -148,7 +144,6 @@ export async function getPoolVoterContracts(networkDetails: INetworkDetails) {
   await factory.setAddresses(
     guageImpl.target,
     governance.zero.target,
-    eligibilityCriteria.target,
     lending.oracle.target,
     governance.vestedZeroNFT.target,
     lending.protocolDataProvider.target
@@ -168,7 +163,7 @@ export async function getPoolVoterContracts(networkDetails: INetworkDetails) {
   await factory.createGauge(await lending.erc20.getAddress());
 
   const gauges = await factory.gauges(lending.erc20.target);
-  await poolVoter.registerGauge(lending.erc20.target, gauges.splitterGauge);
+  // await poolVoter.registerGauge(lending.erc20.target, gauges.splitterGauge);
 
   const aTokenGauge = await ethers.getContractAt(
     "GaugeIncentiveController",
@@ -188,7 +183,6 @@ export async function getPoolVoterContracts(networkDetails: INetworkDetails) {
     aToken,
     aTokenGauge,
     varTokenGauge,
-    eligibilityCriteria,
     aggregator,
   };
 }

@@ -13,7 +13,7 @@ const main = async function () {
   );
   const PoolVoter = await hre.ethers.getContractFactory("PoolVoter");
   const OmnichainStaking = await hre.ethers.getContractFactory(
-    "OmnichainStaking"
+    "OmnichainStakingToken"
   );
   const airdropContractFC = await hre.ethers.getContractFactory(
     "AirdropRewarder"
@@ -78,7 +78,7 @@ const main = async function () {
     stakingBonusProxy.target
   );
   const omnichainStaking = await hre.ethers.getContractAt(
-    "OmnichainStaking",
+    "OmnichainStakingToken",
     omnichainStakingProxy.target
   );
   const lockerToken = await hre.ethers.getContractAt(
