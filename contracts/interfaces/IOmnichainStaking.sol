@@ -13,8 +13,6 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 import {ILocker} from "./ILocker.sol";
 
 interface IOmnichainStaking is IVotes {
@@ -50,5 +48,8 @@ interface IOmnichainStaking is IVotes {
     event RewardsDurationUpdated(uint256 newDuration);
     event TokenLockerUpdated(address previousLocker, address _tokenLocker);
     event RewardsTokenUpdated(address previousToken, address _zeroToken);
-    event PoolVoterUpdated(address previousVoter, address _poolVoter);
+    event VotingPowerCombinedUpdated(
+        address previousVotingPowerCombined,
+        address _votingPowerCombined
+    );
 }

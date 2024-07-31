@@ -15,10 +15,8 @@ pragma solidity ^0.8.20;
 import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/ERC20VotesUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ILocker} from "../../interfaces/ILocker.sol";
-import {ILPOracle} from "../../interfaces/ILPOracle.sol";
 import {IOmnichainStaking} from "../../interfaces/IOmnichainStaking.sol";
-import {IPoolVoter} from "../../interfaces/IPoolVoter.sol";
-import {IPythAggregatorV3} from "../../interfaces/IPythAggregatorV3.sol";
+import {IVotingPowerCombined} from "../../interfaces/IVotingPowerCombined.sol";
 import {IWETH} from "../../interfaces/IWETH.sol";
 import {IZeroLend} from "../../interfaces/IZeroLend.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -37,7 +35,7 @@ abstract contract OmnichainStakingBase is
 {
     ILocker public locker;
     ILocker public __; // unwanted variable to keep storage layout
-    IPoolVoter public poolVoter;
+    IVotingPowerCombined public votingPowerCombined;
 
     // staking reward variables
     IZeroLend public rewardsToken;
@@ -75,7 +73,7 @@ abstract contract OmnichainStakingBase is
         string memory symbol,
         address _locker,
         address _zeroToken,
-        address _poolVoter,
+        address _votingPowerCombined,
         uint256 _rewardsDuration,
         address _distributor
     ) internal {
@@ -85,7 +83,7 @@ abstract contract OmnichainStakingBase is
         __ERC20_init(name, symbol);
 
         locker = ILocker(_locker);
-        poolVoter = IPoolVoter(_poolVoter);
+        votingPowerCombined = IVotingPowerCombined(_votingPowerCombined);
         rewardsToken = IZeroLend(_zeroToken);
         rewardsDuration = _rewardsDuration;
 
@@ -185,7 +183,7 @@ abstract contract OmnichainStakingBase is
         // reset and burn voting power
         _burn(msg.sender, tokenPower[tokenId]);
         tokenPower[tokenId] = 0;
-        poolVoter.reset(msg.sender);
+        votingPowerCombined.reset(msg.sender);
 
         locker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
@@ -210,7 +208,7 @@ abstract contract OmnichainStakingBase is
         _mint(msg.sender, tokenPower[tokenId]);
 
         // reset all the votes for the user
-        poolVoter.reset(msg.sender);
+        votingPowerCombined.reset(msg.sender);
     }
 
     /**
@@ -238,7 +236,7 @@ abstract contract OmnichainStakingBase is
         _mint(msg.sender, tokenPower[tokenId]);
 
         // reset all the votes for the user
-        poolVoter.reset(msg.sender);
+        votingPowerCombined.reset(msg.sender);
     }
 
     /**
@@ -352,13 +350,13 @@ abstract contract OmnichainStakingBase is
     }
 
     /**
-     * Admin only function to set the pool voter contract
+     * Admin only function to set the VotingPowerCombined contract address
      *
      * @param what The new address for the pool voter contract
      */
-    function setPoolVoter(address what) external onlyOwner {
-        emit PoolVoterUpdated(address(poolVoter), what);
-        poolVoter = IPoolVoter(what);
+    function setVotingPowerCombined(address what) external onlyOwner {
+        emit VotingPowerCombinedUpdated(address(votingPowerCombined), what);
+        votingPowerCombined = IVotingPowerCombined(what);
     }
 
     /**
@@ -408,24 +406,6 @@ abstract contract OmnichainStakingBase is
             require(ethSendSuccess, "eth send failed");
             emit RewardPaid(msg.sender, reward);
         }
-    }
-
-    /**
-     * @dev Prevents transfers of voting power.
-     */
-    function transfer(address, uint256) public pure override returns (bool) {
-        revert("transfer disabled");
-    }
-
-    /**
-     * @dev Prevents transfers of voting power.
-     */
-    function transferFrom(
-        address,
-        address,
-        uint256
-    ) public pure override returns (bool) {
-        revert("transferFrom disabled");
     }
 
     /**
