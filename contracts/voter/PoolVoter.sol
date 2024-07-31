@@ -34,6 +34,8 @@ contract PoolVoter is
     mapping(address => uint256) public supplyIndex;
     mapping(address => uint256) public claimable;
 
+    address public votingPowerCombined;
+
     /**
      * @notice Initializes the PoolVoter contract with the specified staking and reward tokens.
      * @dev This function is called only once during deployment.
@@ -74,7 +76,7 @@ contract PoolVoter is
      */
     function reset(address _who) external override {
         require(
-            msg.sender == _who || msg.sender == address(staking),
+            msg.sender == _who || msg.sender == address(votingPowerCombined),
             "Invalid reset performed"
         );
         _reset(_who);
