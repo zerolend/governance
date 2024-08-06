@@ -165,27 +165,13 @@ abstract contract OmnichainStakingBase is
     }
 
     /**
-     * @dev Unstakes a regular token NFT and transfers it back to the user.
-     * @param tokenId The ID of the regular token NFT to unstake.
+     * @notice A single withdraw function to unstake NFT, transfer it back to
+     * the user, and also withdraw all tokens for `tokenId` from the locker.
+     * @param tokenId The ID of the regular token NFT to unstake and withdraw.
      */
-    function unstakeToken(uint256 tokenId) external updateReward(msg.sender) {
-        require(lockedByToken[tokenId] != address(0), "!tokenId");
-        address lockedBy_ = lockedByToken[tokenId];
-        if (_msgSender() != lockedBy_)
-            revert InvalidUnstaker(_msgSender(), lockedBy_);
-
-        delete lockedByToken[tokenId];
-        lockedTokenIdNfts[_msgSender()] = deleteAnElement(
-            lockedTokenIdNfts[_msgSender()],
-            tokenId
-        );
-
-        // reset and burn voting power
-        _burn(msg.sender, tokenPower[tokenId]);
-        tokenPower[tokenId] = 0;
-        votingPowerCombined.reset(msg.sender);
-
-        locker.safeTransferFrom(address(this), msg.sender, tokenId);
+    function unstakeAndWithdraw(uint256 tokenId) external {
+        _unstakeToken(tokenId);
+        locker.withdraw(tokenId);
     }
 
     /**
@@ -406,6 +392,30 @@ abstract contract OmnichainStakingBase is
             require(ethSendSuccess, "eth send failed");
             emit RewardPaid(msg.sender, reward);
         }
+    }
+
+    /**
+     * @dev Unstakes a regular token NFT and transfers it back to the user.
+     * @param tokenId The ID of the regular token NFT to unstake.
+     */
+    function _unstakeToken(uint256 tokenId) internal updateReward(msg.sender) {
+        require(lockedByToken[tokenId] != address(0), "!tokenId");
+        address lockedBy_ = lockedByToken[tokenId];
+        if (_msgSender() != lockedBy_)
+            revert InvalidUnstaker(_msgSender(), lockedBy_);
+
+        delete lockedByToken[tokenId];
+        lockedTokenIdNfts[_msgSender()] = deleteAnElement(
+            lockedTokenIdNfts[_msgSender()],
+            tokenId
+        );
+
+        // reset and burn voting power
+        _burn(msg.sender, tokenPower[tokenId]);
+        tokenPower[tokenId] = 0;
+        votingPowerCombined.reset(msg.sender);
+
+        locker.safeTransferFrom(address(this), msg.sender, tokenId);
     }
 
     /**
