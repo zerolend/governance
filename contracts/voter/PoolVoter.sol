@@ -42,11 +42,12 @@ contract PoolVoter is
      * @param _staking The address of the staking token (VE token).
      * @param _reward The address of the reward token.
      */
-    function init(address _staking, address _reward) external reinitializer(1) {
+    function init(address _staking, address _reward, address _votingPowerCombined) external reinitializer(1) {
         staking = IVotes(_staking);
         reward = IERC20(_reward);
         __ReentrancyGuard_init();
         __Ownable_init(msg.sender);
+        votingPowerCombined = _votingPowerCombined;
     }
 
     /**
