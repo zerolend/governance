@@ -292,8 +292,7 @@ contract BaseLocker is
     /// @dev Only possible if the lock has expired
     function withdraw(uint256 _tokenId) public virtual nonReentrant {
         require(
-            _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId) ||
-            address(staking) == msg.sender,
+            _isAuthorized(ownerOf(_tokenId), msg.sender, _tokenId),
             "caller is not owner nor approved"
         );
 
