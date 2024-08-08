@@ -168,24 +168,20 @@ abstract contract OmnichainStakingBase is
      * @dev Unstakes a regular token NFT and transfers it back to the user.
      * @param tokenId The ID of the regular token NFT to unstake.
      */
-    function unstakeToken(uint256 tokenId) external updateReward(msg.sender) {
-        require(lockedByToken[tokenId] != address(0), "!tokenId");
-        address lockedBy_ = lockedByToken[tokenId];
-        if (_msgSender() != lockedBy_)
-            revert InvalidUnstaker(_msgSender(), lockedBy_);
+    function unstakeToken(uint256 tokenId) external {
+        _unstakeToken(tokenId);
+    }
 
-        delete lockedByToken[tokenId];
-        lockedTokenIdNfts[_msgSender()] = deleteAnElement(
-            lockedTokenIdNfts[_msgSender()],
-            tokenId
-        );
-
-        // reset and burn voting power
-        _burn(msg.sender, tokenPower[tokenId]);
-        tokenPower[tokenId] = 0;
-        votingPowerCombined.reset(msg.sender);
-
-        locker.safeTransferFrom(address(this), msg.sender, tokenId);
+    /**
+     * @notice A single withdraw function to unstake NFT, transfer it back to
+     * the user, and also withdraw all tokens for `tokenId` from the locker.
+     * @param tokenId The ID of the regular token NFT to unstake and withdraw.
+     */
+    function unstakeAndWithdraw(uint256 tokenId) external nonReentrant {
+        _unstakeToken(tokenId);
+        uint256 lockedAmount = locker.locked(tokenId).amount;
+        locker.withdraw(tokenId);
+        assert(rewardsToken.transfer(msg.sender, lockedAmount));
     }
 
     /**
@@ -406,6 +402,29 @@ abstract contract OmnichainStakingBase is
             require(ethSendSuccess, "eth send failed");
             emit RewardPaid(msg.sender, reward);
         }
+    }
+
+    /**
+     * @dev Unstakes a regular token NFT, doesn't send the NFT back to user.
+     * @param tokenId The ID of the regular token NFT to unstake.
+     */
+    function _unstakeToken(uint256 tokenId) internal updateReward(msg.sender) {
+        address sender = msg.sender;
+        require(lockedByToken[tokenId] != address(0), "!tokenId");
+        address lockedBy_ = lockedByToken[tokenId];
+        if (sender != lockedBy_)
+            revert InvalidUnstaker(sender, lockedBy_);
+
+        delete lockedByToken[tokenId];
+        lockedTokenIdNfts[sender] = deleteAnElement(
+            lockedTokenIdNfts[sender],
+            tokenId
+        );
+
+        // reset and burn voting power
+        _burn(sender, tokenPower[tokenId]);
+        tokenPower[tokenId] = 0;
+        votingPowerCombined.reset(sender);
     }
 
     /**
