@@ -179,7 +179,9 @@ abstract contract OmnichainStakingBase is
      */
     function unstakeAndWithdraw(uint256 tokenId) external nonReentrant {
         _unstakeToken(tokenId);
+        uint256 lockedAmount = locker.locked(tokenId).amount;
         locker.withdraw(tokenId);
+        assert(rewardsToken.transfer(msg.sender, lockedAmount));
     }
 
     /**
