@@ -21,11 +21,7 @@ import {Address} from "@openzeppelin/contracts/utils/Address.sol";
  * to position this {TimelockController} as the owner of a smart contract, with
  * a multisig or a DAO as the sole proposer.
  */
-contract TimelockControllerEnumerable is
-    AccessControlEnumerable,
-    ERC721Holder,
-    ERC1155Holder
-{
+contract TimelockControllerEnumerable is AccessControlEnumerable, ERC721Holder, ERC1155Holder {
     bytes32 public constant PROPOSER_ROLE = keccak256("PROPOSER_ROLE");
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
     bytes32 public constant CANCELLER_ROLE = keccak256("CANCELLER_ROLE");
@@ -44,11 +40,7 @@ contract TimelockControllerEnumerable is
     /**
      * @dev Mismatch between the parameters length for an operation call.
      */
-    error TimelockInvalidOperationLength(
-        uint256 targets,
-        uint256 payloads,
-        uint256 values
-    );
+    error TimelockInvalidOperationLength(uint256 targets, uint256 payloads, uint256 values);
 
     /**
      * @dev The schedule operation doesn't meet the minimum delay.
@@ -62,10 +54,7 @@ contract TimelockControllerEnumerable is
      *
      * See {_encodeStateBitmap}.
      */
-    error TimelockUnexpectedOperationState(
-        bytes32 operationId,
-        bytes32 expectedStates
-    );
+    error TimelockUnexpectedOperationState(bytes32 operationId, bytes32 expectedStates);
 
     /**
      * @dev The predecessor to an operation not yet done.
@@ -93,13 +82,7 @@ contract TimelockControllerEnumerable is
     /**
      * @dev Emitted when a call is performed as part of operation `id`.
      */
-    event CallExecuted(
-        bytes32 indexed id,
-        uint256 indexed index,
-        address target,
-        uint256 value,
-        bytes data
-    );
+    event CallExecuted(bytes32 indexed id, uint256 indexed index, address target, uint256 value, bytes data);
 
     /**
      * @dev Emitted when new proposal is scheduled with non-zero salt.
@@ -129,12 +112,7 @@ contract TimelockControllerEnumerable is
      * administration through timelocked proposals. Previous versions of this contract would assign
      * this admin to the deployer automatically and should be renounced as well.
      */
-    constructor(
-        uint256 minDelay,
-        address[] memory proposers,
-        address[] memory executors,
-        address admin
-    ) {
+    constructor(uint256 minDelay, address[] memory proposers, address[] memory executors, address admin) {
         // self administration
         _grantRole(DEFAULT_ADMIN_ROLE, address(this));
 
@@ -179,9 +157,7 @@ contract TimelockControllerEnumerable is
     /**
      * @dev See {IERC165-supportsInterface}.
      */
-    function supportsInterface(
-        bytes4 interfaceId
-    )
+    function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual
@@ -232,9 +208,7 @@ contract TimelockControllerEnumerable is
     /**
      * @dev Returns operation state.
      */
-    function getOperationState(
-        bytes32 id
-    ) public view virtual returns (OperationState) {
+    function getOperationState(bytes32 id) public view virtual returns (OperationState) {
         uint256 timestamp = getTimestamp(id);
         if (timestamp == 0) {
             return OperationState.Unset;
@@ -260,13 +234,12 @@ contract TimelockControllerEnumerable is
      * @dev Returns the identifier of an operation containing a single
      * transaction.
      */
-    function hashOperation(
-        address target,
-        uint256 value,
-        bytes calldata data,
-        bytes32 predecessor,
-        bytes32 salt
-    ) public pure virtual returns (bytes32) {
+    function hashOperation(address target, uint256 value, bytes calldata data, bytes32 predecessor, bytes32 salt)
+        public
+        pure
+        virtual
+        returns (bytes32)
+    {
         return keccak256(abi.encode(target, value, data, predecessor, salt));
     }
 
@@ -281,8 +254,7 @@ contract TimelockControllerEnumerable is
         bytes32 predecessor,
         bytes32 salt
     ) public pure virtual returns (bytes32) {
-        return
-            keccak256(abi.encode(targets, values, payloads, predecessor, salt));
+        return keccak256(abi.encode(targets, values, payloads, predecessor, salt));
     }
 
     /**
@@ -327,34 +299,14 @@ contract TimelockControllerEnumerable is
         bytes32 salt,
         uint256 delay
     ) public virtual onlyRole(PROPOSER_ROLE) {
-        if (
-            targets.length != values.length || targets.length != payloads.length
-        ) {
-            revert TimelockInvalidOperationLength(
-                targets.length,
-                payloads.length,
-                values.length
-            );
+        if (targets.length != values.length || targets.length != payloads.length) {
+            revert TimelockInvalidOperationLength(targets.length, payloads.length, values.length);
         }
 
-        bytes32 id = hashOperationBatch(
-            targets,
-            values,
-            payloads,
-            predecessor,
-            salt
-        );
+        bytes32 id = hashOperationBatch(targets, values, payloads, predecessor, salt);
         _schedule(id, delay);
         for (uint256 i = 0; i < targets.length; ++i) {
-            emit CallScheduled(
-                id,
-                i,
-                targets[i],
-                values[i],
-                payloads[i],
-                predecessor,
-                delay
-            );
+            emit CallScheduled(id, i, targets[i], values[i], payloads[i], predecessor, delay);
         }
         if (salt != bytes32(0)) {
             emit CallSalt(id, salt);
@@ -366,10 +318,7 @@ contract TimelockControllerEnumerable is
      */
     function _schedule(bytes32 id, uint256 delay) private {
         if (isOperation(id)) {
-            revert TimelockUnexpectedOperationState(
-                id,
-                _encodeStateBitmap(OperationState.Unset)
-            );
+            revert TimelockUnexpectedOperationState(id, _encodeStateBitmap(OperationState.Unset));
         }
         uint256 minDelay = getMinDelay();
         if (delay < minDelay) {
@@ -388,9 +337,7 @@ contract TimelockControllerEnumerable is
     function cancel(bytes32 id) public virtual onlyRole(CANCELLER_ROLE) {
         if (!isOperationPending(id)) {
             revert TimelockUnexpectedOperationState(
-                id,
-                _encodeStateBitmap(OperationState.Waiting) |
-                    _encodeStateBitmap(OperationState.Ready)
+                id, _encodeStateBitmap(OperationState.Waiting) | _encodeStateBitmap(OperationState.Ready)
             );
         }
         delete _timestamps[id];
@@ -410,13 +357,12 @@ contract TimelockControllerEnumerable is
     // This function can reenter, but it doesn't pose a risk because _afterCall checks that the proposal is pending,
     // thus any modifications to the operation during reentrancy should be caught.
     // slither-disable-next-line reentrancy-eth
-    function execute(
-        address target,
-        uint256 value,
-        bytes calldata payload,
-        bytes32 predecessor,
-        bytes32 salt
-    ) public payable virtual onlyRoleOrOpenRole(EXECUTOR_ROLE) {
+    function execute(address target, uint256 value, bytes calldata payload, bytes32 predecessor, bytes32 salt)
+        public
+        payable
+        virtual
+        onlyRoleOrOpenRole(EXECUTOR_ROLE)
+    {
         bytes32 id = hashOperation(target, value, payload, predecessor, salt);
 
         _beforeCall(id, predecessor);
@@ -444,23 +390,11 @@ contract TimelockControllerEnumerable is
         bytes32 predecessor,
         bytes32 salt
     ) public payable virtual onlyRoleOrOpenRole(EXECUTOR_ROLE) {
-        if (
-            targets.length != values.length || targets.length != payloads.length
-        ) {
-            revert TimelockInvalidOperationLength(
-                targets.length,
-                payloads.length,
-                values.length
-            );
+        if (targets.length != values.length || targets.length != payloads.length) {
+            revert TimelockInvalidOperationLength(targets.length, payloads.length, values.length);
         }
 
-        bytes32 id = hashOperationBatch(
-            targets,
-            values,
-            payloads,
-            predecessor,
-            salt
-        );
+        bytes32 id = hashOperationBatch(targets, values, payloads, predecessor, salt);
 
         _beforeCall(id, predecessor);
         for (uint256 i = 0; i < targets.length; ++i) {
@@ -476,14 +410,8 @@ contract TimelockControllerEnumerable is
     /**
      * @dev Execute an operation's call.
      */
-    function _execute(
-        address target,
-        uint256 value,
-        bytes calldata data
-    ) internal virtual {
-        (bool success, bytes memory returndata) = target.call{value: value}(
-            data
-        );
+    function _execute(address target, uint256 value, bytes calldata data) internal virtual {
+        (bool success, bytes memory returndata) = target.call{value: value}(data);
         Address.verifyCallResult(success, returndata);
     }
 
@@ -492,10 +420,7 @@ contract TimelockControllerEnumerable is
      */
     function _beforeCall(bytes32 id, bytes32 predecessor) private view {
         if (!isOperationReady(id)) {
-            revert TimelockUnexpectedOperationState(
-                id,
-                _encodeStateBitmap(OperationState.Ready)
-            );
+            revert TimelockUnexpectedOperationState(id, _encodeStateBitmap(OperationState.Ready));
         }
         if (predecessor != bytes32(0) && !isOperationDone(predecessor)) {
             revert TimelockUnexecutedPredecessor(predecessor);
@@ -507,10 +432,7 @@ contract TimelockControllerEnumerable is
      */
     function _afterCall(bytes32 id) private {
         if (!isOperationReady(id)) {
-            revert TimelockUnexpectedOperationState(
-                id,
-                _encodeStateBitmap(OperationState.Ready)
-            );
+            revert TimelockUnexpectedOperationState(id, _encodeStateBitmap(OperationState.Ready));
         }
         _timestamps[id] = _DONE_TIMESTAMP;
     }
@@ -545,9 +467,7 @@ contract TimelockControllerEnumerable is
      *           ^-- Waiting
      *            ^- Unset
      */
-    function _encodeStateBitmap(
-        OperationState operationState
-    ) internal pure returns (bytes32) {
+    function _encodeStateBitmap(OperationState operationState) internal pure returns (bytes32) {
         return bytes32(1 << uint8(operationState));
     }
 }

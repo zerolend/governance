@@ -93,8 +93,9 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
 
         bytes32 node = keccak256(abi.encodePacked(_user, _claimAmount));
 
-        if (!MerkleProof.verify(_merkleProofs, merkleRoot, node))
+        if (!MerkleProof.verify(_merkleProofs, merkleRoot, node)) {
             revert InvalidMerkleProof(_merkleProofs);
+        }
 
         if (rewardsClaimed[_user]) revert RewardsAlreadyClaimed();
 
@@ -112,14 +113,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
         } else {
             rewardToken.approve(address(vestedZeroNFT), remainingAmount);
             vestedZeroNFT.mint(
-                _user,
-                remainingAmount,
-                0,
-                91 days,
-                90 days,
-                0,
-                false,
-                IVestedZeroNFT.VestCategory.AIRDROP
+                _user, remainingAmount, 0, 91 days, 90 days, 0, false, IVestedZeroNFT.VestCategory.AIRDROP
             );
             emit RewardsVested(_user, remainingAmount);
         }
@@ -128,10 +122,7 @@ contract AirdropRewarder is Initializable, OwnableUpgradeable {
     }
 
     function adminWithdrawal() public onlyOwner {
-        rewardToken.safeTransfer(
-            _msgSender(),
-            rewardToken.balanceOf(address(this))
-        );
+        rewardToken.safeTransfer(_msgSender(), rewardToken.balanceOf(address(this)));
         emit RewardTerminated();
     }
 }

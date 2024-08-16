@@ -2,7 +2,11 @@
 pragma solidity 0.8.12;
 
 import {Ownable} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/Ownable.sol";
-import {IEmissionManager, ITransferStrategyBase, IEACAggregatorProxy} from "@zerolendxyz/periphery-v3/contracts/rewards/interfaces/IEmissionManager.sol";
+import {
+    IEmissionManager,
+    ITransferStrategyBase,
+    IEACAggregatorProxy
+} from "@zerolendxyz/periphery-v3/contracts/rewards/interfaces/IEmissionManager.sol";
 import {IERC20} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol";
 import {IPoolDataProvider} from "@zerolendxyz/core-v3/contracts/interfaces/IPoolDataProvider.sol";
 import {IRewardDistributor} from "../../../interfaces/IRewardDistributor.sol";
@@ -46,17 +50,10 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         updateData(_oracle, _strategy, _duration);
     }
 
-    function updateData(
-        address _oracle,
-        address _strategy,
-        uint32 _duration
-    ) public onlyOwner {
+    function updateData(address _oracle, address _strategy, uint32 _duration) public onlyOwner {
         // get data from pool provider
-        (z0Token, z0TokenDebt, ) = dataProvider.getReserveTokensAddresses(
-            asset
-        );
-        (, , , , , , bool borrowingEnabled, , , ) = dataProvider
-            .getReserveConfigurationData(asset);
+        (z0Token, z0TokenDebt,) = dataProvider.getReserveTokensAddresses(asset);
+        (,,,,,, bool borrowingEnabled,,,) = dataProvider.getReserveConfigurationData(asset);
 
         // if there is no borrowing enabled then reduce to 0
         if (!borrowingEnabled) z0TokenDebt = address(0);
@@ -66,10 +63,7 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         strategy = ITransferStrategyBase(_strategy);
     }
 
-    function notifyRewardAmount(
-        address token,
-        uint256 amount
-    ) external returns (bool) {
+    function notifyRewardAmount(address token, uint256 amount) external returns (bool) {
         require(msg.sender == voter, "!voter");
         require(block.timestamp >= nextEpoch, "!epoch");
         require(token == zero, "!token");
@@ -87,22 +81,16 @@ contract LendingPoolGaugeV2 is Ownable, IRewardDistributor {
         uint88 emissionPerSecond = uint88(amount / duration);
 
         // send 1/4 to the supply side if there is no debt. else send all the rewards to the supply side
-        uint88 emissionPerSecondSupply = z0TokenDebt != address(0)
-            ? emissionPerSecond / 4
-            : emissionPerSecond;
+        uint88 emissionPerSecondSupply = z0TokenDebt != address(0) ? emissionPerSecond / 4 : emissionPerSecond;
 
         // send 3/4th to the borrow side if there is a debt token. else send 0
-        uint88 emissionPerSecondDebt = z0TokenDebt != address(0)
-            ? (emissionPerSecond * 3) / 4
-            : 0;
+        uint88 emissionPerSecondDebt = z0TokenDebt != address(0) ? (emissionPerSecond * 3) / 4 : 0;
 
         // config the params for the emission manager
-        RewardsDataTypes.RewardsConfigInput[]
-            memory data = new RewardsDataTypes.RewardsConfigInput[](
-                emissionPerSecondDebt > 0 ? 2 : 1
-                // Uncomment the below line to complete tests
-                // emissionPerSecondDebt > 0 ? 1 : 1
-            );
+        RewardsDataTypes.RewardsConfigInput[] memory data =
+            new RewardsDataTypes.RewardsConfigInput[](emissionPerSecondDebt > 0 ? 2 : 1);
+        // Uncomment the below line to complete tests
+        // emissionPerSecondDebt > 0 ? 1 : 1
 
         data[0] = RewardsDataTypes.RewardsConfigInput({
             emissionPerSecond: emissionPerSecondSupply,

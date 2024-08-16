@@ -9,11 +9,7 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract PoolVoter is
-    IPoolVoter,
-    ReentrancyGuardUpgradeable,
-    OwnableUpgradeable
-{
+contract PoolVoter is IPoolVoter, ReentrancyGuardUpgradeable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
 
     IVotes public staking; // the ve token that governs these contracts
@@ -76,10 +72,7 @@ contract PoolVoter is
      * @dev Only callable by the owner of the contract.
      */
     function reset(address _who) external override {
-        require(
-            msg.sender == _who || msg.sender == address(votingPowerCombined),
-            "Invalid reset performed"
-        );
+        require(msg.sender == _who || msg.sender == address(votingPowerCombined), "Invalid reset performed");
         _reset(_who);
     }
 
@@ -89,10 +82,7 @@ contract PoolVoter is
      * @param _weights An array of weights corresponding to each pool vote.
      * @dev The number of elements in _poolVote and _weights arrays must be the same.
      */
-    function vote(
-        address[] calldata _poolVote,
-        uint256[] calldata _weights
-    ) external {
+    function vote(address[] calldata _poolVote, uint256[] calldata _weights) external {
         require(_poolVote.length == _weights.length, "Invalid number of votes");
         _vote(msg.sender, _poolVote, _weights);
     }
@@ -105,11 +95,7 @@ contract PoolVoter is
      * @return The address of the registered gauge contract.
      * @dev Only callable by the owner of the contract.
      */
-    function registerGauge(
-        address _asset,
-        address _gauge,
-        address _bribe
-    ) external onlyOwner returns (address) {
+    function registerGauge(address _asset, address _gauge, address _bribe) external onlyOwner returns (address) {
         if (!isPool[_asset]) {
             _pools.push(_asset);
             isPool[_asset] = true;
@@ -174,7 +160,7 @@ contract PoolVoter is
     function getPoolWeights() external view returns (uint256[] memory) {
         uint256 poolsLength = _pools.length;
         uint256[] memory poolWeights = new uint256[](poolsLength);
-        for (uint256 i; i < poolsLength; ) {
+        for (uint256 i; i < poolsLength;) {
             poolWeights[i] = weights[_pools[i]];
             unchecked {
                 ++i;
@@ -188,12 +174,10 @@ contract PoolVoter is
      * @param user The address of the user for which votes are queried.
      * @return An array containing the votes of the specified user for each pool.
      */
-    function getUserVotes(
-        address user
-    ) external view returns (uint256[] memory) {
+    function getUserVotes(address user) external view returns (uint256[] memory) {
         uint256 poolsLength = _pools.length;
         uint256[] memory userVotes = new uint256[](poolsLength);
-        for (uint256 i; i < poolsLength; ) {
+        for (uint256 i; i < poolsLength;) {
             userVotes[i] = votes[_pools[i]][user];
             unchecked {
                 ++i;
@@ -294,11 +278,7 @@ contract PoolVoter is
      * @param _weights An array of weights corresponding to each pool vote.
      * @dev This function is used internally and not meant to be directly called outside the contract.
      */
-    function _vote(
-        address _who,
-        address[] memory _poolVote,
-        uint256[] memory _weights
-    ) internal {
+    function _vote(address _who, address[] memory _poolVote, uint256[] memory _weights) internal {
         _reset(_who);
         uint256 _poolCnt = _poolVote.length;
         uint256 _weight = staking.getVotes(_who);

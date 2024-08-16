@@ -33,12 +33,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         _disableInitializers();
     }
 
-    function init(
-        address _zero,
-        address _locker,
-        address _vestedZERO,
-        uint256 _bonusBps
-    ) external initializer {
+    function init(address _zero, address _locker, address _vestedZERO, uint256 _bonusBps) external initializer {
         __Ownable_init(msg.sender);
         zero = IERC20(_zero);
         locker = IZeroLocker(_locker);
@@ -56,12 +51,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         vestedZERO = IVestedZeroNFT(_vestedZERO);
     }
 
-    function onERC721Received(
-        address,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4) {
+    function onERC721Received(address, address from, uint256 tokenId, bytes calldata data) external returns (bytes4) {
         require(msg.sender == address(vestedZERO), "!vestedZERO");
 
         // check how much unvested tokens the nft has
@@ -71,8 +61,9 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         bool stake = true;
         address to = from;
         uint256 duration = 4 * 365 days;
-        if (data.length > 1)
+        if (data.length > 1) {
             (stake, to, duration) = abi.decode(data, (bool, address, uint256));
+        }
 
         // calculate the bonus
         uint256 bonus = calculateBonus(pending, duration);
@@ -91,19 +82,11 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         return this.onERC721Received.selector;
     }
 
-    function createLock(
-        uint256 amount,
-        uint256 duration,
-        bool stake
-    ) external override {
+    function createLock(uint256 amount, uint256 duration, bool stake) external override {
         _createLockFor(msg.sender, amount, duration, stake);
     }
 
-    function createLockFor(
-        address who,
-        uint256 amount,
-        uint256 duration
-    ) external override {
+    function createLockFor(address who, uint256 amount, uint256 duration) external override {
         _createLockFor(who, amount, duration, true);
     }
 
@@ -112,10 +95,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         bonusBps = _bps;
     }
 
-    function calculateBonus(
-        uint256 amount,
-        uint256 duration
-    ) public view override returns (uint256) {
+    function calculateBonus(uint256 amount, uint256 duration) public view override returns (uint256) {
         uint256 rewardPercentage = 0;
 
         if (duration > 0) {
@@ -133,12 +113,7 @@ contract StakingBonus is OwnableUpgradeable, IStakingBonus {
         return bonus;
     }
 
-    function _createLockFor(
-        address who,
-        uint256 amount,
-        uint256 duration,
-        bool stake
-    ) internal {
+    function _createLockFor(address who, uint256 amount, uint256 duration, bool stake) internal {
         uint256 bonus = calculateBonus(amount, duration);
         zero.transferFrom(msg.sender, address(this), amount);
 

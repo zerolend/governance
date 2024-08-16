@@ -8,25 +8,13 @@ import {IHyperLockERC20} from "../../interfaces/IHyperLockERC20.sol";
 contract LockerLPBlast is BaseLocker {
     IHyperLockERC20 hyperlock;
 
-    function init(
-        address _token,
-        address _staking,
-        address _hyperlock,
-        address _pointsOperator
-    ) external initializer {
-        __BaseLocker_init(
-            "Locked ZERO/ETH LP",
-            "LP-ZERO",
-            _token,
-            _staking,
-            365 * 86400
-        );
+    function init(address _token, address _staking, address _hyperlock, address _pointsOperator) external initializer {
+        __BaseLocker_init("Locked ZERO/ETH LP", "LP-ZERO", _token, _staking, 365 * 86400);
 
         hyperlock = IHyperLockERC20(_hyperlock);
         underlying.approve(_hyperlock, type(uint256).max);
 
-        IBlastPoints(0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800)
-            .configurePointsOperator(_pointsOperator);
+        IBlastPoints(0x2536FE9ab3F511540F2f9e2eC2A805005C3Dd800).configurePointsOperator(_pointsOperator);
     }
 
     function _depositFor(

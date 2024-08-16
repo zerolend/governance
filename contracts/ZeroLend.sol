@@ -30,16 +30,8 @@ contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
     bool public paused;
     bool public bootstrap;
 
-    event Blacklisted(
-        address indexed who,
-        address indexed whom,
-        bool indexed what
-    );
-    event Whitelisted(
-        address indexed who,
-        address indexed whom,
-        bool indexed what
-    );
+    event Blacklisted(address indexed who, address indexed whom, bool indexed what);
+    event Whitelisted(address indexed who, address indexed whom, bool indexed what);
     event Paused(address indexed who, bool indexed what);
     event BootstrapMode(address indexed who, bool indexed what);
 
@@ -57,18 +49,12 @@ contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
         deployedAt = block.timestamp;
     }
 
-    function blacklist(
-        address who,
-        bool what
-    ) public onlyRole(RISK_MANAGER_ROLE) {
+    function blacklist(address who, bool what) public onlyRole(RISK_MANAGER_ROLE) {
         blacklisted[who] = what;
         emit Blacklisted(msg.sender, who, what);
     }
 
-    function whitelist(
-        address who,
-        bool what
-    ) public onlyRole(RISK_MANAGER_ROLE) {
+    function whitelist(address who, bool what) public onlyRole(RISK_MANAGER_ROLE) {
         whitelisted[who] = what;
         emit Whitelisted(msg.sender, who, what);
     }
@@ -89,11 +75,7 @@ contract ZeroLend is AccessControlEnumerable, ERC20Burnable, ERC20Permit {
         emit BootstrapMode(msg.sender, what);
     }
 
-    function _update(
-        address from,
-        address to,
-        uint256 value
-    ) internal virtual override {
+    function _update(address from, address to, uint256 value) internal virtual override {
         require(!paused, "you paused");
 
         // ensure that sending back and forth to contracts is disabled during bootstrap

@@ -22,30 +22,18 @@ interface ILPVault is IERC20 {
         uint256 deadline;
     }
 
-    function deposit(
-        DepositParams calldata params
-    )
+    function deposit(DepositParams calldata params)
         external
         payable
-        returns (
-            uint256 shares,
-            uint128 addedLiquidity,
-            uint256 amount0,
-            uint256 amount1
-        );
+        returns (uint256 shares, uint128 addedLiquidity, uint256 amount0, uint256 amount1);
 
-    function withdraw(
-        WithdrawParams calldata params
-    )
+    function withdraw(WithdrawParams calldata params)
         external
         returns (uint128 removedLiquidity, uint256 amount0, uint256 amount1);
 
     function stakeEth() external payable;
 
-    function stakeEthAndTokens(
-        uint256 amount,
-        PermitData memory permit
-    ) external payable;
+    function stakeEthAndTokens(uint256 amount, PermitData memory permit) external payable;
 
     function stakeTokens(uint256 amount, PermitData memory permit) external;
 

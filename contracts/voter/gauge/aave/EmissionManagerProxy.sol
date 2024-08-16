@@ -18,9 +18,7 @@ contract EmissionManagerProxy is Ownable {
         manager = IEmissionManager(_manager);
     }
 
-    function configureAssets(
-        RewardsDataTypes.RewardsConfigInput[] memory config
-    ) external {
+    function configureAssets(RewardsDataTypes.RewardsConfigInput[] memory config) external {
         require(whitelisted[msg.sender], "!whitelisted");
         manager.configureAssets(config);
     }

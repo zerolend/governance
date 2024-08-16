@@ -30,18 +30,11 @@ contract TransferStrategyZERO is Ownable, ITransferStrategyBase {
      * @dev Modifier for incentives controller only functions
      */
     modifier onlyIncentivesController() {
-        require(
-            INCENTIVES_CONTROLLER == msg.sender,
-            "CALLER_NOT_INCENTIVES_CONTROLLER"
-        );
+        require(INCENTIVES_CONTROLLER == msg.sender, "CALLER_NOT_INCENTIVES_CONTROLLER");
         _;
     }
 
-    constructor(
-        address _incentivesController,
-        address _vestedZERO,
-        address _zero
-    ) {
+    constructor(address _incentivesController, address _vestedZERO, address _zero) {
         zero = IERC20(_zero);
         zero.approve(_vestedZERO, type(uint256).max);
         vestedZERO = IVestedZeroNFT(_vestedZERO);
@@ -52,11 +45,7 @@ contract TransferStrategyZERO is Ownable, ITransferStrategyBase {
     }
 
     /// @inheritdoc ITransferStrategyBase
-    function performTransfer(
-        address to,
-        address reward,
-        uint256 amount
-    )
+    function performTransfer(address to, address reward, uint256 amount)
         external
         override(ITransferStrategyBase)
         onlyIncentivesController
@@ -77,12 +66,7 @@ contract TransferStrategyZERO is Ownable, ITransferStrategyBase {
     }
 
     /// @inheritdoc ITransferStrategyBase
-    function getIncentivesController()
-        external
-        view
-        override
-        returns (address)
-    {
+    function getIncentivesController() external view override returns (address) {
         return INCENTIVES_CONTROLLER;
     }
 
@@ -92,11 +76,7 @@ contract TransferStrategyZERO is Ownable, ITransferStrategyBase {
     }
 
     /// @inheritdoc ITransferStrategyBase
-    function emergencyWithdrawal(
-        address token,
-        address to,
-        uint256 amount
-    ) external onlyOwner {
+    function emergencyWithdrawal(address token, address to, uint256 amount) external onlyOwner {
         IERC20(token).transfer(to, amount);
         emit EmergencyWithdrawal(msg.sender, token, to, amount);
     }

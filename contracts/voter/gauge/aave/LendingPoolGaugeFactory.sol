@@ -44,11 +44,8 @@ contract LendingPoolGaugeFactory is Ownable {
         dataProvider = _dataProvider;
         duration = _duration;
 
-        emissionManagerProxy = address(
-            new EmissionManagerProxy(
-                IRewardsController(_incentivesController).getEmissionManager()
-            )
-        );
+        emissionManagerProxy =
+            address(new EmissionManagerProxy(IRewardsController(_incentivesController).getEmissionManager()));
 
         strategy = address(
             new TransferStrategyZERO(
@@ -62,13 +59,7 @@ contract LendingPoolGaugeFactory is Ownable {
         Ownable(emissionManagerProxy).transferOwnership(msg.sender);
 
         emit Initialized(
-            emissionManagerProxy,
-            strategy,
-            _incentivesController,
-            _vestedZERO,
-            _voter,
-            _zero,
-            _dataProvider
+            emissionManagerProxy, strategy, _incentivesController, _vestedZERO, _voter, _zero, _dataProvider
         );
     }
 
@@ -78,16 +69,8 @@ contract LendingPoolGaugeFactory is Ownable {
     }
 
     function createGauge(address reserve, address oracle) external onlyOwner {
-        LendingPoolGaugeV2 gauge = new LendingPoolGaugeV2(
-            zero,
-            reserve,
-            oracle,
-            voter,
-            emissionManagerProxy,
-            dataProvider,
-            strategy,
-            duration
-        );
+        LendingPoolGaugeV2 gauge =
+            new LendingPoolGaugeV2(zero, reserve, oracle, voter, emissionManagerProxy, dataProvider, strategy, duration);
 
         gauges[reserve] = gauge;
         gauge.transferOwnership(msg.sender);

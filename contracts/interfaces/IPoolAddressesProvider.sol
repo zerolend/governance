@@ -26,60 +26,42 @@ interface IPoolAddressesProvider {
      * @param oldAddress The old address of the PoolConfigurator
      * @param newAddress The new address of the PoolConfigurator
      */
-    event PoolConfiguratorUpdated(
-        address indexed oldAddress,
-        address indexed newAddress
-    );
+    event PoolConfiguratorUpdated(address indexed oldAddress, address indexed newAddress);
 
     /**
      * @dev Emitted when the price oracle is updated.
      * @param oldAddress The old address of the PriceOracle
      * @param newAddress The new address of the PriceOracle
      */
-    event PriceOracleUpdated(
-        address indexed oldAddress,
-        address indexed newAddress
-    );
+    event PriceOracleUpdated(address indexed oldAddress, address indexed newAddress);
 
     /**
      * @dev Emitted when the ACL manager is updated.
      * @param oldAddress The old address of the ACLManager
      * @param newAddress The new address of the ACLManager
      */
-    event ACLManagerUpdated(
-        address indexed oldAddress,
-        address indexed newAddress
-    );
+    event ACLManagerUpdated(address indexed oldAddress, address indexed newAddress);
 
     /**
      * @dev Emitted when the ACL admin is updated.
      * @param oldAddress The old address of the ACLAdmin
      * @param newAddress The new address of the ACLAdmin
      */
-    event ACLAdminUpdated(
-        address indexed oldAddress,
-        address indexed newAddress
-    );
+    event ACLAdminUpdated(address indexed oldAddress, address indexed newAddress);
 
     /**
      * @dev Emitted when the price oracle sentinel is updated.
      * @param oldAddress The old address of the PriceOracleSentinel
      * @param newAddress The new address of the PriceOracleSentinel
      */
-    event PriceOracleSentinelUpdated(
-        address indexed oldAddress,
-        address indexed newAddress
-    );
+    event PriceOracleSentinelUpdated(address indexed oldAddress, address indexed newAddress);
 
     /**
      * @dev Emitted when the pool data provider is updated.
      * @param oldAddress The old address of the PoolDataProvider
      * @param newAddress The new address of the PoolDataProvider
      */
-    event PoolDataProviderUpdated(
-        address indexed oldAddress,
-        address indexed newAddress
-    );
+    event PoolDataProviderUpdated(address indexed oldAddress, address indexed newAddress);
 
     /**
      * @dev Emitted when a new proxy is created.
@@ -87,11 +69,7 @@ interface IPoolAddressesProvider {
      * @param proxyAddress The address of the created proxy contract
      * @param implementationAddress The address of the implementation contract
      */
-    event ProxyCreated(
-        bytes32 indexed id,
-        address indexed proxyAddress,
-        address indexed implementationAddress
-    );
+    event ProxyCreated(bytes32 indexed id, address indexed proxyAddress, address indexed implementationAddress);
 
     /**
      * @dev Emitted when a new non-proxied contract address is registered.
@@ -99,11 +77,7 @@ interface IPoolAddressesProvider {
      * @param oldAddress The address of the old contract
      * @param newAddress The address of the new contract
      */
-    event AddressSet(
-        bytes32 indexed id,
-        address indexed oldAddress,
-        address indexed newAddress
-    );
+    event AddressSet(bytes32 indexed id, address indexed oldAddress, address indexed newAddress);
 
     /**
      * @dev Emitted when the implementation of the proxy registered with id is updated
@@ -151,10 +125,7 @@ interface IPoolAddressesProvider {
      * @param id The id
      * @param newImplementationAddress The address of the new implementation
      */
-    function setAddressAsProxy(
-        bytes32 id,
-        address newImplementationAddress
-    ) external;
+    function setAddressAsProxy(bytes32 id, address newImplementationAddress) external;
 
     /**
      * @notice Sets an address for an id replacing the address saved in the addresses map.

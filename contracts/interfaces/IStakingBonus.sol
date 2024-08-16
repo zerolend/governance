@@ -8,7 +8,6 @@ import {IZeroLocker} from "../interfaces/IZeroLocker.sol";
 /// @title StakingBonus Interface
 /// @notice Interface for the StakingBonus contract that rewards users for converting unvested tokens into a 4-year stake
 interface IStakingBonus {
-    
     /**
      * @notice Initialize the contract with necessary parameters
      * @param _zero Address of the ZERO token contract
@@ -16,12 +15,7 @@ interface IStakingBonus {
      * @param _vestedZERO Address of the VestedZERO NFT contract
      * @param _bonusBps Bonus basis points for calculating bonuses
      */
-    function init(
-        address _zero,
-        address _locker,
-        address _vestedZERO,
-        uint256 _bonusBps
-    ) external;
+    function init(address _zero, address _locker, address _vestedZERO, uint256 _bonusBps) external;
 
     /**
      * @notice Set the locker contract address
@@ -42,12 +36,7 @@ interface IStakingBonus {
      * @param data Additional data with no specified format
      * @return Selector to confirm function is implemented
      */
-    function onERC721Received(
-        address,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4);
+    function onERC721Received(address, address from, uint256 tokenId, bytes calldata data) external returns (bytes4);
 
     /**
      * @notice Create a lock with the specified amount and duration

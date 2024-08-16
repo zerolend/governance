@@ -62,9 +62,7 @@ interface IVestedZeroNFT {
     /// @param tokenId the id of the nft contract
     /// @return upfront how much tokens upfront this nft can claim
     /// @return pending how much tokens in the linear vesting (after the cliff) this nft can claim
-    function claimable(
-        uint256 tokenId
-    ) external view returns (uint256 upfront, uint256 pending);
+    function claimable(uint256 tokenId) external view returns (uint256 upfront, uint256 pending);
 
     /// Executes a claim of tokens for a given nft
     /// @param id the nft id to claim tokens for
@@ -92,10 +90,7 @@ interface IVestedZeroNFT {
     /// @param salePrice The price the asset is going to be sold for
     /// @return royaltyReceiver The address that will receive the royalties
     /// @return royaltyAmount The royalty amount
-    function royaltyInfo(
-        uint256,
-        uint256 salePrice
-    ) external view returns (address, uint256);
+    function royaltyInfo(uint256, uint256 salePrice) external view returns (address, uint256);
 
     /// Claim unvested tokens by the bonus staking contract
     /// @param tokenId The nft id

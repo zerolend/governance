@@ -34,33 +34,21 @@ interface IZLRewardsController {
         uint256 updateCadence;
     }
 
-    /********************** Events ***********************/
+    /**
+     * Events **********************
+     */
     // Emitted when rewardPerSecond is updated
-    event RewardsPerSecondUpdated(
-        uint256 indexed rewardsPerSecond,
-        bool persist
-    );
+    event RewardsPerSecondUpdated(uint256 indexed rewardsPerSecond, bool persist);
 
-    event BalanceUpdated(
-        address indexed token,
-        address indexed user,
-        uint256 balance,
-        uint256 totalSupply
-    );
+    event BalanceUpdated(address indexed token, address indexed user, uint256 balance, uint256 totalSupply);
 
-    event EmissionScheduleAppended(
-        uint256[] startTimeOffsets,
-        uint256[] rewardsPerSeconds
-    );
+    event EmissionScheduleAppended(uint256[] startTimeOffsets, uint256[] rewardsPerSeconds);
 
     event ChefReserveLow(uint256 indexed _balance);
 
     event Disqualified(address indexed user);
 
-    event OnwardIncentivesUpdated(
-        address indexed _token,
-        IIncentivesController _incentives
-    );
+    event OnwardIncentivesUpdated(address indexed _token, IIncentivesController _incentives);
 
     event BountyManagerUpdated(address indexed _bountyManager);
 
@@ -72,7 +60,9 @@ interface IZLRewardsController {
 
     event RewardDeposit(uint256 indexed _amount);
 
-    /********************** Errors ***********************/
+    /**
+     * Errors **********************
+     */
     error AddressZero();
 
     error UnknownPool();

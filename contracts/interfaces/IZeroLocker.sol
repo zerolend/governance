@@ -12,18 +12,11 @@ interface IZeroLocker is IERC721 {
 
     function depositFor(uint256 _tokenId, uint256 _value) external;
 
-    function createLockFor(
-        uint256 _value,
-        uint256 _lockDuration,
-        address _to,
-        bool _stakeNFT
-    ) external returns (uint256);
+    function createLockFor(uint256 _value, uint256 _lockDuration, address _to, bool _stakeNFT)
+        external
+        returns (uint256);
 
-    function createLock(
-        uint256 _value,
-        uint256 _lockDuration,
-        bool _stakeNFT
-    ) external returns (uint256);
+    function createLock(uint256 _value, uint256 _lockDuration, bool _stakeNFT) external returns (uint256);
 
     enum DepositType {
         DEPOSIT_FOR_TYPE,
@@ -49,22 +42,11 @@ interface IZeroLocker is IERC721 {
         uint256 ts
     );
 
-    event Withdraw(
-        address indexed provider,
-        uint256 tokenId,
-        uint256 value,
-        uint256 ts
-    );
+    event Withdraw(address indexed provider, uint256 tokenId, uint256 value, uint256 ts);
 
     event Supply(uint256 prevSupply, uint256 supply);
 
     event TokenAddressSet(address indexed oldToken, address indexed newToken);
-    event StakingAddressSet(
-        address indexed oldStaking,
-        address indexed newStaking
-    );
-    event StakingBonusAddressSet(
-        address indexed oldStakingBonus,
-        address indexed newStakingBonus
-    );
+    event StakingAddressSet(address indexed oldStaking, address indexed newStaking);
+    event StakingBonusAddressSet(address indexed oldStakingBonus, address indexed newStakingBonus);
 }

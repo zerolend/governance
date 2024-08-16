@@ -22,11 +22,7 @@ contract EarlyZERO is ERC20, ERC20Permit, ERC20Burnable, Ownable {
     bool public enableWhitelist;
     bool public enableBlacklist;
 
-    constructor()
-        ERC20("EarlyZERO", "earlyZERO")
-        ERC20Permit("earlyZERO")
-        Ownable(msg.sender)
-    {
+    constructor() ERC20("EarlyZERO", "earlyZERO") ERC20Permit("earlyZERO") Ownable(msg.sender) {
         whitelist[msg.sender] = true;
         whitelist[address(this)] = true;
         whitelist[address(0)] = true;
@@ -50,11 +46,7 @@ contract EarlyZERO is ERC20, ERC20Permit, ERC20Burnable, Ownable {
         enableBlacklist = to;
     }
 
-    function _update(
-        address from,
-        address to,
-        uint256 value
-    ) internal virtual override {
+    function _update(address from, address to, uint256 value) internal virtual override {
         super._update(from, to, value);
         if (enableWhitelist) {
             require(whitelist[from] || whitelist[to], "!whitelist");

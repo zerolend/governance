@@ -12,7 +12,8 @@ pragma solidity ^0.8.20;
 // Discord: https://discord.gg/zerolend
 // Twitter: https://twitter.com/zerolendxyz
 
-import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
+import {AccessControlEnumerableUpgradeable} from
+    "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
 import {IERC20} from "@zerolendxyz/core-v3/contracts/dependencies/openzeppelin/contracts/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IPoolVoter} from "../interfaces/IPoolVoter.sol";
@@ -20,11 +21,7 @@ import {IZeroLend} from "../interfaces/IZeroLend.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract EmissionsMainnet is
-    Initializable,
-    OwnableUpgradeable,
-    AccessControlEnumerableUpgradeable
-{
+contract EmissionsMainnet is Initializable, OwnableUpgradeable, AccessControlEnumerableUpgradeable {
     using SafeERC20 for IZeroLend;
 
     IZeroLend public zero;
@@ -38,21 +35,17 @@ contract EmissionsMainnet is
 
     event TotalSupplySet(uint256 oldTokenSupply, uint256 newTokenSupply);
     event WeeklyDividersSet(uint256[] releasePercentagesPerWeek);
+
     error ReleaseIntervalNotMet(uint256 timePassed);
 
-    function initialize(
-        address _zeroToken,
-        address _poolVoter
-    ) external initializer {
+    function initialize(address _zeroToken, address _poolVoter) external initializer {
         __Ownable_init(msg.sender);
         lastReleased = block.timestamp;
         zero = IZeroLend(_zeroToken);
         voter = IPoolVoter(_poolVoter);
     }
 
-    function setWeeklyDividers(
-        uint256[] calldata _dividers
-    ) external onlyOwner {
+    function setWeeklyDividers(uint256[] calldata _dividers) external onlyOwner {
         weeklyDividers = _dividers;
         emit WeeklyDividersSet(_dividers);
     }
@@ -72,25 +65,15 @@ contract EmissionsMainnet is
         voter.notifyRewardAmount(releaseAmount);
     }
 
-    function getReleaseAmount(
-        uint256 _weekNumber
-    ) external view returns (uint256 amount) {
+    function getReleaseAmount(uint256 _weekNumber) external view returns (uint256 amount) {
         return _getReleaseAmount(_weekNumber);
     }
 
-    function _getReleaseAmount(
-        uint256 weekNumber
-    ) internal view returns (uint256 amount) {
-        amount =
-            ((((totalSupply * 1000 * 28) / 100) / 12) /
-                weeklyDividers[weekNumber]) /
-            4;
+    function _getReleaseAmount(uint256 weekNumber) internal view returns (uint256 amount) {
+        amount = ((((totalSupply * 1000 * 28) / 100) / 12) / weeklyDividers[weekNumber]) / 4;
     }
 
     function emergencyWithdrawal(address token) external onlyOwner {
-        IERC20(token).transfer(
-            msg.sender,
-            IERC20(token).balanceOf(address(this))
-        );
+        IERC20(token).transfer(msg.sender, IERC20(token).balanceOf(address(this)));
     }
 }

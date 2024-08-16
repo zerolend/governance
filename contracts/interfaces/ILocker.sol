@@ -7,7 +7,6 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 /// @title ILocker Interface
 /// @notice Interface for a contract that handles locking ERC20 tokens in exchange for NFT representations
 interface ILocker is IERC721Enumerable {
-
     /**
      * @notice Structure to store locked balance information
      * @param amount Amount of tokens locked
@@ -41,19 +40,14 @@ interface ILocker is IERC721Enumerable {
      * @param _t The specific time (timestamp)
      * @return The balance of the NFT at time _t
      */
-    function balanceOfNFTAt(
-        uint256 _tokenId,
-        uint256 _t
-    ) external view returns (uint256);
+    function balanceOfNFTAt(uint256 _tokenId, uint256 _t) external view returns (uint256);
 
     /**
      * @notice Get the locked balance details of an NFT
      * @param _tokenId The NFT ID
      * @return The LockedBalance struct containing lock details
      */
-    function locked(
-        uint256 _tokenId
-    ) external view returns (LockedBalance memory);
+    function locked(uint256 _tokenId) external view returns (LockedBalance memory);
 
     /**
      * @notice Get the end time of the lock for a specific NFT
@@ -67,9 +61,7 @@ interface ILocker is IERC721Enumerable {
      * @param _owner The address of the owner
      * @return _power The voting power of the owner
      */
-    function votingPowerOf(
-        address _owner
-    ) external view returns (uint256 _power);
+    function votingPowerOf(address _owner) external view returns (uint256 _power);
 
     /**
      * @notice Merge two NFTs into one
@@ -92,11 +84,7 @@ interface ILocker is IERC721Enumerable {
      * @param _stakeNFT Whether the NFT should be staked
      * @return The ID of the created NFT
      */
-    function createLock(
-        uint256 _value,
-        uint256 _lockDuration,
-        bool _stakeNFT
-    ) external returns (uint256);
+    function createLock(uint256 _value, uint256 _lockDuration, bool _stakeNFT) external returns (uint256);
 
     /**
      * @notice Increase the amount of tokens locked in a specific NFT
@@ -109,11 +97,8 @@ interface ILocker is IERC721Enumerable {
      * @notice Extend the unlock time for an NFT
      * @param _lockDuration New number of seconds until tokens unlock
      */
-    function increaseUnlockTime(
-        uint256 _tokenId,
-        uint256 _lockDuration
-    ) external;
-    
+    function increaseUnlockTime(uint256 _tokenId, uint256 _lockDuration) external;
+
     /**
      * @notice Create a lock for a specified amount, duration, and recipient
      * @param _value The amount of tokens to lock
@@ -122,12 +107,9 @@ interface ILocker is IERC721Enumerable {
      * @param _stakeNFT Whether the NFT should be staked
      * @return The ID of the created NFT
      */
-    function createLockFor(
-        uint256 _value,
-        uint256 _lockDuration,
-        address _to,
-        bool _stakeNFT
-    ) external returns (uint256);
+    function createLockFor(uint256 _value, uint256 _lockDuration, address _to, bool _stakeNFT)
+        external
+        returns (uint256);
 
     /**
      * @notice Withdraw tokens from a specific NFT

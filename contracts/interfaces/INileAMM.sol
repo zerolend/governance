@@ -9,7 +9,14 @@ interface INileAMM {
     event Initialized(uint8 version);
     event Mint(address indexed sender, uint256 amount0, uint256 amount1);
     event SetFeeSplit(uint8 toFeesOld, uint8 toTreasuryOld, uint8 toFeesNew, uint8 toTreasuryNew);
-    event Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to);
+    event Swap(
+        address indexed sender,
+        uint256 amount0In,
+        uint256 amount1In,
+        uint256 amount0Out,
+        uint256 amount1Out,
+        address indexed to
+    );
     event Sync(uint256 reserve0, uint256 reserve1);
     event Transfer(address indexed from, address indexed to, uint256 amount);
 
@@ -20,28 +27,44 @@ interface INileAMM {
     function burn(address to) external returns (uint256 amount0, uint256 amount1);
     function claimFees() external returns (uint256 claimed0, uint256 claimed1);
     function current(address tokenIn, uint256 amountIn) external view returns (uint256 amountOut);
-    function currentCumulativePrices() external view returns (uint256 reserve0Cumulative, uint256 reserve1Cumulative, uint256 blockTimestamp);
+    function currentCumulativePrices()
+        external
+        view
+        returns (uint256 reserve0Cumulative, uint256 reserve1Cumulative, uint256 blockTimestamp);
     function decimals() external view returns (uint8);
     function feeSplit() external view returns (uint8);
     function fees() external view returns (address);
     function getAmountOut(uint256 amountIn, address tokenIn) external view returns (uint256);
     function getReserves() external view returns (uint256 _reserve0, uint256 _reserve1, uint256 _blockTimestampLast);
     function initialize(address _factory, address _token0, address _token1, bool _stable, address _voter) external;
-    function lastObservation() external view returns (uint256 timestamp, uint256 reserve0Cumulative, uint256 reserve1Cumulative);
-    function metadata() external view returns (uint256 dec0, uint256 dec1, uint256 r0, uint256 r1, bool st, address t0, address t1);
+    function lastObservation()
+        external
+        view
+        returns (uint256 timestamp, uint256 reserve0Cumulative, uint256 reserve1Cumulative);
+    function metadata()
+        external
+        view
+        returns (uint256 dec0, uint256 dec1, uint256 r0, uint256 r1, bool st, address t0, address t1);
     function mint(address to) external returns (uint256 liquidity);
     function name() external view returns (string memory);
     function nonces(address account) external view returns (uint256);
     function observationLength() external view returns (uint256);
-    function observations(uint256 index) external view returns (uint256 timestamp, uint256 reserve0Cumulative, uint256 reserve1Cumulative);
-    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s) external;
+    function observations(uint256 index)
+        external
+        view
+        returns (uint256 timestamp, uint256 reserve0Cumulative, uint256 reserve1Cumulative);
+    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)
+        external;
     function prices(address tokenIn, uint256 amountIn, uint256 points) external view returns (uint256[] memory);
     function quote(address tokenIn, uint256 amountIn, uint256 granularity) external view returns (uint256 amountOut);
     function reserve0() external view returns (uint256);
     function reserve0CumulativeLast() external view returns (uint256);
     function reserve1() external view returns (uint256);
     function reserve1CumulativeLast() external view returns (uint256);
-    function sample(address tokenIn, uint256 amountIn, uint256 points, uint256 window) external view returns (uint256[] memory);
+    function sample(address tokenIn, uint256 amountIn, uint256 points, uint256 window)
+        external
+        view
+        returns (uint256[] memory);
     function setActiveGauge(bool isActive) external;
     function setFeeSplit() external;
     function skim(address to) external;
@@ -56,4 +79,3 @@ interface INileAMM {
     function transfer(address dst, uint256 amount) external returns (bool);
     function transferFrom(address src, address dst, uint256 amount) external returns (bool);
 }
-

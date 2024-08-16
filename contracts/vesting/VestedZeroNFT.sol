@@ -13,12 +13,17 @@ pragma solidity ^0.8.20;
 // Twitter: https://twitter.com/zerolendxyz
 
 import {IVestedZeroNFT} from "../interfaces/IVestedZeroNFT.sol";
-import {IERC165, ERC721Upgradeable, ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
+import {
+    IERC165,
+    ERC721Upgradeable,
+    ERC721EnumerableUpgradeable
+} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import {PausableUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import {ReentrancyGuardUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
-import {AccessControlEnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
+import {AccessControlEnumerableUpgradeable} from
+    "@openzeppelin/contracts-upgradeable/access/extensions/AccessControlEnumerableUpgradeable.sol";
 
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
 /// @author Deadshot Ryker <ryker@zerolend.xyz>
@@ -70,9 +75,7 @@ contract VestedZeroNFT is
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
-    function setStakingBonus(
-        address _addr
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setStakingBonus(address _addr) external onlyRole(DEFAULT_ADMIN_ROLE) {
         stakingBonus = _addr;
     }
 
@@ -124,10 +127,7 @@ contract VestedZeroNFT is
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function freeze(
-        uint256 tokenId,
-        bool what
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function freeze(uint256 tokenId, bool what) external onlyRole(DEFAULT_ADMIN_ROLE) {
         frozen[tokenId] = what;
     }
 
@@ -137,7 +137,7 @@ contract VestedZeroNFT is
         uint256[] memory linearDurations,
         uint256[] memory cliffDurations
     ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        for (uint i = 0; i < tokenIds.length; i++) {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
             LockDetails memory lock = tokenIdToLockDetails[tokenIds[i]];
             lock.cliffDuration = cliffDurations[i];
             lock.linearDuration = linearDurations[i];
@@ -152,10 +152,7 @@ contract VestedZeroNFT is
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function split(
-        uint256 tokenId,
-        uint256 fraction
-    ) external whenNotPaused nonReentrant {
+    function split(uint256 tokenId, uint256 fraction) external whenNotPaused nonReentrant {
         require(msg.sender == _requireOwned(tokenId), "!owner");
         require(fraction > 0 && fraction < denominator, "!fraction");
         require(!frozen[tokenId], "frozen");
@@ -164,10 +161,8 @@ contract VestedZeroNFT is
 
         uint256 splitPendingAmount = (lock.pending * fraction) / denominator;
         uint256 splitUpfrontAmount = (lock.upfront * fraction) / denominator;
-        uint256 splitUnlockedPendingAmount = (lock.pendingClaimed * fraction) /
-            denominator;
-        uint256 splitUnlockedUpfrontAmount = (lock.upfrontClaimed * fraction) /
-            denominator;
+        uint256 splitUnlockedPendingAmount = (lock.pendingClaimed * fraction) / denominator;
+        uint256 splitUnlockedUpfrontAmount = (lock.upfrontClaimed * fraction) / denominator;
 
         tokenIdToLockDetails[tokenId] = LockDetails({
             cliffDuration: lock.cliffDuration,
@@ -198,9 +193,7 @@ contract VestedZeroNFT is
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function claim(
-        uint256 id
-    ) public nonReentrant whenNotPaused returns (uint256 toClaim) {
+    function claim(uint256 id) public nonReentrant whenNotPaused returns (uint256 toClaim) {
         require(!frozen[id], "frozen");
 
         LockDetails memory lock = tokenIdToLockDetails[id];
@@ -241,7 +234,7 @@ contract VestedZeroNFT is
 
     function claim(address _user) public returns (uint256 claimAmount) {
         uint256 userNftCount = balanceOf(_user);
-        for (uint256 i; i < userNftCount; ) {
+        for (uint256 i; i < userNftCount;) {
             uint256 tokenId = tokenOfOwnerByIndex(_user, i);
             claimAmount += claim(tokenId);
             unchecked {
@@ -250,11 +243,9 @@ contract VestedZeroNFT is
         }
     }
 
-    function claim(
-        uint256[] calldata _tokenIds
-    ) public returns (uint256 claimAmount) {
+    function claim(uint256[] calldata _tokenIds) public returns (uint256 claimAmount) {
         uint256 userNftCount = _tokenIds.length;
-        for (uint256 i; i < userNftCount; ) {
+        for (uint256 i; i < userNftCount;) {
             claimAmount += claim(_tokenIds[i]);
             unchecked {
                 ++i;
@@ -266,36 +257,28 @@ contract VestedZeroNFT is
     /// @param _tokenId the id of the nft contract
     /// @return upfront how much tokens upfront this nft can claim
     /// @return pending how much tokens in the linear vesting (after the cliff) this nft can claim
-    function claimable(
-        uint256 _tokenId
-    ) public view returns (uint256 upfront, uint256 pending) {
+    function claimable(uint256 _tokenId) public view returns (uint256 upfront, uint256 pending) {
         LockDetails memory lock = tokenIdToLockDetails[_tokenId];
         if (block.timestamp < lock.unlockDate) return (0, 0);
 
         // if after the unlock date and before the cliff
-        if (
-            block.timestamp >= lock.unlockDate &&
-            block.timestamp < lock.unlockDate + lock.cliffDuration
-        ) return (lock.upfront, 0);
+        if (block.timestamp >= lock.unlockDate && block.timestamp < lock.unlockDate + lock.cliffDuration) {
+            return (lock.upfront, 0);
+        }
 
-        if (
-            block.timestamp >=
-            lock.unlockDate + lock.cliffDuration + lock.linearDuration
-        ) return (lock.upfront, lock.pending);
+        if (block.timestamp >= lock.unlockDate + lock.cliffDuration + lock.linearDuration) {
+            return (lock.upfront, lock.pending);
+        }
 
-        uint256 pct = ((block.timestamp -
-            (lock.unlockDate + lock.cliffDuration)) * denominator) /
-            lock.linearDuration;
+        uint256 pct = ((block.timestamp - (lock.unlockDate + lock.cliffDuration)) * denominator) / lock.linearDuration;
 
         return (lock.upfront, ((lock.pending * pct) / denominator));
     }
 
-    function claimable(
-        address _user
-    ) public view returns (uint256 totalUpFront, uint256 totalPending) {
+    function claimable(address _user) public view returns (uint256 totalUpFront, uint256 totalPending) {
         uint256 userNftCount = this.balanceOf(_user);
 
-        for (uint256 i; i < userNftCount; ) {
+        for (uint256 i; i < userNftCount;) {
             uint256 tokenId = tokenOfOwnerByIndex(_user, i);
 
             (uint256 upFront, uint256 pending) = claimable(tokenId);
@@ -308,12 +291,10 @@ contract VestedZeroNFT is
         }
     }
 
-    function claimable(
-        uint256[] calldata _tokenIds
-    ) public view returns (uint256 totalUpFront, uint256 totalPending) {
+    function claimable(uint256[] calldata _tokenIds) public view returns (uint256 totalUpFront, uint256 totalPending) {
         uint256 nftCount = _tokenIds.length;
 
-        for (uint256 i; i < nftCount; ) {
+        for (uint256 i; i < nftCount;) {
             (uint256 upFront, uint256 pending) = claimable(_tokenIds[i]);
             totalUpFront += upFront;
             totalPending += pending;
@@ -335,19 +316,12 @@ contract VestedZeroNFT is
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function penalty(
-        uint256 tokenId
-    ) public view returns (uint256 penaltyAmount) {
+    function penalty(uint256 tokenId) public view returns (uint256 penaltyAmount) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
-        uint256 penaltyDuration = lock.unlockDate +
-            lock.linearDuration +
-            lock.cliffDuration;
+        uint256 penaltyDuration = lock.unlockDate + lock.linearDuration + lock.cliffDuration;
 
         if (penaltyDuration >= block.timestamp) {
-            uint256 penaltyFactor = ((penaltyDuration - block.timestamp) *
-                HALF) /
-                lock.linearDuration +
-                QUART;
+            uint256 penaltyFactor = ((penaltyDuration - block.timestamp) * HALF) / lock.linearDuration + QUART;
             penaltyAmount = (lock.pending * penaltyFactor) / WHOLE;
         }
     }
@@ -355,25 +329,17 @@ contract VestedZeroNFT is
     /// @inheritdoc IVestedZeroNFT
     function unclaimed(uint256 tokenId) public view override returns (uint256) {
         LockDetails memory lock = tokenIdToLockDetails[tokenId];
-        return
-            lock.upfront +
-            lock.pending -
-            (lock.upfrontClaimed + lock.pendingClaimed);
+        return lock.upfront + lock.pending - (lock.upfrontClaimed + lock.pendingClaimed);
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function royaltyInfo(
-        uint256,
-        uint256 salePrice
-    ) public view virtual returns (address, uint256) {
+    function royaltyInfo(uint256, uint256 salePrice) public view virtual returns (address, uint256) {
         uint256 royaltyAmount = (salePrice * royaltyFraction) / denominator;
         return (royaltyReceiver, royaltyAmount);
     }
 
     /// @inheritdoc IVestedZeroNFT
-    function tokenURI(
-        uint256
-    )
+    function tokenURI(uint256)
         public
         view
         virtual
@@ -384,40 +350,24 @@ contract VestedZeroNFT is
         return string.concat(base, "tokenId");
     }
 
-    function supportsInterface(
-        bytes4 interfaceId
-    )
+    function supportsInterface(bytes4 interfaceId)
         public
         view
         virtual
-        override(
-            AccessControlEnumerableUpgradeable,
-            ERC721EnumerableUpgradeable,
-            IERC165
-        )
+        override(AccessControlEnumerableUpgradeable, ERC721EnumerableUpgradeable, IERC165)
         returns (bool)
     {
-        return
-            AccessControlEnumerableUpgradeable.supportsInterface(interfaceId) ||
-            ERC721EnumerableUpgradeable.supportsInterface(interfaceId);
+        return AccessControlEnumerableUpgradeable.supportsInterface(interfaceId)
+            || ERC721EnumerableUpgradeable.supportsInterface(interfaceId);
     }
 
-    function _update(
-        address to,
-        uint256 tokenId,
-        address auth
-    ) internal virtual override returns (address) {
+    function _update(address to, uint256 tokenId, address auth) internal virtual override returns (address) {
         require(!frozen[tokenId], "frozen");
         _requireNotPaused();
         return super._update(to, tokenId, auth);
     }
 
-    function emergencyWithdrawal(
-        address token
-    ) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        IERC20(token).transfer(
-            msg.sender,
-            IERC20(token).balanceOf(address(this))
-        );
+    function emergencyWithdrawal(address token) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        IERC20(token).transfer(msg.sender, IERC20(token).balanceOf(address(this)));
     }
 }

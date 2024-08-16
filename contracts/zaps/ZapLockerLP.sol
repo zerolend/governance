@@ -49,19 +49,17 @@ contract ZapLockerLP {
      * @param wethAmount How much WETH the user will pass into the LP token
      * @param odosSwapData The data required for the Odos swap.
      */
-    function zapAndStake(
-        uint256 duration,
-        uint256 zeroAmount,
-        uint256 wethAmount,
-        bytes calldata odosSwapData
-    ) external payable {
+    function zapAndStake(uint256 duration, uint256 zeroAmount, uint256 wethAmount, bytes calldata odosSwapData)
+        external
+        payable
+    {
         // fetch tokens and wrap eth
         if (msg.value > 0) weth.deposit{value: msg.value}();
         if (zeroAmount > 0) zero.transferFrom(msg.sender, me, zeroAmount);
         if (wethAmount > 0) weth.transferFrom(msg.sender, me, wethAmount);
 
         // odos should be able to swap into LP tokens directly.
-        (bool success, ) = odos.call(odosSwapData);
+        (bool success,) = odos.call(odosSwapData);
         if (!success) revert OdosSwapFailed();
 
         // stake the LP tokens that we get back from odos
@@ -78,14 +76,16 @@ contract ZapLockerLP {
         uint256 wethB = weth.balanceOf(address(this));
 
         if (eth > 0) {
-            (bool ethSendSuccess, ) = msg.sender.call{value: eth}("");
+            (bool ethSendSuccess,) = msg.sender.call{value: eth}("");
             if (!ethSendSuccess) revert EthSendFailed();
         }
 
-        if (zeroB > 0 && !zero.transfer(msg.sender, zeroB))
+        if (zeroB > 0 && !zero.transfer(msg.sender, zeroB)) {
             revert ZeroTransferFailed();
+        }
 
-        if (wethB > 0 && !weth.transfer(msg.sender, wethB))
+        if (wethB > 0 && !weth.transfer(msg.sender, wethB)) {
             revert EthSendFailed();
+        }
     }
 }

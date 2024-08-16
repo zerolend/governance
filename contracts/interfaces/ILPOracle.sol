@@ -11,5 +11,5 @@ interface ILPOracle {
     /// @dev This function uses an iterative method to compute the square root of a number.
     /// @param x The number to compute the square root of.
     /// @return y The square root of the given number.
-    function sqrt(uint x) external pure returns (uint y);
+    function sqrt(uint256 x) external pure returns (uint256 y);
 }
