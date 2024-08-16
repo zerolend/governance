@@ -19,7 +19,7 @@ interface IOmnichainStaking is IVotes {
     // An omni-chain staking contract that allows users to stake their veNFT
     // and get some voting power. Once staked the voting power is available cross-chain.
 
-    function unstakeToken(uint256 tokenId) external;
+    function unstakeAndWithdraw(uint256 tokenId) external;
 
     // function totalSupply() external view returns (uint256);
 
