@@ -14,6 +14,7 @@ import { AbiCoder, parseEther } from "ethers";
 
 describe("Omnichain Staking Unit tests", () => {
   let ant: SignerWithAddress;
+  let deployer: SignerWithAddress;
   let vest: VestedZeroNFT;
   let now: number;
   let stakingBonus: StakingBonus;
@@ -23,6 +24,7 @@ describe("Omnichain Staking Unit tests", () => {
 
   beforeEach(async () => {
     const deployment = await loadFixture(deployGovernance);
+    deployer = deployment.deployer;
     ant = deployment.ant;
     zero = deployment.zero;
     vest = deployment.vestedZeroNFT;
@@ -38,7 +40,8 @@ describe("Omnichain Staking Unit tests", () => {
 
     // send 100 ZERO
     await zero.transfer(omniStaking.target, parseEther("100"));
-    await omniStaking.notifyRewardAmount(parseEther("1"));
+    await zero.connect(deployer).approve(omniStaking.target, parseEther("1"))
+    await omniStaking.connect(deployer).notifyRewardAmount(parseEther("1"));
 
     // deployer should be able to mint a nft for another user
     await vest.mint(
@@ -78,7 +81,7 @@ describe("Omnichain Staking Unit tests", () => {
       ((oldLockDetails.end - oldLockDetails.start) * 100n) / (86400n * 365n)
     ).to.closeTo(100, 5);
 
-    await omniStaking.connect(ant).increaseLockDuration(0, 1, 86400 * 365 * 3);
+    await omniStaking.connect(ant).increaseLockDuration(1, 86400 * 365 * 3);
     const newLockDetails = await lockerToken.locked(1);
     expect(
       ((newLockDetails.end - newLockDetails.start) * 100n) / (86400n * 365n)
@@ -90,8 +93,13 @@ describe("Omnichain Staking Unit tests", () => {
     const oldLockDetails = await lockerToken.locked(1);
     expect(oldLockDetails.amount).to.eq(e18 * 20n);
     await zero.connect(ant).approve(omniStaking.target, 25n * e18);
-    await omniStaking.connect(ant).increaseLockAmount(0, 1, e18 * 25n);
+    await omniStaking.connect(ant).increaseLockAmount(1, e18 * 25n);
     const newLockDetails = await lockerToken.locked(1);
     expect(newLockDetails.amount).to.eq(45n * e18);
   });
+
+  it("should be able to unstake and withdraw for an existing lock", async () => {
+    await zero.transfer(ant.address, e18  * 100n);
+    const lockDetails = await lockerToken.locked(1);
+    expect(lockDetails.amount).to.eq(e18 * 20n);});
 });
