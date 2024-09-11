@@ -37,6 +37,7 @@ contract PoolVoter is IPoolVoter, ReentrancyGuardUpgradeable, OwnableUpgradeable
      * @dev This function is called only once during deployment.
      * @param _staking The address of the staking token (VE token).
      * @param _reward The address of the reward token.
+     * @param _votingPowerCombined The address of the VotingPowerCombined contract.
      */
     function init(address _staking, address _reward, address _votingPowerCombined) external reinitializer(1) {
         staking = IVotes(_staking);
