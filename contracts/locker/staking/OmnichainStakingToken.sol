@@ -20,7 +20,7 @@ contract OmnichainStakingToken is OmnichainStakingBase {
     function init(
         address _locker,
         address _zeroToken,
-        address _poolVoter,
+        address _votingPowerCombined,
         uint256 _rewardsDuration,
         address _owner,
         address _distributor
@@ -30,7 +30,7 @@ contract OmnichainStakingToken is OmnichainStakingBase {
             "ZEROvp",
             _locker,
             _zeroToken,
-            _poolVoter,
+            _votingPowerCombined,
             _rewardsDuration,
             _distributor
         );

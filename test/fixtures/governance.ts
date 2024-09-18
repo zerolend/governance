@@ -8,6 +8,7 @@ import {
   PoolVoter,
   StakingBonus,
   VestedZeroNFT,
+  VotingPowerCombined,
 } from "../../types";
 import { LockerLP } from "../../typechain-types";
 
@@ -24,6 +25,8 @@ export async function deployGovernance() {
   const staking = await initProxy<OmnichainStakingToken>(
     "OmnichainStakingToken"
   );
+  const votingPowerCombined: VotingPowerCombined = await initProxy<VotingPowerCombined>("VotingPowerCombined");
+
   const lockerLP = await initProxy<LockerLP>("LockerLP");
   const lockerToken = await initProxy<LockerToken>("LockerToken");
   const poolVoter = await initProxy<PoolVoter>("PoolVoter");
@@ -40,16 +43,28 @@ export async function deployGovernance() {
 
   await lockerToken.init(zero.target, staking.target);
   await lockerLP.init(zero.target, staking.target); // TODO: add a simple LP token
-  await poolVoter.init(staking.target, zero.target);
+  await poolVoter.init(staking.target, zero.target, votingPowerCombined.target);
   await staking.init(
     lockerToken.target,
     zero.target,
-    poolVoter.target,
+    votingPowerCombined.target,
     86400 * 14, // 14 days
     deployer.address,
     deployer.address
   );
 
+  await votingPowerCombined.init(
+    deployer.address,
+    staking.target,
+    staking.target,
+    poolVoter.target
+  );
+
+  await votingPowerCombined.connect(deployer).setAddresses(
+    staking.target,
+    staking.target,
+    poolVoter.target,
+  );
   // unpause zero
   await zero.togglePause(false);
 
