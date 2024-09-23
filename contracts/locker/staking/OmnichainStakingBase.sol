@@ -385,6 +385,7 @@ abstract contract OmnichainStakingBase is
     function _unstakeToken(uint256 tokenId) internal updateReward(msg.sender) {
         address sender = msg.sender;
         require(lockedByToken[tokenId] != address(0), "!tokenId");
+        uint256 power = tokenPower[tokenId];
         address lockedBy_ = lockedByToken[tokenId];
         if (sender != lockedBy_) revert InvalidUnstaker(sender, lockedBy_);
 
@@ -392,8 +393,8 @@ abstract contract OmnichainStakingBase is
         lockedTokenIdNfts[sender] = deleteAnElement(lockedTokenIdNfts[sender], tokenId);
 
         // reset and burn voting power
-        _burn(sender, tokenPower[tokenId]);
         tokenPower[tokenId] = 0;
+        _burn(sender, power);
 
         if (votingPowerCombined != IVotingPowerCombined(address(0))) {
             votingPowerCombined.reset(sender);
