@@ -1,7 +1,7 @@
 import hre, { ethers } from "hardhat";
 
 const main = async function () {
-  const factory = await ethers.getContractFactory("OmnichainStakingToken");
+  const factory = await ethers.getContractFactory("OmnichainStakingLP");
   const contract = await factory.deploy();
 
   console.log("deployed to", contract.target);

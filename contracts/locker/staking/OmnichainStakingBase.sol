@@ -35,7 +35,7 @@ abstract contract OmnichainStakingBase is
     OwnableUpgradeable
 {
     ILocker public locker;
-    ILocker public __; // unwanted variable to keep storage layout
+    // ILocker public __; // unwanted variable to keep storage layout
     IVotingPowerCombined public votingPowerCombined;
 
     // staking reward variables
@@ -181,7 +181,7 @@ abstract contract OmnichainStakingBase is
         _unstakeToken(tokenId);
         uint256 lockedAmount = locker.locked(tokenId).amount;
         locker.withdraw(tokenId);
-        assert(rewardsToken.transfer(msg.sender, lockedAmount));
+        assert(locker.underlying().transfer(msg.sender, lockedAmount));
     }
 
     /**

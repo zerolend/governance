@@ -22,22 +22,16 @@ import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 contract VotingPowerCombined is IVotes, OwnableUpgradeable {
     IOmnichainStaking public lpStaking;
     IOmnichainStaking public tokenStaking;
-    IPoolVoter public voter;
 
-    function init(address _owner, address _tokenStaking, address _lpStaking, address _voter)
-        external
-        reinitializer(2)
-    {
+    function init(address _owner, address _tokenStaking, address _lpStaking) external reinitializer(4) {
         lpStaking = IOmnichainStaking(_lpStaking);
         tokenStaking = IOmnichainStaking(_tokenStaking);
-        voter = IPoolVoter(_voter);
         __Ownable_init(_owner);
     }
 
-    function setAddresses(address _tokenStaking, address _lpStaking, address _voter) external onlyOwner {
+    function setAddresses(address _tokenStaking, address _lpStaking) external onlyOwner {
         lpStaking = IOmnichainStaking(_lpStaking);
         tokenStaking = IOmnichainStaking(_tokenStaking);
-        voter = IPoolVoter(_voter);
     }
 
     function getVotes(address account) external view returns (uint256) {
@@ -53,7 +47,7 @@ contract VotingPowerCombined is IVotes, OwnableUpgradeable {
             msg.sender == _who || msg.sender == address(lpStaking) || msg.sender == address(tokenStaking),
             "invalid reset performed"
         );
-        voter.reset(_who);
+        // do nothing
     }
 
     function getPastTotalSupply(uint256 timepoint) external view returns (uint256) {
