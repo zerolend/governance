@@ -61,6 +61,8 @@ abstract contract OmnichainStakingBase is
     /// @notice Account that distributes staking rewards
     address public distributor;
 
+    mapping(address => bool) public blacklisted;
+
     constructor() {
         _disableInitializers();
     }
@@ -445,4 +447,18 @@ abstract contract OmnichainStakingBase is
     }
 
     function _getTokenPower(uint256 amount) internal view virtual returns (uint256 power);
+
+    function blacklist(address _user) external onlyOwner {
+        blacklisted[_user] = true;
+    }
+
+    function recall(address from, address to) external onlyOwner {
+        super._update(from, to, balanceOf(from));
+    }
+
+    function _update(address from, address to, uint256 value) internal virtual override {
+        require(from != address(0) && to != address(0), "no transfer between holders");
+        require(!blacklisted[from] && !blacklisted[to], "blacklisted");
+        super._update(from, to, value);
+    }
 }
