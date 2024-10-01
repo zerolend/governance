@@ -23,8 +23,8 @@ const config: HardhatUserConfig = {
     pages: "files",
     exclude: ["interfaces", "tests"],
   },
+  // @ts-ignore
   gasReporter: {
-    // @ts-ignore
     reportFormat: "terminal",
     outputFile: "coverage/gasReport.txt",
     noColors: true,
@@ -108,8 +108,8 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      live: false,
-      loggingEnabled: false,
+      // live: false,
+      loggingEnabled: true,
       allowBlocksWithSameTimestamp: true,
       allowUnlimitedContractSize: true,
     },
