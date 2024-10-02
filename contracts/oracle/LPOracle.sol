@@ -38,6 +38,11 @@ contract LPOracle {
         price = (sqrtK * 2 * sqrt(uint256(px0 * px1))) / 1e18;
     }
 
+    /// @notice Gets the latest price of the liquidity pool token.
+    function latestAnswer() public view returns (int256) {
+        return int256(getPrice());
+    }
+
     /// @notice Computes the square root of a given number using the Babylonian method.
     /// @dev This function uses an iterative method to compute the square root of a number.
     /// @param x The number to compute the square root of.
