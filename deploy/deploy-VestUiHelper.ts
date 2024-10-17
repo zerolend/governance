@@ -13,7 +13,7 @@ const deployAirdropRewarder = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
 
-  const vestui = await deploy("VestUiHelper", {
+  const vestui = await deploy("VestUiHelperV3", {
     from: deployer,
     contract: "VestUiHelper",
     args: [VESTED_NFT_ADDRESS, OMNICHAIN_STAKING_TOKEN, OMNICHAIN_STAKING_LP],
