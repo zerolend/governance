@@ -157,7 +157,7 @@ contract VestUiHelper {
             lock.start = lockedBalance.start;
             lock.end = lockedBalance.end;
             lock.power = vePower;
-            lock.apr = aprScaled * 100;
+            lock.apr = aprScaled;
 
             lockDetails[i] = lock;
 
