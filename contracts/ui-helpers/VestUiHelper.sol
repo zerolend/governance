@@ -16,12 +16,19 @@ import {VestedZeroNFT} from "../vesting/VestedZeroNFT.sol";
 import {OmnichainStakingToken} from "../locker/staking/OmnichainStakingToken.sol";
 import {OmnichainStakingLP} from "../locker/staking/OmnichainStakingLP.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
+import {ILPOracle} from "contracts/interfaces/ILPOracle.sol";
 
+interface IOracle {
+    function latestAnswer() external view returns (int256);
+}
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
+
 contract VestUiHelper {
     VestedZeroNFT public vestedZero;
     OmnichainStakingToken public omnichainStaking;
     OmnichainStakingLP public omnichainStakingLp;
+    ILPOracle public lpOracle;
+    IOracle public zeroOracle;
 
     struct VestDetails {
         uint256 id;
@@ -50,10 +57,18 @@ contract VestUiHelper {
         uint256 apr;
     }
 
-    constructor(address _vestedZeroNFT, address _omnichainStaking, address _omnichainStakingLp) {
+    constructor(
+        address _vestedZeroNFT,
+        address _omnichainStaking,
+        address _omnichainStakingLp,
+        address _lpOracle,
+        address _zeroOracle
+    ) {
         vestedZero = VestedZeroNFT(_vestedZeroNFT);
         omnichainStaking = OmnichainStakingToken(_omnichainStaking);
         omnichainStakingLp = OmnichainStakingLP(payable(_omnichainStakingLp));
+        lpOracle = ILPOracle(_lpOracle);
+        zeroOracle = IOracle(_zeroOracle);
     }
 
     function getVestedNFTData(address _userAddress) external view returns (VestDetails[] memory) {
@@ -99,8 +114,6 @@ contract VestUiHelper {
             LockedBalanceWithApr memory lock;
             ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
 
-            uint256 vePower = omnichainStaking.getTokenPower(lockedBalance.amount);
-
             uint256 scale = (lockedBalance.power != 0 && lockedBalance.amount != 0)
                 ? (lockedBalance.power * 1e18) / lockedBalance.amount
                 : 1e18;
@@ -113,7 +126,7 @@ contract VestUiHelper {
             lock.amount = lockedBalance.amount;
             lock.start = lockedBalance.start;
             lock.end = lockedBalance.end;
-            lock.power = vePower;
+            lock.power = lockedBalance.power;
             lock.apr = aprScaled;
 
             lockDetails[i] = lock;
@@ -146,10 +159,10 @@ contract VestUiHelper {
                 ? (lockedBalance.power * 1e18) / lockedBalance.amount
                 : 1e18;
 
-            uint256 priceConversion = zeroToETH();
+            uint256 priceConversion = (lpOracle.getPrice() * 1e18 / uint256(zeroOracle.latestAnswer())) / 1e18;
 
-            uint256 poolRewardAnnual = rewardRate * 31536000;
-            uint256 apr = (priceConversion * (poolRewardAnnual * 1000)) / totalSupply;
+            uint256 poolRewardAnnual = priceConversion * rewardRate * 31536000 * 1000;
+            uint256 apr = (poolRewardAnnual * 1000) / totalSupply;
             uint256 aprScaled = (apr * scale) / 1000;
 
             lock.id = tokenIds[i];
