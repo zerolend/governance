@@ -16,12 +16,13 @@ import {VestedZeroNFT} from "../vesting/VestedZeroNFT.sol";
 import {OmnichainStakingToken} from "../locker/staking/OmnichainStakingToken.sol";
 import {OmnichainStakingLP} from "../locker/staking/OmnichainStakingLP.sol";
 import {ILocker} from "../interfaces/ILocker.sol";
-import { ILPOracle } from "contracts/interfaces/ILPOracle.sol";
+import {ILPOracle} from "contracts/interfaces/ILPOracle.sol";
 
 interface IOracle {
     function latestAnswer() external view returns (int256);
 }
 /// @title VestedZeroNFT is a NFT based contract to hold all the user vests
+
 contract VestUiHelper {
     VestedZeroNFT public vestedZero;
     OmnichainStakingToken public omnichainStaking;
@@ -113,8 +114,6 @@ contract VestUiHelper {
             LockedBalanceWithApr memory lock;
             ILocker.LockedBalance memory lockedBalance = lockedBalances[i];
 
-            uint256 vePower = omnichainStaking.getTokenPower(lockedBalance.amount);
-
             uint256 scale = (lockedBalance.power != 0 && lockedBalance.amount != 0)
                 ? (lockedBalance.power * 1e18) / lockedBalance.amount
                 : 1e18;
@@ -127,7 +126,7 @@ contract VestUiHelper {
             lock.amount = lockedBalance.amount;
             lock.start = lockedBalance.start;
             lock.end = lockedBalance.end;
-            lock.power = vePower;
+            lock.power = lockedBalance.power;
             lock.apr = aprScaled;
 
             lockDetails[i] = lock;
