@@ -231,6 +231,14 @@ abstract contract OmnichainStakingBase is
         }
     }
 
+    function transfer(address to, uint256 value) public virtual override returns (bool) {
+        revert VeTokenTransferDisabled();
+    }
+
+    function transferFrom(address from, address to, uint256 value) public virtual override returns (bool) {
+        revert VeTokenTransferDisabled();
+    }
+
     /**
      * @dev Updates the reward for a given account.
      * @param account The address of the account.
