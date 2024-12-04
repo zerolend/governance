@@ -25,6 +25,7 @@
   "private": false,
   "license": "MIT",
   "devDependencies": {
+    "@aragon/osx": "^1.3.0",
     "@matterlabs/hardhat-zksync-deploy": "^1.2.1",
     "@matterlabs/hardhat-zksync-solc": "^1.1.4",
     "@matterlabs/hardhat-zksync-verify": "^0.1.8",
