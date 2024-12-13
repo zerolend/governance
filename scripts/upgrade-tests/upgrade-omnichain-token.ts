@@ -22,7 +22,7 @@ const main = async function () {
 
   const impl = await hre.ethers.getContractAt(
     "OmnichainStakingToken",
-    "0x9067cE4F32242a78938e4AF7E2A4A3801D98Dd1B"
+    "0xb320Fa6C84d67145759f2e6B06e2Fc14B0BADb5d"
   );
 
   // proxies
@@ -76,7 +76,7 @@ const main = async function () {
   const tx = await admin
     .connect(safeSigner)
     .upgradeAndCall(proxy.target, impl.target, call.data);
-  console.log(tx.data);
+  console.log(tx);
 
   console.log("rewardRate", await implP.rewardRate());
   console.log("balanceOf", await implP.balanceOf(d));

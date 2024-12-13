@@ -89,19 +89,19 @@ const config: HardhatUserConfig = {
       {
         version: "0.8.10",
         settings: {
-          optimizer: { enabled: true, runs: 100_000 },
+          optimizer: { enabled: true, runs: 200_000 },
         },
       },
       {
         version: "0.8.12",
         settings: {
-          optimizer: { enabled: true, runs: 100_000 },
+          optimizer: { enabled: true, runs: 200_000 },
         },
       },
       {
         version: "0.8.20",
         settings: {
-          optimizer: { enabled: true, runs: 100_000 },
+          optimizer: { enabled: true, runs: 200_000 },
         },
       },
     ],
@@ -109,7 +109,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       // live: false,
-      loggingEnabled: true,
+      // loggingEnabled: true,
       allowBlocksWithSameTimestamp: true,
       allowUnlimitedContractSize: true,
     },

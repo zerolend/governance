@@ -35,7 +35,7 @@ abstract contract OmnichainStakingBase is
     OwnableUpgradeable
 {
     ILocker public locker;
-    // ILocker public __; // unwanted variable to keep storage layout
+    ILocker public __; // unwanted variable to keep storage layout
     IVotingPowerCombined public votingPowerCombined;
 
     // staking reward variables
@@ -60,12 +60,6 @@ abstract contract OmnichainStakingBase is
 
     /// @notice Account that distributes staking rewards
     address public distributor;
-
-    mapping(address => bool) public blacklisted;
-
-    constructor() {
-        _disableInitializers();
-    }
 
     /**
      * @dev Initializes the contract with the provided token lockers.
@@ -232,11 +226,11 @@ abstract contract OmnichainStakingBase is
     }
 
     function transfer(address to, uint256 value) public virtual override returns (bool) {
-        revert VeTokenTransferDisabled();
+        require(false, 'revert');
     }
 
     function transferFrom(address from, address to, uint256 value) public virtual override returns (bool) {
-        revert VeTokenTransferDisabled();
+        require(false, 'revert');
     }
 
     /**
@@ -456,17 +450,13 @@ abstract contract OmnichainStakingBase is
 
     function _getTokenPower(uint256 amount) internal view virtual returns (uint256 power);
 
-    function blacklist(address _user) external onlyOwner {
-        blacklisted[_user] = true;
-    }
 
     function recall(address from, address to) external onlyOwner {
         super._update(from, to, balanceOf(from));
     }
 
     function _update(address from, address to, uint256 value) internal virtual override {
-        require(from != address(0) && to != address(0), "no transfer between holders");
-        require(!blacklisted[from] && !blacklisted[to], "blacklisted");
-        super._update(from, to, value);
+        require(from == address(0) || to == address(0), "no transfer between holders");
+         super._update(from, to, value);
     }
 }

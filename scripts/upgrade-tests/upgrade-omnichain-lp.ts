@@ -17,7 +17,7 @@ const main = async function () {
   // const impl = await factory.deploy();
   const impl = await hre.ethers.getContractAt(
     "OmnichainStakingLP",
-    "0xB5327E0961eef65803b29114bAfc3B90cFe9035E"
+    "0xe98f5d40f5F07376675542F9a449c59f18275A19"
   );
 
   // proxies
@@ -36,29 +36,29 @@ const main = async function () {
     "0xb21da3000ffcc2156da080940da8506311da037e"
   );
 
-  // console.log(
-  //   "impl",
-  //   await getSlot(
-  //     proxy,
-  //     "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
-  //   )
-  // );
+  console.log(
+    "impl",
+    await getSlot(
+      proxy,
+      "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
+    )
+  );
 
-  // console.log(
-  //   "admin",
-  //   await getSlot(
-  //     proxy,
-  //     "0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"
-  //   )
-  // );
+  console.log(
+    "admin",
+    await getSlot(
+      proxy,
+      "0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103"
+    )
+  );
 
-  // console.log("rewardRate", await implP.rewardRate());
-  // console.log("balanceOf", await implP.balanceOf(d));
-  // console.log("userRewardPerTokenPaid", await implP.userRewardPerTokenPaid(d));
-  // console.log("earned", await implP.earned(d));
-  // console.log("owner", await implP.owner());
-  // console.log("lockedByToken", await implP.lockedByToken(1));
-  // console.log("lockedTokenIdNfts", await implP.lockedTokenIdNfts(d, 0));
+  console.log("rewardRate", await implP.rewardRate());
+  console.log("balanceOf", await implP.balanceOf(d));
+  console.log("userRewardPerTokenPaid", await implP.userRewardPerTokenPaid(d));
+  console.log("earned", await implP.earned(d));
+  console.log("owner", await implP.owner());
+  console.log("lockedByToken", await implP.lockedByToken(1));
+  console.log("lockedTokenIdNfts", await implP.lockedTokenIdNfts(d, 0));
 
   const call = await impl.init.populateTransaction(
     "0x8bB8B092f3f872a887F377f73719c665Dd20Ab06", // address _locker,
@@ -79,7 +79,7 @@ const main = async function () {
 
   const tx = await admin
     .connect(safeSigner)
-    .upgradeAndCall.populateTransaction(proxy.target, impl.target, call.data);
+    .upgradeAndCall(proxy.target, impl.target, call.data);
 
   console.log(tx);
 

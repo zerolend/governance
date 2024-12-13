@@ -826,54 +826,6 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@nomicfoundation/edr-darwin-arm64@0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/edr-darwin-arm64/-/edr-darwin-arm64-0.5.2.tgz#72f7a826c9f0f2c91308edca562de3b9484ac079"
-  integrity sha512-Gm4wOPKhbDjGTIRyFA2QUAPfCXA1AHxYOKt3yLSGJkQkdy9a5WW+qtqKeEKHc/+4wpJSLtsGQfpzyIzggFfo/A==
-
-"@nomicfoundation/edr-darwin-x64@0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/edr-darwin-x64/-/edr-darwin-x64-0.5.2.tgz#6d0fedb219d664631c6feddc596ab8c3bbc36fa8"
-  integrity sha512-ClyABq2dFCsrYEED3/UIO0c7p4H1/4vvlswFlqUyBpOkJccr75qIYvahOSJRM62WgUFRhbSS0OJXFRwc/PwmVg==
-
-"@nomicfoundation/edr-linux-arm64-gnu@0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/edr-linux-arm64-gnu/-/edr-linux-arm64-gnu-0.5.2.tgz#60e4d52d963141bc2bb4a02639dc590a7fbdda2f"
-  integrity sha512-HWMTVk1iOabfvU2RvrKLDgtFjJZTC42CpHiw2h6rfpsgRqMahvIlx2jdjWYzFNy1jZKPTN1AStQ/91MRrg5KnA==
-
-"@nomicfoundation/edr-linux-arm64-musl@0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/edr-linux-arm64-musl/-/edr-linux-arm64-musl-0.5.2.tgz#6676a09eab57c435a16ffc144658c896acca9baa"
-  integrity sha512-CwsQ10xFx/QAD5y3/g5alm9+jFVuhc7uYMhrZAu9UVF+KtVjeCvafj0PaVsZ8qyijjqVuVsJ8hD1x5ob7SMcGg==
-
-"@nomicfoundation/edr-linux-x64-gnu@0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/edr-linux-x64-gnu/-/edr-linux-x64-gnu-0.5.2.tgz#f558d9697ce961410e7a7468f9ab8c8a601b9df6"
-  integrity sha512-CWVCEdhWJ3fmUpzWHCRnC0/VLBDbqtqTGTR6yyY1Ep3S3BOrHEAvt7h5gx85r2vLcztisu2vlDq51auie4IU1A==
-
-"@nomicfoundation/edr-linux-x64-musl@0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/edr-linux-x64-musl/-/edr-linux-x64-musl-0.5.2.tgz#c9c9cbb2997499f75c1d022be724b0551d44569f"
-  integrity sha512-+aJDfwhkddy2pP5u1ISg3IZVAm0dO836tRlDTFWtvvSMQ5hRGqPcWwlsbobhDQsIxhPJyT7phL0orCg5W3WMeA==
-
-"@nomicfoundation/edr-win32-x64-msvc@0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/edr-win32-x64-msvc/-/edr-win32-x64-msvc-0.5.2.tgz#f16db88bf4fe09a996af0a25096e09deecb72bfa"
-  integrity sha512-CcvvuA3sAv7liFNPsIR/68YlH6rrybKzYttLlMr80d4GKJjwJ5OKb3YgE6FdZZnOfP19HEHhsLcE0DPLtY3r0w==
-
-"@nomicfoundation/edr@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/edr/-/edr-0.5.2.tgz#e8c7b3d3dd4a312432ab3930dec60f76dc5c4926"
-  integrity sha512-hW/iLvUQZNTVjFyX/I40rtKvvDOqUEyIi96T28YaLfmPL+3LW2lxmYLUXEJ6MI14HzqxDqrLyhf6IbjAa2r3Dw==
-  dependencies:
-    "@nomicfoundation/edr-darwin-arm64" "0.5.2"
-    "@nomicfoundation/edr-darwin-x64" "0.5.2"
-    "@nomicfoundation/edr-linux-arm64-gnu" "0.5.2"
-    "@nomicfoundation/edr-linux-arm64-musl" "0.5.2"
-    "@nomicfoundation/edr-linux-x64-gnu" "0.5.2"
-    "@nomicfoundation/edr-linux-x64-musl" "0.5.2"
-    "@nomicfoundation/edr-win32-x64-msvc" "0.5.2"
-
 "@nomicfoundation/ethereumjs-block@5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@nomicfoundation/ethereumjs-block/-/ethereumjs-block-5.0.2.tgz#13a7968f5964f1697da941281b7f7943b0465d04"
@@ -914,13 +866,6 @@
     "@nomicfoundation/ethereumjs-util" "9.0.2"
     crc-32 "^1.2.0"
 
-"@nomicfoundation/ethereumjs-common@4.0.4":
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/ethereumjs-common/-/ethereumjs-common-4.0.4.tgz#9901f513af2d4802da87c66d6f255b510bef5acb"
-  integrity sha512-9Rgb658lcWsjiicr5GzNCjI1llow/7r0k50dLL95OJ+6iZJcVbi15r3Y0xh2cIO+zgX0WIHcbzIu6FeQf9KPrg==
-  dependencies:
-    "@nomicfoundation/ethereumjs-util" "9.0.4"
-
 "@nomicfoundation/ethereumjs-ethash@3.0.2":
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/@nomicfoundation/ethereumjs-ethash/-/ethereumjs-ethash-3.0.2.tgz#da77147f806401ee996bfddfa6487500118addca"
@@ -951,11 +896,6 @@
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@nomicfoundation/ethereumjs-rlp/-/ethereumjs-rlp-5.0.2.tgz#4fee8dc58a53ac6ae87fb1fca7c15dc06c6b5dea"
   integrity sha512-QwmemBc+MMsHJ1P1QvPl8R8p2aPvvVcKBbvHnQOKBpBztEo0omN0eaob6FeZS/e3y9NSe+mfu3nNFBHszqkjTA==
-
-"@nomicfoundation/ethereumjs-rlp@5.0.4":
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/ethereumjs-rlp/-/ethereumjs-rlp-5.0.4.tgz#66c95256fc3c909f6fb18f6a586475fc9762fa30"
-  integrity sha512-8H1S3s8F6QueOc/X92SdrA4RDenpiAEqMg5vJH99kcQaCy/a3Q6fgseo75mgWlbanGJXSlAPtnCeG9jvfTYXlw==
 
 "@nomicfoundation/ethereumjs-statemanager@2.0.2":
   version "2.0.2"
@@ -992,16 +932,6 @@
     "@nomicfoundation/ethereumjs-util" "9.0.2"
     ethereum-cryptography "0.1.3"
 
-"@nomicfoundation/ethereumjs-tx@5.0.4":
-  version "5.0.4"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/ethereumjs-tx/-/ethereumjs-tx-5.0.4.tgz#b0ceb58c98cc34367d40a30d255d6315b2f456da"
-  integrity sha512-Xjv8wAKJGMrP1f0n2PeyfFCCojHd7iS3s/Ab7qzF1S64kxZ8Z22LCMynArYsVqiFx6rzYy548HNVEyI+AYN/kw==
-  dependencies:
-    "@nomicfoundation/ethereumjs-common" "4.0.4"
-    "@nomicfoundation/ethereumjs-rlp" "5.0.4"
-    "@nomicfoundation/ethereumjs-util" "9.0.4"
-    ethereum-cryptography "0.1.3"
-
 "@nomicfoundation/ethereumjs-util@9.0.2":
   version "9.0.2"
   resolved "https://registry.yarnpkg.com/@nomicfoundation/ethereumjs-util/-/ethereumjs-util-9.0.2.tgz#16bdc1bb36f333b8a3559bbb4b17dac805ce904d"
@@ -1009,14 +939,6 @@
   dependencies:
     "@chainsafe/ssz" "^0.10.0"
     "@nomicfoundation/ethereumjs-rlp" "5.0.2"
-    ethereum-cryptography "0.1.3"
-
-"@nomicfoundation/ethereumjs-util@9.0.4":
-  version "9.0.4"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/ethereumjs-util/-/ethereumjs-util-9.0.4.tgz#84c5274e82018b154244c877b76bc049a4ed7b38"
-  integrity sha512-sLOzjnSrlx9Bb9EFNtHzK/FJFsfg2re6bsGqinFinH1gCqVfz9YYlXiMWwDM4C/L4ywuHFCYwfKTVr/QHQcU0Q==
-  dependencies:
-    "@nomicfoundation/ethereumjs-rlp" "5.0.4"
     ethereum-cryptography "0.1.3"
 
 "@nomicfoundation/ethereumjs-vm@7.0.2":
@@ -4038,17 +3960,23 @@ hardhat-tracer@^3.0.3:
     ethers "^5.6.1"
     semver "^7.6.2"
 
-hardhat@^2.22.10:
-  version "2.22.10"
-  resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.22.10.tgz#826ab56e47af98406e6dd105ba6d2dbb148013d9"
-  integrity sha512-JRUDdiystjniAvBGFmJRsiIZSOP2/6s++8xRDe3TzLeQXlWWHsXBrd9wd3JWFyKXvgMqMeLL5Sz/oNxXKYw9vg==
+hardhat@2.19.4:
+  version "2.19.4"
+  resolved "https://registry.yarnpkg.com/hardhat/-/hardhat-2.19.4.tgz#5112c30295d8be2e18e55d847373c50483ed1902"
+  integrity sha512-fTQJpqSt3Xo9Mn/WrdblNGAfcANM6XC3tAEi6YogB4s02DmTf93A8QsGb8uR0KR8TFcpcS8lgiW4ugAIYpnbrQ==
   dependencies:
     "@ethersproject/abi" "^5.1.2"
     "@metamask/eth-sig-util" "^4.0.0"
-    "@nomicfoundation/edr" "^0.5.2"
-    "@nomicfoundation/ethereumjs-common" "4.0.4"
-    "@nomicfoundation/ethereumjs-tx" "5.0.4"
-    "@nomicfoundation/ethereumjs-util" "9.0.4"
+    "@nomicfoundation/ethereumjs-block" "5.0.2"
+    "@nomicfoundation/ethereumjs-blockchain" "7.0.2"
+    "@nomicfoundation/ethereumjs-common" "4.0.2"
+    "@nomicfoundation/ethereumjs-evm" "2.0.2"
+    "@nomicfoundation/ethereumjs-rlp" "5.0.2"
+    "@nomicfoundation/ethereumjs-statemanager" "2.0.2"
+    "@nomicfoundation/ethereumjs-trie" "6.0.2"
+    "@nomicfoundation/ethereumjs-tx" "5.0.2"
+    "@nomicfoundation/ethereumjs-util" "9.0.2"
+    "@nomicfoundation/ethereumjs-vm" "7.0.2"
     "@nomicfoundation/solidity-analyzer" "^0.1.0"
     "@sentry/node" "^5.18.1"
     "@types/bn.js" "^5.1.0"
@@ -4056,7 +3984,6 @@ hardhat@^2.22.10:
     adm-zip "^0.4.16"
     aggregate-error "^3.0.0"
     ansi-escapes "^4.3.0"
-    boxen "^5.1.2"
     chalk "^2.4.2"
     chokidar "^3.4.0"
     ci-info "^2.0.0"
@@ -4079,7 +4006,7 @@ hardhat@^2.22.10:
     raw-body "^2.4.1"
     resolve "1.17.0"
     semver "^6.3.0"
-    solc "0.8.26"
+    solc "0.7.3"
     source-map-support "^0.5.13"
     stacktrace-parser "^0.1.10"
     tsort "0.0.1"
@@ -6000,19 +5927,6 @@ solc@0.8.15:
   version "0.8.15"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.15.tgz#d274dca4d5a8b7d3c9295d4cbdc9291ee1c52152"
   integrity sha512-Riv0GNHNk/SddN/JyEuFKwbcWcEeho15iyupTSHw5Np6WuXA5D8kEHbyzDHi6sqmvLzu2l+8b1YmL8Ytple+8w==
-  dependencies:
-    command-exists "^1.2.8"
-    commander "^8.1.0"
-    follow-redirects "^1.12.1"
-    js-sha3 "0.8.0"
-    memorystream "^0.3.1"
-    semver "^5.5.0"
-    tmp "0.0.33"
-
-solc@0.8.26:
-  version "0.8.26"
-  resolved "https://registry.yarnpkg.com/solc/-/solc-0.8.26.tgz#afc78078953f6ab3e727c338a2fefcd80dd5b01a"
-  integrity sha512-yiPQNVf5rBFHwN6SIf3TUUvVAFKcQqmSUFeq+fb6pNRCo0ZCgpYOZDi3BVoezCPIAcKrVYd/qXlBLUP9wVrZ9g==
   dependencies:
     command-exists "^1.2.8"
     commander "^8.1.0"
