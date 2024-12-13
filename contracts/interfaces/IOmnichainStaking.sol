@@ -35,6 +35,7 @@ interface IOmnichainStaking is IVotes {
     function getTokenPower(uint256 amount) external view returns (uint256 power);
 
     error InvalidUnstaker(address, address);
+    error VeTokenTransferDisabled();
 
     event LpOracleSet(address indexed oldLpOracle, address indexed newLpOracle);
     event ZeroAggregatorSet(address indexed oldZeroAggregator, address indexed newZeroAggregator);
