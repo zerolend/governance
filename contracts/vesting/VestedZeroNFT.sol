@@ -198,7 +198,7 @@ contract VestedZeroNFT is
         _grantRole(UNDO_VEST_ROLE, _user);
     }
 
-    function undoVest(uint256 tokenId) external onlyRole(UNDO_VEST_ROLE) returns (uint256 totalClaim) {
+    function undoVest(uint256 tokenId) external nonReentrant whenNotPaused onlyRole(UNDO_VEST_ROLE) returns (uint256 totalClaim) {
         require(msg.sender == _requireOwned(tokenId), "!owner");
         require(!frozen[tokenId], "frozen");
 
@@ -210,15 +210,25 @@ contract VestedZeroNFT is
             if (lock.pendingClaimed == 0) {
                 uint256 _penalty = penalty(tokenId);
                 totalClaim += lock.pending - _penalty;
-                lock.pendingClaimed = lock.pending;
 
                 // send the penalty tokens back to the staking bonus
                 // contract (used for staking bonuses)
                 zero.transfer(stakingBonus, _penalty);
             }
-        }
+        } else {
+            // handle vesting without penalties
+            // handle the upfront vesting
+            if (lock.upfront > 0 && lock.upfrontClaimed == 0) {
+                totalClaim += lock.upfront;
+            }
 
-        zero.transfer(msg.sender, totalClaim);
+            // handle the linear vesting
+            if (lock.pending > 0 && lock.pendingClaimed >= 0) {
+                totalClaim += lock.pending - lock.pendingClaimed;
+            }
+        }
+        
+        if (totalClaim > 0) zero.transfer(msg.sender, totalClaim);
 
         _burn(tokenId);
         delete tokenIdToLockDetails[tokenId];
