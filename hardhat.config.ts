@@ -9,6 +9,7 @@ import "solidity-coverage";
 import "solidity-docgen";
 import "hardhat-tracer";
 import dotenv from "dotenv";
+import { base } from "./types/@zerolendxyz/core-v3/contracts/flashloan";
 dotenv.config();
 
 const config: HardhatUserConfig = {
@@ -150,6 +151,10 @@ const config: HardhatUserConfig = {
       url: `https://pacific-rpc.manta.network/http`,
       accounts: [process.env.WALLET_PRIVATE_KEY || ""],
     },
+    base: {
+      url: `https://mainnet.base.org`,
+      accounts: [process.env.WALLET_PRIVATE_KEY || ""],
+    }
   },
   namedAccounts: {
     deployer: 0,
@@ -163,6 +168,7 @@ const config: HardhatUserConfig = {
       blastSepolia: process.env.BLAST_SEPOLIA_KEY || "",
       manta: "",
       era: process.env.ZKSYNC_KEY || "",
+      base: process.env.BASESCAN_KEY || "",
     },
     customChains: [
       {
@@ -206,6 +212,14 @@ const config: HardhatUserConfig = {
           browserURL: "https://sepolia.blastscan.io/",
         },
       },
+      {
+        network: "base",
+        chainId: 8453,
+        urls: {
+          apiURL: "https://api.basescan.org/api",
+          browserURL: "https://basescan.org",
+        }
+      }
     ],
   },
 };
