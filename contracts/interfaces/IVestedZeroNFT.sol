@@ -23,7 +23,7 @@ interface IVestedZeroNFT {
         bool hasPenalty;
         VestCategory category;
     }
-
+    
     /// Mints a vesting nft for a user. This is a privileged function meant to only be called by a contract or a deployer
     /// @param who For whom we are vesting tokesn for
     /// @param pending How much tokens the user gets after the cliff is over during the linear vesting
@@ -95,6 +95,11 @@ interface IVestedZeroNFT {
     /// Claim unvested tokens by the bonus staking contract
     /// @param tokenId The nft id
     function claimUnvested(uint256 tokenId) external;
+
+    /// Recall unvested tokens 
+    /// @param tokenId The nft id
+    /// @param to The address to send the unvested tokens to
+    function recallNFT(uint256 tokenId, address to) external;
 
     /// Metadata helper for nft platforms like openzea
     /// @param tokenId The nft id
