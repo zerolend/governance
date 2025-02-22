@@ -51,6 +51,8 @@ contract VestedZeroNFT is
     mapping(uint256 => LockDetails) public tokenIdToLockDetails;
     mapping(uint256 => bool) public frozen;
 
+    bytes32 public constant UNDO_VEST_ROLE = keccak256("UNDO_VEST_ROLE");
+
     constructor() {
         _disableInitializers();
     }
@@ -190,6 +192,46 @@ contract VestedZeroNFT is
             hasPenalty: lock.hasPenalty,
             category: lock.category
         });
+    }
+
+    function allowUndoVest(address _user) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        _grantRole(UNDO_VEST_ROLE, _user);
+    }
+
+    function undoVest(uint256 tokenId) external nonReentrant whenNotPaused onlyRole(UNDO_VEST_ROLE) returns (uint256 totalClaim) {
+        require(msg.sender == _requireOwned(tokenId), "!owner");
+        require(!frozen[tokenId], "frozen");
+
+        LockDetails memory lock = tokenIdToLockDetails[tokenId];
+
+        if (lock.hasPenalty) {
+            // if the user hasn't claimed before, then calculate how much penalty should be charged
+            // and send the remaining tokens to the user
+            if (lock.pendingClaimed == 0) {
+                uint256 _penalty = penalty(tokenId);
+                totalClaim += lock.pending - _penalty;
+
+                // send the penalty tokens back to the staking bonus
+                // contract (used for staking bonuses)
+                zero.transfer(stakingBonus, _penalty);
+            }
+        } else {
+            // handle vesting without penalties
+            // handle the upfront vesting
+            if (lock.upfront > 0 && lock.upfrontClaimed == 0) {
+                totalClaim += lock.upfront;
+            }
+
+            // handle the linear vesting
+            if (lock.pending > 0 && lock.pendingClaimed >= 0) {
+                totalClaim += lock.pending - lock.pendingClaimed;
+            }
+        }
+        
+        if (totalClaim > 0) zero.transfer(msg.sender, totalClaim);
+
+        _burn(tokenId);
+        delete tokenIdToLockDetails[tokenId];
     }
 
     /// @inheritdoc IVestedZeroNFT
