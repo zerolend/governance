@@ -311,8 +311,10 @@ contract VestedZeroNFT is
         return lock.upfrontClaimed + lock.pendingClaimed;
     }
 
-    function recallNFT(uint256 id) external onlyRole(DEFAULT_ADMIN_ROLE) {
-        // todo
+    function recallNFT(uint256 tokenId, address to) external nonReentrant onlyRole(DEFAULT_ADMIN_ROLE) {
+        uint256 _pending = unclaimed(tokenId);
+        zero.transfer(to, _pending);
+        _burn(tokenId);
     }
 
     /// @inheritdoc IVestedZeroNFT
