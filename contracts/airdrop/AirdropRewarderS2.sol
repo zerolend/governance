@@ -5,8 +5,8 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import { IVestedZeroNFT } from "contracts/interfaces/IVestedZeroNFT.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {IVestedZeroNFT} from "contracts/interfaces/IVestedZeroNFT.sol";
 
 contract AirdropRewarderS2 is Initializable, OwnableUpgradeable {
     using SafeERC20 for ERC20Upgradeable;
@@ -53,15 +53,16 @@ contract AirdropRewarderS2 is Initializable, OwnableUpgradeable {
         address _vestedZeroNFT,
         uint256 _unlockDate,
         uint256 _endDate,
+        address _owner,
         address[] memory vestRewardsForUsers
     ) external initializer {
-        __Ownable_init(msg.sender);
+        __Ownable_init(_owner);
         unlockDate = _unlockDate;
         endDate = _endDate;
         vestedZeroNFT = IVestedZeroNFT(_vestedZeroNFT);
         rewardToken = ERC20Upgradeable(_rewardToken);
 
-        for(uint i = 0; i < vestRewardsForUsers.length; i++) {
+        for (uint256 i = 0; i < vestRewardsForUsers.length; i++) {
             vestRewards[vestRewardsForUsers[i]] = true;
         }
     }
@@ -71,8 +72,10 @@ contract AirdropRewarderS2 is Initializable, OwnableUpgradeable {
         merkleRoot = _merkleRoot;
     }
 
-    function setVestForUser(address _user, bool _vest) external onlyOwner {
-        vestRewards[_user] = _vest;
+    function setVestForUsers(address[] memory _user, bool _vest) external onlyOwner {
+        for (uint256 i = 0; i < _user.length; i++) {
+            vestRewards[_user[i]] = _vest;
+        }
     }
 
     function setRewardToken(address _rewardToken) external onlyOwner {
@@ -94,11 +97,7 @@ contract AirdropRewarderS2 is Initializable, OwnableUpgradeable {
         paused = false;
     }
 
-    function claim(
-        address _user,
-        uint256 _claimAmount,
-        bytes32[] calldata _merkleProofs
-    ) external whenNotPaused{
+    function claim(address _user, uint256 _claimAmount, bytes32[] calldata _merkleProofs) external whenNotPaused {
         if (_user == address(0)) revert InvalidAddress();
         if (block.timestamp < unlockDate) revert ClaimNotReady();
         if (block.timestamp > endDate) revert ClaimDurationOver();
@@ -115,16 +114,7 @@ contract AirdropRewarderS2 is Initializable, OwnableUpgradeable {
 
         if (vestRewards[_user]) {
             rewardToken.approve(address(vestedZeroNFT), _claimAmount);
-            vestedZeroNFT.mint(
-                _user,
-                _claimAmount,
-                0,
-                31 days,
-                30 days,
-                0,
-                false,
-                IVestedZeroNFT.VestCategory.AIRDROP
-            );
+            vestedZeroNFT.mint(_user, _claimAmount, 0, 31 days, 0, 0, false, IVestedZeroNFT.VestCategory.AIRDROP);
             emit RewardsVested(_user, _claimAmount);
         } else {
             rewardToken.safeTransfer(_user, _claimAmount);
@@ -135,10 +125,7 @@ contract AirdropRewarderS2 is Initializable, OwnableUpgradeable {
     }
 
     function adminWithdrawal() public onlyOwner {
-        rewardToken.safeTransfer(
-            _msgSender(),
-            rewardToken.balanceOf(address(this))
-        );
+        rewardToken.safeTransfer(_msgSender(), rewardToken.balanceOf(address(this)));
         emit RewardTerminated();
     }
 }

@@ -75,8 +75,12 @@
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-periphery": "^1.4.4",
     "@zerolendxyz/core-v3": "^2.8.0",
+    "csv-parse": "^5.6.0",
+    "csv-parser": "^3.2.0",
+    "fast-csv": "^5.0.2",
     "hardhat-abi-exporter": "^2.10.1",
     "hardhat-dependency-compiler": "^1.1.3",
     "solidity-coverage": "^0.8.12"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
