@@ -1,0 +1,187 @@
+{
+  "address": "0xBA92B73287289b06Da58FDc3388619A86061fBb4",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_nileAMM",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_zeroPriceFeed",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_ethPriceFeed",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "ethPriceFeed",
+      "outputs": [
+        {
+          "internalType": "contract IPythAggregatorV3",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "price",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "latestAnswer",
+      "outputs": [
+        {
+          "internalType": "int256",
+          "name": "",
+          "type": "int256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "nileAMM",
+      "outputs": [
+        {
+          "internalType": "contract INileAMM",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "x",
+          "type": "uint256"
+        }
+      ],
+      "name": "sqrt",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "y",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "zeroPriceFeed",
+      "outputs": [
+        {
+          "internalType": "contract IPythAggregatorV3",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "transactionHash": "0x6bddb493dc0fbc9c48ec4ba647ad07157c01b9e990632c2c52e3f296d14fc859",
+  "receipt": {
+    "to": null,
+    "from": "0xeD3Af36D7b9C5Bbd7ECFa7fb794eDa6E242016f5",
+    "contractAddress": "0xBA92B73287289b06Da58FDc3388619A86061fBb4",
+    "transactionIndex": 40,
+    "gasUsed": "409753",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0xd5fe3335c7ff06b4240f10b82f5fbe6056b2b6c24020947aa4113ef778eabdd8",
+    "transactionHash": "0x6bddb493dc0fbc9c48ec4ba647ad07157c01b9e990632c2c52e3f296d14fc859",
+    "logs": [],
+    "blockNumber": 20152526,
+    "cumulativeGasUsed": "6604226",
+    "status": 1,
+    "byzantium": true
+  },
+  "args": [
+    "0x6cDcb1C4A4D1C3C6d054b27AC5B77e89eAFb971d",
+    "0x15Fc7b4982A11c5CB63379cD0b2CE57f3e9C08f9",
+    "0x71041dddad3595F9CEd3DcCFBe3D1F4b0a16Bb70"
+  ],
+  "numDeployments": 3,
+  "solcInputHash": "431994b6cdfb8adc62f53047f5321e7f",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.20+commit.a1b79de6\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_nileAMM\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_zeroPriceFeed\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_ethPriceFeed\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"ethPriceFeed\",\"outputs\":[{\"internalType\":\"contract IPythAggregatorV3\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getPrice\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"price\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"latestAnswer\",\"outputs\":[{\"internalType\":\"int256\",\"name\":\"\",\"type\":\"int256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"nileAMM\",\"outputs\":[{\"internalType\":\"contract INileAMM\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"x\",\"type\":\"uint256\"}],\"name\":\"sqrt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"y\",\"type\":\"uint256\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"zeroPriceFeed\",\"outputs\":[{\"internalType\":\"contract IPythAggregatorV3\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}],\"devdoc\":{\"details\":\"This contract interacts with the INileAMM interface to fetch reserves and calculate prices.Reference from https://github.com/AlphaFinanceLab/alpha-homora-v2-contract/blob/master/contracts/oracle/UniswapV2Oracle.sol\",\"kind\":\"dev\",\"methods\":{\"constructor\":{\"params\":{\"_nileAMM\":\"The address of the Nile AMM contract.\"}},\"getPrice()\":{\"details\":\"This function fetches reserves from the Nile AMM and uses a pre-defined price for tokens to calculate the LP token price.\",\"returns\":{\"price\":\"The price of the liquidity pool token.\"}},\"sqrt(uint256)\":{\"details\":\"This function uses an iterative method to compute the square root of a number.\",\"params\":{\"x\":\"The number to compute the square root of.\"},\"returns\":{\"y\":\"The square root of the given number.\"}}},\"title\":\"LPOracle\",\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{\"constructor\":{\"notice\":\"Constructor sets the address of the Nile AMM contract.\"},\"getPrice()\":{\"notice\":\"Gets the price of the liquidity pool token.\"},\"latestAnswer()\":{\"notice\":\"Gets the latest price of the liquidity pool token.\"},\"sqrt(uint256)\":{\"notice\":\"Computes the square root of a given number using the Babylonian method.\"}},\"notice\":\"This contract provides a price oracle for the liquidity pool tokens in a Nile AMM.\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"contracts/oracle/LPOracle.sol\":\"LPOracle\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":100000},\"remappings\":[]},\"sources\":{\"contracts/interfaces/INileAMM.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity ^0.8.12;\\n\\ninterface INileAMM {\\n    event Approval(address indexed owner, address indexed spender, uint256 amount);\\n    event Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to);\\n    event Claim(address indexed sender, address indexed recipient, uint256 amount0, uint256 amount1);\\n    event Fees(address indexed sender, uint256 amount0, uint256 amount1);\\n    event Initialized(uint8 version);\\n    event Mint(address indexed sender, uint256 amount0, uint256 amount1);\\n    event SetFeeSplit(uint8 toFeesOld, uint8 toTreasuryOld, uint8 toFeesNew, uint8 toTreasuryNew);\\n    event Swap(\\n        address indexed sender,\\n        uint256 amount0In,\\n        uint256 amount1In,\\n        uint256 amount0Out,\\n        uint256 amount1Out,\\n        address indexed to\\n    );\\n    event Sync(uint256 reserve0, uint256 reserve1);\\n    event Transfer(address indexed from, address indexed to, uint256 amount);\\n\\n    function allowance(address owner, address spender) external view returns (uint256);\\n    function approve(address spender, uint256 amount) external returns (bool);\\n    function balanceOf(address account) external view returns (uint256);\\n    function blockTimestampLast() external view returns (uint256);\\n    function burn(address to) external returns (uint256 amount0, uint256 amount1);\\n    function claimFees() external returns (uint256 claimed0, uint256 claimed1);\\n    function current(address tokenIn, uint256 amountIn) external view returns (uint256 amountOut);\\n    function currentCumulativePrices()\\n        external\\n        view\\n        returns (uint256 reserve0Cumulative, uint256 reserve1Cumulative, uint256 blockTimestamp);\\n    function decimals() external view returns (uint8);\\n    function feeSplit() external view returns (uint8);\\n    function fees() external view returns (address);\\n    function getAmountOut(uint256 amountIn, address tokenIn) external view returns (uint256);\\n    function getReserves() external view returns (uint256 _reserve0, uint256 _reserve1, uint256 _blockTimestampLast);\\n    function initialize(address _factory, address _token0, address _token1, bool _stable, address _voter) external;\\n    function lastObservation()\\n        external\\n        view\\n        returns (uint256 timestamp, uint256 reserve0Cumulative, uint256 reserve1Cumulative);\\n    function metadata()\\n        external\\n        view\\n        returns (uint256 dec0, uint256 dec1, uint256 r0, uint256 r1, bool st, address t0, address t1);\\n    function mint(address to) external returns (uint256 liquidity);\\n    function name() external view returns (string memory);\\n    function nonces(address account) external view returns (uint256);\\n    function observationLength() external view returns (uint256);\\n    function observations(uint256 index)\\n        external\\n        view\\n        returns (uint256 timestamp, uint256 reserve0Cumulative, uint256 reserve1Cumulative);\\n    function permit(address owner, address spender, uint256 value, uint256 deadline, uint8 v, bytes32 r, bytes32 s)\\n        external;\\n    function prices(address tokenIn, uint256 amountIn, uint256 points) external view returns (uint256[] memory);\\n    function quote(address tokenIn, uint256 amountIn, uint256 granularity) external view returns (uint256 amountOut);\\n    function reserve0() external view returns (uint256);\\n    function reserve0CumulativeLast() external view returns (uint256);\\n    function reserve1() external view returns (uint256);\\n    function reserve1CumulativeLast() external view returns (uint256);\\n    function sample(address tokenIn, uint256 amountIn, uint256 points, uint256 window)\\n        external\\n        view\\n        returns (uint256[] memory);\\n    function setActiveGauge(bool isActive) external;\\n    function setFeeSplit() external;\\n    function skim(address to) external;\\n    function stable() external view returns (bool);\\n    function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata data) external;\\n    function symbol() external view returns (string memory);\\n    function sync() external;\\n    function token0() external view returns (address);\\n    function token1() external view returns (address);\\n    function tokens() external view returns (address, address);\\n    function totalSupply() external view returns (uint256);\\n    function transfer(address dst, uint256 amount) external returns (bool);\\n    function transferFrom(address src, address dst, uint256 amount) external returns (bool);\\n}\\n\",\"keccak256\":\"0xfc08ebf5e3ed9715cf38fc55b9c9a4f2bd25ce1f67514976567991aef06137a3\",\"license\":\"AGPL-3.0\"},\"contracts/interfaces/IPythAggregatorV3.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.8.0;\\n\\ninterface IPythAggregatorV3 {\\n    function decimals() external view returns (uint8);\\n    function description() external pure returns (string memory);\\n    function getAnswer(uint256) external view returns (int256);\\n    function getRoundData(uint80 _roundId)\\n        external\\n        view\\n        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);\\n    function getTimestamp(uint256) external view returns (uint256);\\n    function latestAnswer() external view returns (int256);\\n    function latestRound() external view returns (uint256);\\n    function latestRoundData()\\n        external\\n        view\\n        returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);\\n    function latestTimestamp() external view returns (uint256);\\n    function priceId() external view returns (bytes32);\\n    function pyth() external view returns (address);\\n\\n    function updateFeeds(bytes[] calldata priceUpdateData) external payable;\\n    function version() external pure returns (uint256);\\n}\\n\",\"keccak256\":\"0x364ac4f73c50a55e13548632423b2557599a753edbe376147adb848c84764302\",\"license\":\"MIT\"},\"contracts/oracle/LPOracle.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.12;\\n\\nimport \\\"../interfaces/INileAMM.sol\\\";\\nimport \\\"../interfaces/IPythAggregatorV3.sol\\\";\\n\\n/// @title LPOracle\\n/// @notice This contract provides a price oracle for the liquidity pool tokens in a Nile AMM.\\n/// @dev This contract interacts with the INileAMM interface to fetch reserves and calculate prices.\\n/// @dev Reference from https://github.com/AlphaFinanceLab/alpha-homora-v2-contract/blob/master/contracts/oracle/UniswapV2Oracle.sol\\ncontract LPOracle {\\n    INileAMM public immutable nileAMM;\\n    IPythAggregatorV3 public immutable zeroPriceFeed;\\n    IPythAggregatorV3 public immutable ethPriceFeed;\\n\\n    /// @notice Constructor sets the address of the Nile AMM contract.\\n    /// @param _nileAMM The address of the Nile AMM contract.\\n    constructor(address _nileAMM, address _zeroPriceFeed, address _ethPriceFeed) {\\n        nileAMM = INileAMM(_nileAMM);\\n        zeroPriceFeed = IPythAggregatorV3(_zeroPriceFeed);\\n        ethPriceFeed = IPythAggregatorV3(_ethPriceFeed);\\n    }\\n\\n    /// @notice Gets the price of the liquidity pool token.\\n    /// @dev This function fetches reserves from the Nile AMM and uses a pre-defined price for tokens to calculate the LP token price.\\n    /// @return price The price of the liquidity pool token.\\n    function getPrice() public view returns (uint256 price) {\\n        (uint256 reserve0, uint256 reserve1,) = nileAMM.getReserves();\\n\\n        int256 px0 = zeroPriceFeed.latestAnswer();\\n        int256 px1 = ethPriceFeed.latestAnswer();\\n\\n        require(px0 > 0 && px1 > 0, \\\"Invalid Price\\\");\\n\\n        uint256 sqrtK = (sqrt(reserve0 * reserve1) * 1e18) / nileAMM.totalSupply();\\n\\n        price = (sqrtK * 2 * sqrt(uint256(px0 * px1))) / 1e18;\\n    }\\n\\n    /// @notice Gets the latest price of the liquidity pool token.\\n    function latestAnswer() public view returns (int256) {\\n        return int256(getPrice());\\n    }\\n\\n    /// @notice Computes the square root of a given number using the Babylonian method.\\n    /// @dev This function uses an iterative method to compute the square root of a number.\\n    /// @param x The number to compute the square root of.\\n    /// @return y The square root of the given number.\\n    function sqrt(uint256 x) public pure returns (uint256 y) {\\n        if (x == 0) return 0; // Handle the edge case for 0\\n        uint256 z = (x + 1) / 2;\\n        y = x;\\n        while (z < y) {\\n            y = z;\\n            z = (x / z + z) / 2;\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x83f81adcf0b0ed96fffb9c7806c7c38a57e28bb2451d044c7b1e3d4f332e4c8c\",\"license\":\"MIT\"}},\"version\":1}",
+  "bytecode": "0x60e060405234801561001057600080fd5b5060405161076438038061076483398101604081905261002f91610068565b6001600160a01b0392831660805290821660a0521660c0526100ab565b80516001600160a01b038116811461006357600080fd5b919050565b60008060006060848603121561007d57600080fd5b6100868461004c565b92506100946020850161004c565b91506100a26040850161004c565b90509250925092565b60805160a05160c0516106706100f46000396000818161012501526102f001526000818160aa015261025d01526000818160f6015281816101c701526103fd01526106706000f3fe608060405234801561001057600080fd5b50600436106100725760003560e01c806391ce579c1161005057806391ce579c146100f157806398d5fdca14610118578063af7665ce1461012057600080fd5b806350d25bcd14610077578063677342ce1461009257806389e402f1146100a5575b600080fd5b61007f610147565b6040519081526020015b60405180910390f35b61007f6100a03660046104f4565b610156565b6100cc7f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610089565b6100cc7f000000000000000000000000000000000000000000000000000000000000000081565b61007f6101c0565b6100cc7f000000000000000000000000000000000000000000000000000000000000000081565b60006101516101c0565b905090565b60008160000361016857506000919050565b6000600261017784600161053c565b6101819190610555565b90508291505b818110156101ba5790508060028161019f8186610555565b6101a9919061053c565b6101b39190610555565b9050610187565b50919050565b60008060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff16630902f1ac6040518163ffffffff1660e01b8152600401606060405180830381865afa158015610230573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102549190610590565b509150915060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166350d25bcd6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156102c6573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102ea91906105be565b905060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166350d25bcd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610359573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061037d91906105be565b905060008213801561038f5750600081135b6103f9576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600d60248201527f496e76616c696420507269636500000000000000000000000000000000000000604482015260640160405180910390fd5b60007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166318160ddd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610466573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061048a91906105be565b6104976100a086886105d7565b6104a990670de0b6b3a76400006105d7565b6104b39190610555565b9050670de0b6b3a76400006104cb6100a084866105ee565b6104d68360026105d7565b6104e091906105d7565b6104ea9190610555565b9550505050505090565b60006020828403121561050657600080fd5b5035919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b8082018082111561054f5761054f61050d565b92915050565b60008261058b577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b6000806000606084860312156105a557600080fd5b8351925060208401519150604084015190509250925092565b6000602082840312156105d057600080fd5b5051919050565b808202811582820484141761054f5761054f61050d565b808202600082127f8000000000000000000000000000000000000000000000000000000000000000841416156106265761062661050d565b818105831482151761054f5761054f61050d56fea26469706673582212208c9913b96197cede86f88a6b6d7f673167bcb66f0029498110038c8b1b306f2164736f6c63430008140033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100725760003560e01c806391ce579c1161005057806391ce579c146100f157806398d5fdca14610118578063af7665ce1461012057600080fd5b806350d25bcd14610077578063677342ce1461009257806389e402f1146100a5575b600080fd5b61007f610147565b6040519081526020015b60405180910390f35b61007f6100a03660046104f4565b610156565b6100cc7f000000000000000000000000000000000000000000000000000000000000000081565b60405173ffffffffffffffffffffffffffffffffffffffff9091168152602001610089565b6100cc7f000000000000000000000000000000000000000000000000000000000000000081565b61007f6101c0565b6100cc7f000000000000000000000000000000000000000000000000000000000000000081565b60006101516101c0565b905090565b60008160000361016857506000919050565b6000600261017784600161053c565b6101819190610555565b90508291505b818110156101ba5790508060028161019f8186610555565b6101a9919061053c565b6101b39190610555565b9050610187565b50919050565b60008060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff16630902f1ac6040518163ffffffff1660e01b8152600401606060405180830381865afa158015610230573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102549190610590565b509150915060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166350d25bcd6040518163ffffffff1660e01b8152600401602060405180830381865afa1580156102c6573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906102ea91906105be565b905060007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166350d25bcd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610359573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061037d91906105be565b905060008213801561038f5750600081135b6103f9576040517f08c379a000000000000000000000000000000000000000000000000000000000815260206004820152600d60248201527f496e76616c696420507269636500000000000000000000000000000000000000604482015260640160405180910390fd5b60007f000000000000000000000000000000000000000000000000000000000000000073ffffffffffffffffffffffffffffffffffffffff166318160ddd6040518163ffffffff1660e01b8152600401602060405180830381865afa158015610466573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061048a91906105be565b6104976100a086886105d7565b6104a990670de0b6b3a76400006105d7565b6104b39190610555565b9050670de0b6b3a76400006104cb6100a084866105ee565b6104d68360026105d7565b6104e091906105d7565b6104ea9190610555565b9550505050505090565b60006020828403121561050657600080fd5b5035919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b8082018082111561054f5761054f61050d565b92915050565b60008261058b577f4e487b7100000000000000000000000000000000000000000000000000000000600052601260045260246000fd5b500490565b6000806000606084860312156105a557600080fd5b8351925060208401519150604084015190509250925092565b6000602082840312156105d057600080fd5b5051919050565b808202811582820484141761054f5761054f61050d565b808202600082127f8000000000000000000000000000000000000000000000000000000000000000841416156106265761062661050d565b818105831482151761054f5761054f61050d56fea26469706673582212208c9913b96197cede86f88a6b6d7f673167bcb66f0029498110038c8b1b306f2164736f6c63430008140033",
+  "devdoc": {
+    "details": "This contract interacts with the INileAMM interface to fetch reserves and calculate prices.Reference from https://github.com/AlphaFinanceLab/alpha-homora-v2-contract/blob/master/contracts/oracle/UniswapV2Oracle.sol",
+    "kind": "dev",
+    "methods": {
+      "constructor": {
+        "params": {
+          "_nileAMM": "The address of the Nile AMM contract."
+        }
+      },
+      "getPrice()": {
+        "details": "This function fetches reserves from the Nile AMM and uses a pre-defined price for tokens to calculate the LP token price.",
+        "returns": {
+          "price": "The price of the liquidity pool token."
+        }
+      },
+      "sqrt(uint256)": {
+        "details": "This function uses an iterative method to compute the square root of a number.",
+        "params": {
+          "x": "The number to compute the square root of."
+        },
+        "returns": {
+          "y": "The square root of the given number."
+        }
+      }
+    },
+    "title": "LPOracle",
+    "version": 1
+  },
+  "userdoc": {
+    "kind": "user",
+    "methods": {
+      "constructor": {
+        "notice": "Constructor sets the address of the Nile AMM contract."
+      },
+      "getPrice()": {
+        "notice": "Gets the price of the liquidity pool token."
+      },
+      "latestAnswer()": {
+        "notice": "Gets the latest price of the liquidity pool token."
+      },
+      "sqrt(uint256)": {
+        "notice": "Computes the square root of a given number using the Babylonian method."
+      }
+    },
+    "notice": "This contract provides a price oracle for the liquidity pool tokens in a Nile AMM.",
+    "version": 1
+  },
+  "storageLayout": {
+    "storage": [],
+    "types": null
+  }
+}
