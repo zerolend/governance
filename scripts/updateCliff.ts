@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 import { VestedZeroNFT } from "../types";
 
 const VESTED_ZERO_NFT_ADDRESS = "0x9FA72ea96591e486FF065E7C8A89282dEDfA6C12";
-const LINEAR_DURATION = 86400 * 91;
+const LINEAR_DURATION = 86400 * 31;
 const CLIFF_DURATION = 86400 * 90;
 const tokenIds: number[] = [];
 
