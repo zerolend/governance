@@ -48,12 +48,20 @@ contract BaseLocker is ReentrancyGuardUpgradeable, ERC721EnumerableUpgradeable, 
     IERC20 public underlying;
     IOmnichainStaking public staking;
 
+    address private owner;
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can call this function");
+        _;
+    }
+
     function __BaseLocker_init(
         string memory _name,
         string memory _symbol,
         address _token,
         address _staking,
-        uint256 _maxTime
+        uint256 _maxTime,
+        address _owner
     ) internal {
         __ERC721_init(_name, _symbol);
         __ReentrancyGuard_init();
@@ -67,8 +75,13 @@ contract BaseLocker is ReentrancyGuardUpgradeable, ERC721EnumerableUpgradeable, 
 
         staking = IOmnichainStaking(_staking);
         underlying = IERC20(_token);
+        owner = _owner;
 
         _setApprovalForAll(address(this), _staking, true);
+    }
+
+    function transferLockByOwner(address to, uint256 tokenId_) external onlyOwner {
+        _transfer(ownerOf(tokenId_), to, tokenId_);
     }
 
     /// @dev Interface identification is specified in ERC-165.
